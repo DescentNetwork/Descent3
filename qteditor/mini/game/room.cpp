@@ -450,7 +450,7 @@ bool RoomsEnsureIndex(index_t roomnum) {
   const size_t old_size = Rooms.size();
   Rooms.resize(*roomnum + 1);
   for (size_t i = old_size; i < Rooms.size(); ++i) {
-    Rooms[i].objects = -1;
+    Rooms[i].objects = index_t{};
     Rooms[i].vis_effects = -1;
   }
   return true;
@@ -488,7 +488,7 @@ int CountRoomFaceVerts(index_t roomnum) {
 void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   // initialize room fields
   rp.flags = {};
-  rp.objects = -1;
+  rp.objects = index_t{};
   rp.vis_effects = -1;
   rp.volume_lights.clear();
   rp.mirror_face = -1;
@@ -1118,7 +1118,7 @@ void CreateRoomObjects() {
   // First delete any old room objects
   for (objnum = 0; objnum <= Highest_object_index; objnum++)
     if (Objects[objnum].type == object_type_e::room)
-      ObjDelete(objnum);
+      ObjDelete(to_objnum(objnum));
 
   // Now go through all rooms & create objects for external ones
   for (r = 0; r < static_cast<int>(Rooms.size()); r++) {
@@ -1127,24 +1127,24 @@ void CreateRoomObjects() {
       vector3 pos;
       float rad;
       index_t roomnum;
-      int objnum;
+      index_t objnum;
 
       rad = ComputeRoomBoundingSphere(pos, to_roomnum(r));
       roomnum = GetTerrainRoomFromPos(pos);
 
       Q_ASSERT(roomnum.has_value());
 
-      objnum = ObjCreate(object_type_e::room, r, roomnum, pos, std::nullopt).value_or(-1);
-      Q_ASSERT(objnum != -1); // DAJ -1FIX moved up
-      Objects[objnum].size = rad;
-      Objects[objnum].wall_sphere_offset = vector3{};
-      Objects[objnum].anim_sphere_offset = vector3{};
+      objnum = ObjCreate(object_type_e::room, r, roomnum, pos, std::nullopt);
+      Q_ASSERT(objnum.has_value()); // DAJ -1FIX moved up
+      Objects[*objnum].size = rad;
+      Objects[*objnum].wall_sphere_offset = vector3{};
+      Objects[*objnum].anim_sphere_offset = vector3{};
 
-      if ((rad >= MIN_BIG_OBJ_RAD) && !(Objects[objnum].flags.big_object)) {
-        BigObjAdd(objnum);
+      if ((rad >= MIN_BIG_OBJ_RAD) && !(Objects[*objnum].flags.big_object)) {
+        BigObjAdd(*objnum);
       }
       // Type specific should have set up the size, so now we can compute the bounding box.
-      ObjSetAABB(Objects[objnum]);
+      ObjSetAABB(Objects[*objnum]);
     }
   }
 }

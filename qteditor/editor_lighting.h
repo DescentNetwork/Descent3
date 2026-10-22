@@ -44,7 +44,7 @@ void BuildElementListForRoomFace(index_t roomnum, int facenum, rad_surface *surf
 void BuildElementListForObjectFace(object& obj, int subobj_num, int facenum, rad_surface *surf);
 
 void AssignRoomSurfaceToLightmap(index_t roomnum, int facenum, rad_surface *sp);
-void AssignObjectSurfaceToLightmap(int objnum, int sobj_num, int facenum, rad_surface *sp);
+void AssignObjectSurfaceToLightmap(index_t objnum, int sobj_num, int facenum, rad_surface *sp);
 void AssignLightmapsToObjectSurfacesForSingleRoom(int surface_index, index_t roomnum);
 
 int ClipRadPointList(rad_point **src, rad_point **dest, int *nv, g3_clip_codes_t code);

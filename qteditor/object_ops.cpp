@@ -203,7 +203,7 @@ std::optional<uint16_t> currentObjectPageId() {
 // location, then repositions it onto the current surface.
 // ============================================================================
 bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
-  int objnum;
+  index_t objnum;
   poly_model *pm;
   matrix orient = IDENTITY_MATRIX;
 
@@ -226,11 +226,11 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     orient = Viewer_object->orient;
   }
 
-  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, orient).value_or(-1);
-  if (objnum == -1)
+  objnum = ObjCreate(obj_type, obj_id, Viewer_object->roomnum, Viewer_object->pos, orient);
+  if (!objnum)
     return false;
 
-  object& obj = Objects[objnum];
+  object& obj = Objects[*objnum];
 
   // If we have a ground plane, use current cell or face for position
   if ((obj.render_type == render_type_e::polyobj) &&
@@ -244,12 +244,12 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
       int cellnum = GetSelectedTerrainCell();
       if (cellnum == -1) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a terrain cell selected to place an object.");
-        ObjDelete(objnum);
+        ObjDelete(*objnum);
         return false;
       }
       if (cellnum == -2) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have only one cell selected to place an object.");
-        ObjDelete(objnum);
+        ObjDelete(*objnum);
         return false;
       }
 
@@ -259,7 +259,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     } else {
       if (!app.current.room) {
         QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "You must have a current room selected for this operation.");
-        ObjDelete(objnum);
+        ObjDelete(*objnum);
         return false;
       }
       ComputeCenterPointOnFace(pos, static_cast<int>(*app.current.room), index_to_int(app.current.face));
@@ -291,7 +291,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     vector3 pos;
 
     if (Viewer_object->flags.outside_mine) {
-      ObjDelete(objnum);
+      ObjDelete(*objnum);
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: the viewer is outside the mine.");
       return false;
     }
@@ -303,7 +303,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     pos = Viewer_object->pos + Viewer_object->orient.fvec * OBJECT_PLACE_DIST;
 
     if (!MoveObject(obj, pos)) {
-      ObjDelete(objnum);
+      ObjDelete(*objnum);
       QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot place the object here: collides with wall.");
       return false;
     }
@@ -317,7 +317,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
     vm_Orthogonalize(Players[obj_id].start_orient);
   }
 
-  app.Cur_object_index = objnum;
+  app.Cur_object_index = *objnum;
   app.World_changed = true;
 
   return true;

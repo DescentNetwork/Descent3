@@ -1453,12 +1453,12 @@ int MainWindow::onSelectObjectByNumber()
 // The Qt port already implements this on the Object menu; we expose a
 // second name (SelectObject via the user's command router) so it's
 // discoverable alongside SelectNextObject / SelectPrevObject.
-void MainWindow::onSelectObject(int objnum) {
-  if (objnum < 0 || objnum > Highest_object_index)
+void MainWindow::onSelectObject(index_t objnum) {
+  if (!objnum || *objnum > Highest_object_index)
     return;
-  if (Objects[objnum].type == object_type_e::none)
+  if (Objects[*objnum].type == object_type_e::none)
     return;
-  app.Cur_object_index = objnum;
+  app.Cur_object_index = *objnum;
   m_editorView->update();
 }
 

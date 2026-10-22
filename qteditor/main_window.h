@@ -168,7 +168,7 @@ private:
   int onSelectNextViewer();
   void onDeleteCurrentViewer();
   int onSelectObjectByNumber();
-  void onSelectObject(int objnum);
+  void onSelectObject(index_t objnum);
 
   // ====== CLIPBOARD OPERATIONS ======
   void onCopyObjectToClipboard();

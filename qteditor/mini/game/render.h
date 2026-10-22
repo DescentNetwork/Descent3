@@ -243,7 +243,7 @@ struct state_limited_element {
 
 struct obj_sort_item {
   int vis_effect;
-  int objnum;
+  index_t objnum;
   float dist;
 };
 

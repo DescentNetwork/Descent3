@@ -6364,7 +6364,7 @@ private slots:
     ResetObjectList();
     RoomsEnsureIndex(MAX_ROOMS - 1);
     for (int i = 0; i < MAX_ROOMS; i++) {
-      Rooms[i].objects = -1;
+      Rooms[i].objects = index_t{};
       Rooms[i].vis_effects = -1;
     }
     Highest_object_index = -1;
@@ -9101,7 +9101,7 @@ int main(int argc, char *argv[])
       ResetObjectList();
       for (int i = 0; i < MAX_ROOMS; i++) {
         Rooms[i].used = 0;
-        Rooms[i].objects = -1;
+        Rooms[i].objects = index_t{};
         Rooms[i].vis_effects = -1;
       }
       Highest_object_index = -1;

@@ -687,7 +687,7 @@ extern int32_t Highest_object_index; // highest objnum
 extern object *Player_object; // the object that is the player
 extern object *Viewer_object; // which object we are seeing from
 
-extern std::vector<int16_t> BigObjectList; // DAJ_MR utb int
+extern std::vector<index_t> BigObjectList;
 
 // Compute the object number from an object pointer
 #define OBJNUM(objp) (objp - Objects.data())
@@ -709,10 +709,10 @@ void InitObjects(void);
 
 // links an object into a room's list of objects.
 // takes object number and room number
-void ObjLink(int objnum, index_t roomnum);
+void ObjLink(index_t objnum, index_t roomnum);
 
 // reverses ObjLink.
-void ObjUnlink(int objnum);
+void ObjUnlink(index_t objnum);
 
 // Sets the AABB for the object
 void ObjSetAABB(object& obj);
@@ -758,7 +758,7 @@ void ClearTransientObjects(int clear_all);
 // Remaps all static powerups,sounds,etc to their appropriate indices
 void RemapEverything();
 
-void BigObjAdd(int objnum);
+void BigObjAdd(index_t objnum);
 void InitBigObjects(void);
 
 // Creates the player object in the center of the given room
@@ -782,10 +782,10 @@ void ObjSetTurretUpdate(uint16_t objnum, multi_turret *multi_turret_info);
 object *ObjGetUltimateParent(object *child);
 
 // Sets an object to a type object_type::dummy (saves its old type) so it won't be renderered, etc, but still alive
-void ObjGhostObject(int objnum);
+void ObjGhostObject(index_t objnum);
 
 // Restores a ghosted object back to its old type
-void ObjUnGhostObject(int objnum);
+void ObjUnGhostObject(index_t objnum);
 
 /////////////////////////////////
 // Position history information

@@ -61,7 +61,7 @@ extern uint32_t Num_objects;
 
 // Big-object tracking, declared extern in object.h but not defined elsewhere
 // in the mini tree.
-std::vector<int16_t> BigObjectList;
+std::vector<index_t> BigObjectList;
 
 // The mini defines the in-memory model table with this many slots
 // (see stubs.cpp).  Guards model lookups against the original's
@@ -78,7 +78,7 @@ object *Viewer_object = &Objects[0];
 object *Player_object = &Objects[0];
 
 
-uint32_t free_obj_list[MAX_OBJECTS];
+std::array<index_t, MAX_OBJECTS> free_obj_list;
 int32_t Highest_ever_object_index = -1;
 
 // Position history (declared extern in object.h).  Used for runtime motion
@@ -97,15 +97,19 @@ static int Num_free_object_position_history = 0;
 
 void InitBigObjects() { BigObjectList.clear(); }
 
-void BigObjAdd(int objnum) {
-  Objects[objnum].flags.big_object = true;
-  BigObjectList.push_back(static_cast<int16_t>(objnum));
+void BigObjAdd(index_t objnum) {
+  if (!objnum)
+    return;
+  Objects[*objnum].flags.big_object = true;
+  BigObjectList.push_back(objnum);
 }
 
-void BigObjRemove(int objnum) {
-  Objects[objnum].flags.big_object = false;
+void BigObjRemove(index_t objnum) {
+  if (!objnum)
+    return;
+  Objects[*objnum].flags.big_object = false;
 
-  const auto found = std::find(BigObjectList.begin(), BigObjectList.end(), static_cast<int16_t>(objnum));
+  const auto found = std::find(BigObjectList.begin(), BigObjectList.end(), objnum);
   if (found != BigObjectList.end())
     BigObjectList.erase(found);
 }
@@ -141,7 +145,7 @@ void ResetFreeObjects() {
   uint32_t i;
   for (i = Num_objects = MAX_OBJECTS; i-- > 0;)
     if (Objects[i].type == object_type_e::none)
-      free_obj_list[--Num_objects] = i;
+      free_obj_list[--Num_objects] = index_t{i};
     else if (Highest_object_index == -1)
       Highest_object_index = i;
 }
@@ -216,10 +220,10 @@ index_t ObjAllocate(void) {
   if (Num_objects >= MAX_OBJECTS)
     return std::nullopt;
 
-  uint32_t objnum = free_obj_list[Num_objects++];
+  const index_t objnum = free_obj_list[Num_objects++];
 
-  if (objnum > Highest_object_index) {
-    Highest_object_index = objnum;
+  if (*objnum > Highest_object_index) {
+    Highest_object_index = static_cast<int32_t>(*objnum);
     if (Highest_object_index > Highest_ever_object_index)
       Highest_ever_object_index = Highest_object_index;
   }
@@ -230,14 +234,16 @@ index_t ObjAllocate(void) {
 // Frees up an object.  Generally, ObjDelete() should be called to get rid of
 // an object.  This function deallocates the object entry after the object has
 // been unlinked.
-void ObjFree(int objnum) {
-  ObjFreePositionHistory(Objects[objnum]);
+void ObjFree(index_t objnum) {
+  if (!objnum)
+    return;
+  ObjFreePositionHistory(Objects[*objnum]);
 
   free_obj_list[--Num_objects] = objnum;
   if (Num_objects < 0)
     Num_objects = 0;
 
-  if (objnum == Highest_object_index)
+  if (static_cast<int32_t>(*objnum) == Highest_object_index)
     while (Highest_object_index > 0 && Objects[--Highest_object_index].type == object_type_e::none)
       ;
 }
@@ -247,10 +253,10 @@ void ObjFree(int objnum) {
 // ---------------------------------------------------------------------------
 
 // Links the object into the list for its room (or terrain cell).
-void ObjLink(int objnum, index_t roomnum) {
-  object &obj = Objects[objnum];
-  if (objnum == -1)
+void ObjLink(index_t objnum, index_t roomnum) {
+  if (!objnum)
     return;
+  object &obj = Objects[*objnum];
 
   if (obj.roomnum.has_value() || (obj.flags.big_object))
     return;
@@ -278,16 +284,16 @@ void ObjLink(int objnum, index_t roomnum) {
     Rooms[*roomnum].objects = objnum;
   }
 
-  obj.prev = -1;
+  obj.prev.reset();
 
-  if (obj.next != -1)
-    Objects[obj.next].prev = objnum;
+  if (obj.next)
+    Objects[*obj.next].prev = objnum;
 }
 
-void ObjUnlink(int objnum) {
-  object &obj = Objects[objnum];
-  if (objnum == -1)
+void ObjUnlink(index_t objnum) {
+  if (!objnum)
     return;
+  object &obj = Objects[*objnum];
 
   // If object is already unlinked, do nothing
   if (!obj.roomnum)
@@ -303,26 +309,26 @@ void ObjUnlink(int objnum) {
 
     terrain_segment &seg = Terrain_seg[cellnum];
 
-    if (obj.prev == -1)
+    if (!obj.prev)
       seg.objects = obj.next;
     else
-      Objects[obj.prev].next = obj.next;
+      Objects[*obj.prev].next = obj.next;
 
-    if (obj.next != -1)
-      Objects[obj.next].prev = obj.prev;
+    if (obj.next)
+      Objects[*obj.next].prev = obj.prev;
   } else {
     if (*obj.roomnum >= Rooms.size())
       return;
 
     room_t &rp = Rooms[*obj.roomnum];
 
-    if (obj.prev == -1)
+    if (!obj.prev)
       rp.objects = obj.next;
     else
-      Objects[obj.prev].next = obj.next;
+      Objects[*obj.prev].next = obj.next;
 
-    if (obj.next != -1)
-      Objects[obj.next].prev = obj.prev;
+    if (obj.next)
+      Objects[*obj.next].prev = obj.prev;
   }
 
   // Mark as not linked
@@ -331,8 +337,8 @@ void ObjUnlink(int objnum) {
 
 // When an object has moved into a new room, this function unlinks it from its
 // old room and links it into the new room.
-void ObjRelink(int objnum, index_t newroomnum) {
-  if ((objnum < 0) || (objnum > Highest_object_index))
+void ObjRelink(index_t objnum, index_t newroomnum) {
+  if (!objnum || (static_cast<int32_t>(*objnum) > Highest_object_index))
     return;
 
   ObjUnlink(objnum);
@@ -575,12 +581,11 @@ index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos
   }
 
   // Get next free object
-  const index_t objnum_opt = ObjAllocate();
-  if (!objnum_opt) // no free objects
+  const index_t objnum = ObjAllocate();
+  if (!objnum) // no free objects
     return std::nullopt;
 
-  const int objnum = static_cast<int>(*objnum_opt);
-  object& obj = Objects[objnum];
+  object& obj = Objects[*objnum];
 
   // Make sure the object is ok
   if (obj.type != object_type_e::none)
@@ -613,7 +618,7 @@ index_t ObjCreate(object_type_e type, uint16_t id, index_t roomnum, vector3& pos
 
   ObjInitPositionHistory(obj);
 
-  return static_cast<uint32_t>(objnum);
+  return objnum;
 }
 
 // Removes an object from the world.
@@ -667,7 +672,7 @@ void FreeAllObjects() {
     if (Objects[objnum].type != object_type_e::none) {
       Objects[objnum].flags.server_says_delete = true;
       Objects[objnum].flags.inplayer_inventory = false;
-      ObjDelete(objnum);
+      ObjDelete(to_objnum(objnum));
     }
 }
 
@@ -755,11 +760,11 @@ object *ObjGet(int handle) {
   if (handle == OBJECT_HANDLE_BAD)
     return nullptr;
 
-  int objnum = handle & HANDLE_OBJNUM_MASK;
-  if (objnum < 0 || objnum >= MAX_OBJECTS)
+  const index_t objnum = index_t{static_cast<uint32_t>(handle & HANDLE_OBJNUM_MASK)};
+  if (!objnum || *objnum >= MAX_OBJECTS)
     return nullptr;
 
-  object &objp = Objects[objnum];
+  object &objp = Objects[*objnum];
 
   if ((objp.type != object_type_e::none) && (objp.handle == handle))
     return &objp;

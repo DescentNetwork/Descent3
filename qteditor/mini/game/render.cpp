@@ -656,9 +656,9 @@ void MarkFacesForRendering(index_t roomnum, clip_wnd &wnd) {
   }
 
   // Mark objects for rendering
-  int objnum;
-  for (objnum = rp.objects; (objnum != -1); objnum = Objects[objnum].next) {
-    object &obj = Objects[objnum];
+  index_t objnum;
+  for (objnum = rp.objects; (objnum.has_value()); objnum = Objects[*objnum].next) {
+    object &obj = Objects[*objnum];
     uint8_t anded = 0xff;
     g3Point pnts[8];
     vector3 vecs[8];
@@ -1126,8 +1126,8 @@ void BuildRoomList(int start_room_num) {
   Global_buffer_index += rp.verts.size();
 
   // Mark all objects in this room as visible
-  for (int objnum = rp.objects; (objnum != -1); objnum = Objects[objnum].next)
-    Objects[objnum].flags.safe_to_render = true;
+  for (index_t objnum = rp.objects; objnum; objnum = Objects[*objnum].next)
+    Objects[*objnum].flags.safe_to_render = true;
 
   // Initial clip window is whole screen
   wnd.left = wnd.top = 0.0f;
@@ -3127,15 +3127,16 @@ uint8_t Trick_type = 0;
 // Render the objects and viseffects in a room.  Do a simple sort
 void RenderRoomObjects(index_t roomnum) {
   const room_t &rp = Rooms[*roomnum];
-  int n_objs = 0, objnum, i, visnum;
+  int n_objs = 0, i, visnum;
+  index_t objnum;
   float zdist;
   if (!Render_mirror_for_room && UseHardware)
     return; // This function only works for mirrors now
 
   // Add objects to sort list
-  for (objnum = rp.objects; (objnum != -1) && (n_objs < MAX_OBJECTS_PER_ROOM); objnum = Objects[objnum].next) {
-    Q_ASSERT(objnum != Objects[objnum].next);
-    object *obj = &Objects[objnum];
+  for (objnum = rp.objects; objnum && (n_objs < MAX_OBJECTS_PER_ROOM); objnum = Objects[*objnum].next) {
+    Q_ASSERT(objnum != Objects[*objnum].next);
+    object *obj = &Objects[*objnum];
 
     if (obj->render_type == render_type_e::none)
       continue;
@@ -3163,12 +3164,12 @@ void RenderRoomObjects(index_t roomnum) {
     bool pointIsVisible = IsPointVisible(VisEffects[visnum].pos, VisEffects[visnum].size, zdist) ? true : false;
     if (Render_mirror_for_room || pointIsVisible) {
       obj_sort_list[n_objs].vis_effect = 1;
-      obj_sort_list[n_objs].objnum = visnum;
+      obj_sort_list[n_objs].objnum = index_t{static_cast<uint32_t>(visnum)};
       obj_sort_list[n_objs].dist = zdist;
       n_objs++;
     }
   }
-  Q_ASSERT(objnum == -1); // if not -1, ran out of space in render_order[]
+  Q_ASSERT(!objnum); // if still set, ran out of space in render_order[]
   Q_ASSERT(visnum == -1); // if not -1, ran out of space in render_order[]
   // Sort the objects
   qsort(obj_sort_list, n_objs, sizeof(*obj_sort_list), (int (*)(const void *, const void *))obj_sort_func);
@@ -3197,9 +3198,9 @@ void RenderRoomObjects(index_t roomnum) {
     negz_matrix.rvec *= -1;
 
     for (i = n_objs - 1; i >= 0; i--) {
-      objnum = obj_sort_list[i].objnum;
+      const index_t sort_objnum = obj_sort_list[i].objnum;
       if (obj_sort_list[i].vis_effect) {
-        vis_effect &vis = VisEffects[objnum];
+        vis_effect &vis = VisEffects[*sort_objnum];
         vector3 save_vec = vis.pos;
         vector3 save_end_vec = vis.end_pos;
         vector3 &vec = vis.pos;
@@ -3215,7 +3216,7 @@ void RenderRoomObjects(index_t roomnum) {
         vis.pos = save_vec;
         vis.end_pos = save_end_vec;
       } else {
-        object *objp = &Objects[objnum];
+        object *objp = &Objects[*sort_objnum];
 
         vector3 save_vec = objp->pos;
         matrix save_orient = objp->orient;
@@ -3254,11 +3255,11 @@ void RenderRoomObjects(index_t roomnum) {
     return;
   }
   for (i = n_objs - 1; i >= 0; i--) {
-    objnum = obj_sort_list[i].objnum;
+    const index_t sort_objnum = obj_sort_list[i].objnum;
     if (obj_sort_list[i].vis_effect) {
-      DrawVisEffect(&VisEffects[objnum]);
+      DrawVisEffect(&VisEffects[*sort_objnum]);
     } else {
-      object *objp = &Objects[objnum];
+      object *objp = &Objects[*sort_objnum];
       if (objp == Viewer_object)
         continue;
       RenderObject(*objp);
@@ -3272,23 +3273,22 @@ void RenderRoomObjects(index_t roomnum) {
 void CheckToRenderMineObjects(index_t roomnum) {
 
   if (UseHardware) {
-    int index;
     float zdist;
     if (Render_mirror_for_room)
       return;
-    for (index = Rooms[*roomnum].objects; index != -1; index = Objects[index].next) {
-      object *obj = &Objects[index];
-      if (Objects[index].render_type == render_type_e::none)
+    for (index_t index = Rooms[*roomnum].objects; index; index = Objects[*index].next) {
+      object *obj = &Objects[*index];
+      if (obj->render_type == render_type_e::none)
         continue;
       if (obj == Viewer_object)
         continue;
       // Don't draw piggybacked objects
       if (Viewer_object->type == object_type_e::observer && index == Players[Viewer_object->id].piggy_objnum)
         continue;
-      float size = Objects[index].size;
+      float size = obj->size;
       // Special case weapons with streamers
-      if (Objects[index].type == object_type_e::weapon && (Weapons[Objects[index].id].flags.streamer))
-        size = Weapons[Objects[index].id].phys_info.velocity.z();
+      if (obj->type == object_type_e::weapon && (Weapons[obj->id].flags.streamer))
+        size = Weapons[obj->id].phys_info.velocity.z();
       // Check if object is trivially rejected
       int isVisible = IsPointVisible(obj->pos, size, zdist); // calculate zdist
       if ((obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
@@ -3301,7 +3301,7 @@ void CheckToRenderMineObjects(index_t roomnum) {
       }
     }
     // Now do viseffects
-    for (index = Rooms[*roomnum].vis_effects; index != -1; index = VisEffects[index].next) {
+    for (int index = Rooms[*roomnum].vis_effects; index != -1; index = VisEffects[index].next) {
       if (VisEffects[index].type == VIS_NONE || VisEffects[index].flags.dead)
         continue;
 

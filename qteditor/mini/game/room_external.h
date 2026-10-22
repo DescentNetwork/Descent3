@@ -297,7 +297,7 @@ struct room_t {
 
   std::unique_ptr<doorway> doorway_data;   // this room's doorway data, or null if not a doorway
   std::string name;              // name of this room, or NULL
-  int32_t objects;             // index of first object in this room
+  index_t objects;             // index of first object in this room
   vector3 max_xyz, min_xyz; // for external room visibility checking
 
   float last_render_time; // Last time we rendered this room

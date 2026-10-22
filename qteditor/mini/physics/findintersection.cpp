@@ -979,7 +979,7 @@ static bool check_vector_to_cylinder(vector3 &colp, vector3 &intp, float &col_di
 static bool check_sphere_to_face(vector3 &colp, vector3 &intp, float &col_dist, vector3 &wall_norm, const vector3 &p0,
                                  const vector3 &p1, const vector3 &face_normal, int nv, float rad, vector3 **vertex_ptr_list);
 static void fvi_rooms_objs(void);
-static int obj_in_list(int objnum, int *obj_list);
+static int obj_in_list(index_t objnum, int *obj_list);
 static void make_trigger_face_list(int last_sim_faces);
 static bool PhysPastPortal(index_t roomnum, const portal &pp);
 
@@ -2144,26 +2144,26 @@ int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, 
     for (ycounter = ystart; ycounter <= yend; ycounter++) {
       for (xcounter = xstart; xcounter <= xend; xcounter++) {
         // Do object stuff
-        int cur_obj_index = Terrain_seg[cur_node].objects;
+        index_t cur_obj_index = Terrain_seg[cur_node].objects;
 
-        while (cur_obj_index > -1) {
+        while (cur_obj_index.has_value()) {
           if (num_objects >= max_elements)
             break;
 
-          if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
-            if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type_e::player ||
-                Objects[cur_obj_index].ai_info) {
-              if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps) &&
-                    Objects[cur_obj_index].type != object_type_e::room)) {
-                if (object_movement_AABB(Objects[cur_obj_index]) && !(Objects[cur_obj_index].flags.big_object)) {
-                  object_index_list[num_objects++] = cur_obj_index;
+          if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[*cur_obj_index].type)] != collision_result::nothing) {
+            if (!f_only_players_and_ais || Objects[*cur_obj_index].type == object_type_e::player ||
+                Objects[*cur_obj_index].ai_info) {
+              if (!(f_lightmap_only && (Objects[*cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps) &&
+                    Objects[*cur_obj_index].type != object_type_e::room)) {
+                if (object_movement_AABB(Objects[*cur_obj_index]) && !(Objects[*cur_obj_index].flags.big_object)) {
+                  object_index_list[num_objects++] = static_cast<int16_t>(*cur_obj_index);
                   Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
                 }
               }
             }
           }
 
-          cur_obj_index = Objects[cur_obj_index].next;
+          cur_obj_index = Objects[*cur_obj_index].next;
         }
 
         if (num_objects >= max_elements)
@@ -2184,10 +2184,10 @@ int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, 
                                              obj_type_index(Objects[x].type) < MAX_OBJECT_TYPES &&
                                              CollisionRayResult[obj_type_index(Objects[x].type)] != collision_result::nothing)) {
         if (!f_only_players_and_ais || Objects[x].type == object_type_e::player || Objects[x].ai_info) {
-          if (!(f_lightmap_only && (Objects[BigObjectList[x]].lighting_render_type != lighting_render_type_e::lightmaps) &&
-                Objects[BigObjectList[x]].type != object_type_e::room)) {
-            if (object_movement_AABB(Objects[BigObjectList[x]])) {
-              object_index_list[num_objects++] = BigObjectList[x];
+          if (!(f_lightmap_only && (Objects[*BigObjectList[x]].lighting_render_type != lighting_render_type_e::lightmaps) &&
+                Objects[*BigObjectList[x]].type != object_type_e::room)) {
+            if (object_movement_AABB(Objects[*BigObjectList[x]])) {
+              object_index_list[num_objects++] = index_to_int(BigObjectList[x]);
               Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
             }
           }
@@ -2219,23 +2219,23 @@ int fvi_QuickDistObjectList(const vector3 &pos, int init_room_index, float rad, 
       cur_room = &Rooms[cur_room_index];
 
       // Do object stuff
-      int cur_obj_index = cur_room->objects;
+      index_t cur_obj_index = cur_room->objects;
 
-      while (cur_obj_index > -1) {
+      while (cur_obj_index.has_value()) {
         if (num_objects >= max_elements)
           break;
-        if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[cur_obj_index].type)] != collision_result::nothing) {
-          if (!f_only_players_and_ais || Objects[cur_obj_index].type == object_type_e::player || Objects[cur_obj_index].ai_info) {
-            if (!(f_lightmap_only && (Objects[cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps))) {
-              if (object_movement_AABB(Objects[cur_obj_index])) {
-                object_index_list[num_objects++] = cur_obj_index;
+        if ((f_include_non_collide_objects) || CollisionRayResult[obj_type_index(Objects[*cur_obj_index].type)] != collision_result::nothing) {
+          if (!f_only_players_and_ais || Objects[*cur_obj_index].type == object_type_e::player || Objects[*cur_obj_index].ai_info) {
+            if (!(f_lightmap_only && (Objects[*cur_obj_index].lighting_render_type != lighting_render_type_e::lightmaps))) {
+              if (object_movement_AABB(Objects[*cur_obj_index])) {
+                object_index_list[num_objects++] = static_cast<int16_t>(*cur_obj_index);
                 Q_ASSERT(num_objects < 0 || num_objects <= max_elements);
               }
             }
           }
         }
 
-        cur_obj_index = Objects[cur_obj_index].next;
+        cur_obj_index = Objects[*cur_obj_index].next;
       }
 
       if (num_objects >= max_elements)
@@ -2884,13 +2884,13 @@ fvi_hit_type fvi_FindIntersection(fvi_query &fq, fvi_info &hit_data, bool no_sub
   return hit_data.hit_type[0];
 }
 
-int obj_in_list(int objnum, int *obj_list) {
+int obj_in_list(index_t objnum, int *obj_list) {
   int t;
 
-  while ((t = *obj_list) != -1 && t != objnum)
+  while ((t = *obj_list) != -1 && t != *objnum)
     obj_list++;
 
-  return (t == objnum);
+  return (t == *objnum);
 }
 
 // new function for Mike
@@ -3300,10 +3300,10 @@ bool object_intersects_wall(const object &objp) {
   return false;
 }
 
-void check_hit_obj(int objnum) {
+void check_hit_obj(index_t objnum) {
   vector3 hit_point;
   float cur_dist;
-  const object &obj = Objects[objnum];
+  const object &obj = Objects[*objnum];
   collision_result collision_type;
   int m_obj_index = fvi_query_ptr->thisobjnum;
   object *m_obj = &Objects[m_obj_index];
@@ -3317,28 +3317,28 @@ void check_hit_obj(int objnum) {
     return;
 
   if (!(obj.flags.dead)) {
-    if (m_obj_index != objnum) {
-      if (!((m_obj_index > -1) && ((collision_type = CollisionResult[obj_type_index(m_obj->type)][obj_type_index(obj.type)]) == collision_result::nothing) &&
+    if (m_obj_index < 0 || m_obj_index != index_to_int(*objnum)) {
+      if (!((m_obj_index >= 0) && ((collision_type = CollisionResult[obj_type_index(m_obj->type)][obj_type_index(obj.type)]) == collision_result::nothing) &&
             (CollisionResult[obj_type_index(obj.type)][obj_type_index(m_obj->type)] == collision_result::nothing))) {
         // Account for ray casting
         if (m_obj_index <= -1 && (CollisionRayResult[obj_type_index(obj.type)] == collision_result::nothing))
           return;
 
-        if (object_movement_AABB(Objects[objnum])) {
+        if (object_movement_AABB(Objects[*objnum])) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
           if (Physics_player_verbose) {
-            if (OBJNUM(Player_object) == objnum && m_obj_index != -1) {
+            if (to_objnum(OBJNUM(Player_object)) == objnum && m_obj_index >= 0) {
               LOG_DEBUG("FVI: %d AABB with player", m_obj_index);
             } else if (Player_object == m_obj) {
-              LOG_DEBUG("FVI: Player AABB with %d", objnum);
+              LOG_DEBUG("FVI: Player AABB with %d", *objnum);
             }
           }
 #endif
 #endif
 
-          if (fvi_query_ptr->ignore_obj_list == nullptr || !obj_in_list(objnum, fvi_query_ptr->ignore_obj_list)) {
-            if (!ObjectsAreRelated(objnum, m_obj_index)) {
+          if (fvi_query_ptr->ignore_obj_list == nullptr || !obj_in_list(*objnum, fvi_query_ptr->ignore_obj_list)) {
+            if (!ObjectsAreRelated(index_to_int(*objnum), m_obj_index)) {
 
               if (m_obj_index < 0) {
                 switch (obj.type) {
@@ -3432,7 +3432,7 @@ void check_hit_obj(int objnum) {
               case collision_result::check_sphere_room: {
                 Q_ASSERT(obj.type == object_type_e::room);
 
-                fvi_room(obj.id, -1, objnum);
+                fvi_room(obj.id, -1, index_to_int(*objnum));
               } break;
 
               case collision_result::check_sphere_poly:
@@ -3453,11 +3453,11 @@ void check_hit_obj(int objnum) {
                 // fvi_anim_sphere_rad)
                 //										||
                 // check_vector_to_object(&hit_point, &cur_dist, &fvi_anim_sphere_p0,&fvi_anim_sphere_p1,
-                // fvi_anim_sphere_rad, &Objects[objnum], &Objects[fvi_query_ptr->thisobjnum])
+                // fvi_anim_sphere_rad, &Objects[*objnum], &Objects[fvi_query_ptr->thisobjnum])
                 //									{
-                fvi_curobj = objnum;
+                fvi_curobj = index_to_int(*objnum);
                 fvi_moveobj = m_obj_index;
-                if (PolyCollideObject(Objects[objnum])) {
+                if (PolyCollideObject(Objects[*objnum])) {
                   compute_movement_AABB();
                 }
                 //									}
@@ -3480,16 +3480,16 @@ void check_hit_obj(int objnum) {
                 fvi_hit_data_ptr = &hit_info;
                 fvi_query_ptr = &fq;
 
-                fq.p0 = &Objects[objnum].pos;
+                fq.p0 = &Objects[*objnum].pos;
                 fq.p1 = &relative_pos;
                 fq.rad = obj.size;
-                fq.thisobjnum = objnum;
+                fq.thisobjnum = static_cast<int16_t>(*objnum);
 
                 hit_info.num_hits = 0;
                 hit_info.hit_type[0] = fvi_hit_type::none;
 
                 fvi_curobj = m_obj_index;
-                fvi_moveobj = objnum;
+                fvi_moveobj = index_to_int(*objnum);
                 PolyCollideObject(Objects[temp_fvi_query_ptr->thisobjnum]);
 
                 fvi_hit_data_ptr = temp_fvi_hit_data_ptr;
@@ -3507,7 +3507,7 @@ void check_hit_obj(int objnum) {
 
                   for (counter = 0; counter < hit_info.num_hits; counter++) {
                     fvi_hit_data_ptr->hit_type[fvi_hit_data_ptr->num_hits] = fvi_hit_type::object;
-                    fvi_hit_data_ptr->hit_object[fvi_hit_data_ptr->num_hits] = objnum;
+                    fvi_hit_data_ptr->hit_object[fvi_hit_data_ptr->num_hits] = index_to_int(*objnum);
                     fvi_hit_data_ptr->hit_face_pnt[fvi_hit_data_ptr->num_hits] =
                         fvi_hit_data_ptr->hit_pnt + (hit_info.hit_face_pnt[counter] - m_obj->pos);
                     fvi_hit_data_ptr->hit_wallnorm[fvi_hit_data_ptr->num_hits] = -hit_info.hit_wallnorm[counter];
@@ -3530,7 +3530,7 @@ void check_hit_obj(int objnum) {
               case collision_result::check_bbox_sphere: {
               sphere_sphere:
                 if (check_vector_to_object(hit_point, cur_dist, fvi_anim_sphere_p0, fvi_anim_sphere_p1,
-                                           fvi_anim_sphere_rad, Objects[objnum], Objects[m_obj_index])) {
+                                           fvi_anim_sphere_rad, Objects[*objnum], Objects[m_obj_index])) {
                   //	hit_point
 
                   if (cur_dist < fvi_collision_dist) {
@@ -3557,14 +3557,14 @@ void check_hit_obj(int objnum) {
                     compute_movement_AABB();
                     fvi_hit_data_ptr->num_hits = 1;
 
-                    fvi_hit_data_ptr->hit_object[0] = objnum;
+                    fvi_hit_data_ptr->hit_object[0] = index_to_int(*objnum);
                     fvi_hit_data_ptr->hit_type[0] = fvi_hit_type::object;
                     fvi_hit_data_ptr->hit_face_pnt[0] = pos_hit;
 
                     Q_ASSERT(hit_obj_size > 0.0f);
                     fvi_hit_data_ptr->hit_wallnorm[0] = (pos_hit - hit_obj_pos) / hit_obj_size;
 
-                    Q_ASSERT(objnum != -1);
+                    Q_ASSERT(objnum.has_value());
                   }
                 }
               } break;
@@ -3577,7 +3577,7 @@ void check_hit_obj(int objnum) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
               if (Physics_player_verbose) {
-                if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
+                if (to_objnum(OBJNUM(Player_object)) == objnum || Player_object == m_obj) {
                   LOG_DEBUG("Related");
                 }
               }
@@ -3588,7 +3588,7 @@ void check_hit_obj(int objnum) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
             if (Physics_player_verbose) {
-              if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
+              if (to_objnum(OBJNUM(Player_object)) == objnum || Player_object == m_obj) {
                 LOG_DEBUG("Ignore list");
               }
             }
@@ -3601,9 +3601,9 @@ void check_hit_obj(int objnum) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
       if (Physics_player_verbose) {
-        if (objnum != m_obj_index) {
-          if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
-            LOG_DEBUG("Result nothing %d %d", objnum, m_obj_index);
+        if (m_obj_index < 0 || m_obj_index != index_to_int(*objnum)) {
+          if (to_objnum(OBJNUM(Player_object)) == objnum || Player_object == m_obj) {
+            LOG_DEBUG("Result nothing %d %d", index_to_int(*objnum), m_obj_index);
           }
         }
       }
@@ -3614,8 +3614,8 @@ void check_hit_obj(int objnum) {
 #ifndef NED_PHYSICS
 #ifdef _DEBUG
     if (Physics_player_verbose) {
-      if (OBJNUM(Player_object) == objnum || Player_object == m_obj) {
-        LOG_DEBUG("Dead %d %d", objnum, m_obj_index);
+      if (to_objnum(OBJNUM(Player_object)) == objnum || Player_object == m_obj) {
+        LOG_DEBUG("Dead %d %d", index_to_int(*objnum), m_obj_index);
       }
     }
 #endif
@@ -3782,7 +3782,7 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
   int terxstart, terxend;
   int terystart, teryend;
   int i;
-  int objnum;
+  index_t objnum;
   bool f_check_next_ground;
   object *this_obj;
 
@@ -3800,18 +3800,18 @@ inline void check_terrain_node(int cur_node, bool f_check_local_nodes, bool f_ch
     fvi_num_cells_obj_visited++;
 
     if (fvi_query_ptr->flags.check_objs) {
-      for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
-        Q_ASSERT(objnum != -1);
-        if (!(Objects[objnum].flags.big_object))
-          check_hit_obj(objnum);
+      for (objnum = Terrain_seg[cur_node].objects; objnum.has_value(); objnum = Objects[*objnum].next) {
+        Q_ASSERT(objnum.has_value());
+        if (!(Objects[*objnum].flags.big_object))
+          check_hit_obj(*objnum);
       }
     } else {
 
       if (!(fvi_query_ptr->flags.ignore_external_rooms))
-        for (objnum = Terrain_seg[cur_node].objects; objnum != -1; objnum = Objects[objnum].next) {
-          Q_ASSERT(objnum != -1);
-          if ((Objects[objnum].type == object_type_e::room) && !(Objects[objnum].flags.big_object))
-            check_hit_obj(objnum);
+        for (objnum = Terrain_seg[cur_node].objects; objnum.has_value(); objnum = Objects[*objnum].next) {
+          Q_ASSERT(objnum.has_value());
+          if ((Objects[*objnum].type == object_type_e::room) && !(Objects[*objnum].flags.big_object))
+            check_hit_obj(*objnum);
         }
     }
   }
@@ -4336,14 +4336,14 @@ fvi_hit_type do_fvi_terrain() {
 check_big_objs: // Check Big objects
   if (fvi_query_ptr->flags.check_objs) {
     for (i = 0; i < BigObjectList.size(); i++) {
-      Q_ASSERT(BigObjectList[i] >= 0);
+      Q_ASSERT(BigObjectList[i].has_value());
       check_hit_obj(BigObjectList[i]);
       //		mprintf(0, "CHecking BIG %d\n", i);
     }
   } else {
     if (!(fvi_query_ptr->flags.ignore_external_rooms))
       for (i = 0; i < BigObjectList.size(); i++) {
-        if (Objects[BigObjectList[i]].type == object_type_e::room)
+        if (Objects[*BigObjectList[i]].type == object_type_e::room)
           check_hit_obj(BigObjectList[i]);
         //		mprintf(0, "CHecking BIG %d\n", i);
       }
@@ -4357,7 +4357,7 @@ check_big_objs: // Check Big objects
 #define MAX_NEXT_PORTALS 50
 
 void fvi_rooms_objs(void) {
-  int objnum;
+  index_t objnum;
   int i;
 
   // first, see if vector hit any objects in this segment
@@ -4370,9 +4370,9 @@ void fvi_rooms_objs(void) {
     Q_ASSERT((fvi_visit_list[*roomnum >> 3] & (0x01 << (*roomnum % 8))) != 0);
     Q_ASSERT(roomnum.has_value() && *roomnum < Rooms.size() && cur_room.used);
 
-    for (objnum = cur_room.objects; objnum != -1; objnum = Objects[objnum].next) {
-      Q_ASSERT(objnum != -1);
-      check_hit_obj(objnum);
+    for (objnum = cur_room.objects; objnum.has_value(); objnum = Objects[*objnum].next) {
+      Q_ASSERT(objnum.has_value());
+      check_hit_obj(*objnum);
     }
   }
 }

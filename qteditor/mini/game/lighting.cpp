@@ -61,7 +61,7 @@ int DYNAMIC_LIGHTMAP_MEMORY = 1000000;
 #define MAX_DYNAMIC_LIGHTMAPS 2000
 
 struct volume_object {
-  uint32_t objnum;
+  index_t objnum;
   int handle;
 };
 
@@ -1319,7 +1319,7 @@ void ClearDynamicLightmaps() {
 
   // Reset volume lights
   for (auto &vol_obj : Dynamic_volume_object_list) {
-    const object &obj = Objects[vol_obj.objnum];
+    const object &obj = Objects[*vol_obj.objnum];
     if (obj.type == object_type_e::none || obj.handle != vol_obj.handle)
       continue; // object was destroyed this frame
 

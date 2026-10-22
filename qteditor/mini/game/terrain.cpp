@@ -869,7 +869,7 @@ void ResetTerrain(int force) {
 #if (!defined(RELEASE) || defined(NEWEDITOR))
       Terrain_seg_render_objs[i * TERRAIN_WIDTH + t] = -1;
 #endif
-      Terrain_seg[i * TERRAIN_WIDTH + t].objects = -1;
+      Terrain_seg[i * TERRAIN_WIDTH + t].objects = index_t{};
       Terrain_seg[i * TERRAIN_WIDTH + t].flags = {};
       Terrain_seg[i * TERRAIN_WIDTH + t].lm_quad = ((i / 128) * 2) + (t / 128);
       Terrain_seg[i * TERRAIN_WIDTH + t].texseg_index = ((i >> 3) * TERRAIN_TEX_WIDTH) + (t >> 3);

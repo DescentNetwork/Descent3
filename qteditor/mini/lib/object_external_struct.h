@@ -159,6 +159,16 @@ inline int from_roomnum(const index_t& roomnum) {
   return index_to_int(roomnum);
 }
 
+// Convert a legacy object number (-1 meaning "no object") to index_t.
+inline index_t to_objnum(int objnum) {
+  return objnum == -1 ? index_t{} : index_t{static_cast<uint32_t>(objnum)};
+}
+
+// Convert an index_t object number back to the legacy int form (-1 when unset).
+inline int from_objnum(const index_t& objnum) {
+  return index_to_int(objnum);
+}
+
 /*
  *    STRUCTURES
  */
@@ -779,7 +789,7 @@ struct object {
   std::string name; // the name of this object, or NULL
 
   int32_t handle;       //  unique handle for this object.  See defines above
-  int16_t next, prev;   // id of next and previous connected object in Objects, -1 = no connection
+  index_t next, prev;   // id of next and previous connected object in Objects; nullopt = no connection
 
   control_type_e control_type;         // how this object is controlled
   movement_type_e movement_type;       // how this object moves

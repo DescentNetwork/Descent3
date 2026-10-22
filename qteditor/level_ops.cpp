@@ -252,13 +252,13 @@ void CheckLevelNames() {
 
 // Finds a specific viewer object if one exists
 // Parameters:	id - which viewer id
-// Returns:		object number of a viewer object, or -1 if none
+// Returns:		object number of a viewer object, or nullopt if none
 // (port of editor/HView.cpp:220 FindViewerObject)
-static int findViewerObject(int id) {
+static index_t findViewerObject(int id) {
   for (int objnum = 0; objnum <= Highest_object_index; objnum++)
     if ((Objects[objnum].type == object_type_e::viewer) && (Objects[objnum].id == id))
-      return objnum;
-  return -1;
+      return to_objnum(objnum);
+  return std::nullopt;
 }
 
 // Finds a viewer object if one exists.  Starts looking at the specified id
@@ -266,9 +266,9 @@ static int findViewerObject(int id) {
 // Parameters:	id - which viewer id
 //					view_mode - if -1, find any viewer, else find one that matches
 //                  view mode
-// Returns:		object number of a viewer object, or -1 if none
+// Returns:		object number of a viewer object, or nullopt if none
 // (port of editor/HView.cpp:240 FindNextViewerObject)
-static int findNextViewerObject(int id, state::viewer view_mode) {
+static index_t findNextViewerObject(int id, state::viewer view_mode) {
   if (id == -1)
     id = 0;
 
@@ -281,27 +281,27 @@ static int findNextViewerObject(int id, state::viewer view_mode) {
   int i;
   for (i = 0; i < MAX_VIEWERS; i++) {
     const int check_id = ((id + i) % MAX_VIEWERS);
-    const int objnum = findViewerObject(check_id);
+    const index_t objnum = findViewerObject(check_id);
 
-    if ((objnum != -1) &&
+    if ((objnum.has_value()) &&
         (view_mode == state::viewer::invalid ||
-         Objects[objnum].is_outside() == terrain_flag))
+         Objects[*objnum].is_outside() == terrain_flag))
       return objnum;
   }
 
-  return -1;
+  return std::nullopt;
 }
 
 // Creates a viewer object of the specified type
 // Parameters:	view_mode - mine, terrain, or room.  See constants in d3edit.h
 //					pos - initial position of this object
 //					roomnum - initial room/terrain cell of this object
-// Returns:		object number of the object created, or -1 if at max number of
-//              viewers of that type
+// Returns:		object number of the object created, or nullopt if at max number
+//              of viewers of that type
 // (port of editor/HView.cpp:274 CreateViewerObject; ObjCreate is MFC gated
 // so the slot is carved out of Objects[] directly, like
 // MainWindow::onSpawnNewViewer)
-static int createViewerObject(state::viewer view_mode, vector3& pos, index_t roomnum) {
+static index_t createViewerObject(state::viewer view_mode, vector3& pos, index_t roomnum) {
   int id;
   int objnum = -1;
 
@@ -310,7 +310,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, index_t roo
 
     for (objnum = 0; objnum <= Highest_object_index; objnum++)
       if ((Objects[objnum].type == object_type_e::viewer) && (Objects[objnum].id == id))
-        return -1; // this one already used
+        return std::nullopt; // this one already used
   } else {
     // for each id, loop through all objects to see if it's used
     for (id = 0; id < MAX_VIEWERS; id++) {
@@ -322,7 +322,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, index_t roo
     }
 
     if (id == MAX_VIEWERS) // no unused viewer id's
-      return -1;
+      return std::nullopt;
   }
 
   // Create the new object
@@ -335,7 +335,7 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, index_t roo
   }
 
   if (objnum == -1)
-    return -1;
+    return std::nullopt;
 
   Objects[objnum] = object{};
   Objects[objnum].type = object_type_e::viewer;
@@ -350,13 +350,13 @@ static int createViewerObject(state::viewer view_mode, vector3& pos, index_t roo
 
   ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, false);
 
-  return objnum;
+  return to_objnum(objnum);
 }
 
 // Binds the editor camera to an object (port of editor/HView.cpp:318
 // SetViewer).  The caller guarantees `objnum` names a valid object slot.
-static void setViewer(int objnum) {
-  Viewer_object = &Objects[objnum];
+static void setViewer(index_t objnum) {
+  Viewer_object = &Objects[*objnum];
 
   if (app.view_mode != state::viewer::room)
     app.Editor_viewer_id = Viewer_object->id;
@@ -375,14 +375,14 @@ static void setViewer(int objnum) {
 // (port of editor/HView.cpp:410 SetEditorViewer)
 void SetEditorViewer() {
   // First, see if a camera object already exists in the level
-  int objnum;
+  index_t objnum;
   if (app.view_mode == state::viewer::room)
     objnum = findViewerObject(ROOM_VIEWER_ID);
   else
     objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), app.view_mode);
 
   // If no viewer object, create one
-  if (objnum == -1) {
+  if (!objnum) {
     vector3 pos;
     index_t roomnum;
 
@@ -411,20 +411,20 @@ void SetEditorViewer() {
     objnum = createViewerObject(app.view_mode, pos, roomnum);
 
     // If no free viewer slots, grab any viewer and move it
-    if (objnum == -1) {
+    if (!objnum) {
       Q_ASSERT(Viewer_object != nullptr);
       if (Viewer_object->type == object_type_e::viewer)
-        objnum = OBJNUM(Viewer_object);
+        objnum = to_objnum(OBJNUM(Viewer_object));
       else {
         objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), state::viewer::invalid);
-        Q_ASSERT(objnum != -1);
+        Q_ASSERT(objnum.has_value());
       }
-      ObjSetPos(Objects[objnum], pos, roomnum, std::nullopt, true);
+      ObjSetPos(Objects[*objnum], pos, roomnum, std::nullopt, true);
     }
   }
 
-  Q_ASSERT(objnum != -1);
-  if (objnum != -1)
+  Q_ASSERT(objnum.has_value());
+  if (objnum.has_value())
     setViewer(objnum);
 }
 

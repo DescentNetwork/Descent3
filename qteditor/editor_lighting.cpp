@@ -264,8 +264,9 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
   float u_scalar = (float)w / 128.0f;
   float v_scalar = (float)h / 128.0f;
 
-  for (int objnum = obj - Objects.data(); objnum != -1; objnum = Objects[objnum].next) {
-    object &this_obj = Objects[objnum];
+  for (index_t objnum = to_objnum(static_cast<int>(obj - Objects.data())); objnum;
+       objnum = Objects[*objnum].next) {
+    object &this_obj = Objects[*objnum];
 
     if (this_obj.lighting_render_type != lighting_render_type_e::lightmaps)
       continue;
@@ -534,8 +535,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     }
 
     // Now search through all the objects in this room
-    for (k = rp.objects; k != -1; k = Objects[k].next) {
-      object &obj = Objects[k];
+    for (index_t objnum = rp.objects; objnum; objnum = Objects[*objnum].next) {
+      object &obj = Objects[*objnum];
       if (obj.lighting_render_type != lighting_render_type_e::lightmaps)
         continue;
       if (!obj.lm_object.used)
@@ -570,8 +571,8 @@ void SqueezeLightmaps(int external, int target_roomnum) {
             CopySqueezeDataForObject(&obj, t, j, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
           } else {
             // Can't find an empty slot, so search through all the other remaining faces
-            for (int a = rp.objects; a != -1; a = Objects[a].next) {
-              object &obj = Objects[a];
+            for (index_t inner_objnum = rp.objects; inner_objnum; inner_objnum = Objects[*inner_objnum].next) {
+              object &obj = Objects[*inner_objnum];
               if (obj.lighting_render_type != lighting_render_type_e::lightmaps)
                 continue;
               if (!obj.lm_object.used)

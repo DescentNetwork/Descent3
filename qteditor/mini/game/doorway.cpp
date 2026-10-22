@@ -505,9 +505,9 @@ object *GetDoorObject(index_t roomnum) {
   const room_t &rp = Rooms[*roomnum];
   Q_ASSERT(rp.flags.door);
 
-  for (int objnum = rp.objects; (objnum != -1); objnum = Objects[objnum].next)
-    if (Objects[objnum].type == object_type_e::door)
-      return &Objects[objnum];
+  for (index_t objnum = rp.objects; objnum; objnum = Objects[*objnum].next)
+    if (Objects[*objnum].type == object_type_e::door)
+      return &Objects[*objnum];
 
   return NULL;
 }

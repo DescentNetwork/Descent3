@@ -1895,7 +1895,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
         for (int i = 0; i < nh; i++) {
           int32_t handle32 = 0;
           ifile >> handle32;
-          int objnum = handle32 & HANDLE_OBJNUM_MASK;
+          const int32_t objnum = handle32 & HANDLE_OBJNUM_MASK;
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
           Q_ASSERT(already_loaded[objnum] == 0);
@@ -1915,7 +1915,7 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
           uint32_t handle = 0;
           ifile >> handle;
 
-          int32_t objnum = handle & HANDLE_OBJNUM_MASK;
+          const int32_t objnum = handle & HANDLE_OBJNUM_MASK;
           if (objnum < 0 || objnum >= MAX_OBJECTS)
             continue;
           object &obj = Objects[objnum];
@@ -1938,12 +1938,12 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
                     roomnum ? static_cast<int>(*roomnum) : -1, obj.pos.x(), obj.pos.y(), obj.pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).
-          obj.handle = (version >= 45) ? handle : (objnum + HANDLE_COUNT_INCREMENT);
+          obj.handle = (version >= 45) ? handle : (static_cast<uint32_t>(objnum) + HANDLE_COUNT_INCREMENT);
           obj.roomnum.reset(); // ObjLink() expects the roomnum to be unset
           if (roomnum && *roomnum >= Rooms.size() && !roomnum_outside(roomnum))
             obj.type = object_type_e::none; // loading object with invalid room number
           else
-            ObjLink(objnum, roomnum);
+            ObjLink(to_objnum(objnum), roomnum);
           if (objnum > Highest_object_index)
             Highest_object_index = objnum;
         }

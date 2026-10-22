@@ -133,7 +133,7 @@ struct player {
   float last_homing_warning_sound_time; // Obvious  :)
   float last_thrust_time;               // Last time the player thrusted
   float last_afterburner_time;          // Last time the player used the afterburner
-  int16_t objnum;                         // The object number of this player
+  index_t objnum;                         // The object number of this player
   int8_t team;                           // The team number this guy is on
 
   // The current auto-waypoint for this player
@@ -217,7 +217,7 @@ struct player {
   float weapon_speed_scalar;
 
   // Observer stuff
-  int32_t piggy_objnum;
+  index_t piggy_objnum;
   int32_t piggy_sig;
 
   // Custom texture stuff
