@@ -95,9 +95,6 @@ int FindMatcenIndex(const std::string &name) {
 }
 
 int CreateMatcen(const std::string &name, bool &f_name_changed) {
-  if (Matcen.size() >= MAX_MATCENS)
-    return MATCEN_ERROR;
-
   Matcen.emplace_back();
   f_name_changed = !Matcen.back().SetName(name);
 
@@ -147,7 +144,7 @@ matcen::matcen() {
 
   m_num_spawn_pnts = 0;
 
-  m_roomnum = MATCEN_ERROR;
+  m_index = index_t{};
 
   m_spawn_pnt.assign(MAX_SPAWN_PNTS, index_t{});
   m_spawn_vec.assign(MAX_SPAWN_PNTS, vector3{});
@@ -265,10 +262,10 @@ bool matcen::SetControlType(matcen_control_type type) {
   return false;
 }
 
-int32_t matcen::GetAttach() { return m_roomnum; }
+int32_t matcen::GetAttach() { return index_to_int(m_index); }
 
 bool matcen::SetAttach(int32_t attach) {
-  m_roomnum = attach;
+  m_index = (attach < 0) ? index_t{} : index_t{static_cast<uint32_t>(attach)};
   ComputeCreatePnt();
 
   return true;
@@ -307,7 +304,7 @@ bool matcen::SetCreateRoom(int32_t room) {
 int32_t matcen::GetNumSpawnPnts() { return m_num_spawn_pnts; }
 
 bool matcen::SetNumSpawnPnts(int32_t num_s) {
-  if (num_s >= 0 && num_s <= MAX_SPAWN_PNTS) {
+  if (num_s >= 0 && num_s <= static_cast<int32_t>(m_spawn_pnt.size())) {
     m_num_spawn_pnts = num_s;
     ComputeCreatePnt();
     return true;
@@ -317,14 +314,14 @@ bool matcen::SetNumSpawnPnts(int32_t num_s) {
 }
 
 int32_t matcen::GetSpawnPnt(int8_t s_index) {
-  if (s_index >= 0 && s_index < MAX_SPAWN_PNTS && s_index < static_cast<int8_t>(m_spawn_pnt.size()))
+  if (s_index >= 0 && s_index < static_cast<int8_t>(m_spawn_pnt.size()))
     return index_to_int(m_spawn_pnt[s_index]);
 
   return MATCEN_ERROR;
 }
 
 bool matcen::SetSpawnPnt(int8_t s_index, int32_t s_value) {
-  if (s_index >= 0 && s_index < MAX_SPAWN_PNTS && s_index < static_cast<int8_t>(m_spawn_pnt.size())) {
+  if (s_index >= 0 && s_index < static_cast<int8_t>(m_spawn_pnt.size())) {
     m_spawn_pnt[s_index] = (s_value < 0) ? index_t{} : index_t{static_cast<uint32_t>(s_value)};
     ComputeCreatePnt();
     return true;
@@ -350,12 +347,13 @@ bool matcen::SetMaxProd(int32_t max_p) {
 int32_t matcen::GetNumProdTypes() { return m_num_prod_types; }
 
 bool matcen::SetNumProdTypes(int32_t num_prod_types) {
-  if (num_prod_types >= 0 && num_prod_types <= MAX_PROD_TYPES) {
+  if (num_prod_types >= 0 && num_prod_types <= static_cast<int32_t>(m_prod_type.size()) &&
+      num_prod_types <= static_cast<int32_t>(UINT8_MAX)) {
     if (m_num_prod_types < num_prod_types && m_status.done_prod) {
       ComputeNextProdInfo();
     }
 
-    m_num_prod_types = static_cast<int8_t>(num_prod_types);
+    m_num_prod_types = static_cast<uint8_t>(num_prod_types);
     return true;
   }
 
@@ -364,7 +362,7 @@ bool matcen::SetNumProdTypes(int32_t num_prod_types) {
 
 bool matcen::GetProdInfo(int8_t index, optref<int32_t> type_id, optref<int32_t> priority, optref<float> time,
                          optref<int32_t> max_prod) {
-  if (index >= 0 && index < MAX_PROD_TYPES && index < static_cast<int8_t>(m_prod_type.size())) {
+  if (index >= 0 && index < static_cast<int8_t>(m_prod_type.size())) {
     if (type_id)
       *type_id = index_to_int(m_prod_type[index]);
 
@@ -385,7 +383,7 @@ bool matcen::GetProdInfo(int8_t index, optref<int32_t> type_id, optref<int32_t> 
 
 bool matcen::SetProdInfo(int8_t index, optref<int32_t> type_id, optref<int32_t> priority, optref<float> time,
                          optref<int32_t> max_prod) {
-  if (index >= 0 && index < MAX_PROD_TYPES && index < static_cast<int8_t>(m_prod_type.size())) {
+  if (index >= 0 && index < static_cast<int8_t>(m_prod_type.size())) {
     if (type_id && (*type_id >= -1))
       m_prod_type[index] = (*type_id < 0) ? index_t{} : index_t{static_cast<uint32_t>(*type_id)};
 
@@ -569,9 +567,9 @@ static std::string readLevelName(byte_istream &ifile) {
 void matcen::SaveData(byte_ostream &ofile) const {
   ofile << static_cast<int32_t>(MATCEN_LOADSAVE_VERSION);
 
-  ofile << static_cast<int16_t>(MAX_SPAWN_PNTS);
-  ofile << static_cast<int16_t>(MAX_PROD_TYPES);
-  ofile << static_cast<int16_t>(std::to_underlying(matcen_sound::count));
+  ofile << static_cast<int16_t>(m_spawn_pnt.size());
+  ofile << static_cast<int16_t>(m_prod_type.size());
+  ofile << static_cast<int16_t>(m_sounds.size());
 
   ofile << static_cast<int16_t>(m_name.size() + 1) << m_name;
 
@@ -582,7 +580,7 @@ void matcen::SaveData(byte_ostream &ofile) const {
   ofile << m_creation_texture; // int16_t
 
   ofile << static_cast<int32_t>(m_num_spawn_pnts);
-  ofile << static_cast<int32_t>(m_roomnum);
+  ofile << index_to_int(m_index);
 
   ofile << m_create_pnt;
   ofile << static_cast<int32_t>(from_roomnum(m_create_room));
@@ -591,8 +589,8 @@ void matcen::SaveData(byte_ostream &ofile) const {
   // spawn vectors and normals (a long-standing bug); the corrected z() is
   // written here.  Load+Save is still an identity because LoadData stores the
   // stored z value and SaveData writes that same value back.
-  for (size_t i = 0; i < MAX_SPAWN_PNTS; i++) {
-    const index_t spawn_pnt = (i < m_spawn_pnt.size()) ? m_spawn_pnt[i] : index_t{};
+  for (size_t i = 0; i < m_spawn_pnt.size(); i++) {
+    const index_t spawn_pnt = m_spawn_pnt[i];
     const vector3 &spawn_vec = (i < m_spawn_vec.size()) ? m_spawn_vec[i] : g_zero_vector;
     const vector3 &spawn_normal = (i < m_spawn_normal.size()) ? m_spawn_normal[i] : g_zero_vector;
 
@@ -601,8 +599,8 @@ void matcen::SaveData(byte_ostream &ofile) const {
 
   ofile << static_cast<int32_t>(m_max_prod);
 
-  for (size_t i = 0; i < MAX_PROD_TYPES; i++) {
-    const index_t type = (i < m_prod_type.size()) ? m_prod_type[i] : index_t{};
+  for (size_t i = 0; i < m_prod_type.size(); i++) {
+    const index_t type = m_prod_type[i];
 
     if (type && *type < Object_info.size()) {
       ofile << static_cast<int16_t>(Object_info[*type].name.size() + 1) << Object_info[*type].name;
@@ -630,8 +628,8 @@ void matcen::SaveData(byte_ostream &ofile) const {
   ofile << m_preprod_time << m_postprod_time;
 
   // Convert these to names
-  for (size_t i = 0; i < static_cast<size_t>(matcen_sound::count); i++) {
-    if (i >= m_sounds.size() || !m_sounds[i]) {
+  for (size_t i = 0; i < m_sounds.size(); i++) {
+    if (!m_sounds[i]) {
       ofile << static_cast<int16_t>(0);
       continue;
     }
@@ -656,8 +654,8 @@ void matcen::SaveData(byte_ostream &ofile) const {
 
   ofile << static_cast<int32_t>(m_last_prod_objref);
 
-  for (size_t i = 0; i < MAX_PROD_TYPES; i++)
-    ofile << static_cast<int32_t>((i < m_num_prod_type.size()) ? m_num_prod_type[i] : 0);
+  for (size_t i = 0; i < m_num_prod_type.size(); i++)
+    ofile << static_cast<int32_t>(m_num_prod_type[i]);
 
   ofile << static_cast<int32_t>(m_sound_active_handle);
 }
@@ -666,26 +664,18 @@ void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
   int32_t version = 0;
   ifile >> version;
 
-  int16_t max_spawn_pnts = 0;
-  int16_t max_prod_types = 0;
-  int16_t max_matcen_sounds = 0;
+  uint16_t max_spawn_pnts = 0;
+  uint16_t max_prod_types = 0;
+  uint16_t max_matcen_sounds = 0;
   ifile >> max_spawn_pnts >> max_prod_types >> max_matcen_sounds;
 
-  // The engine asserts these against its compile-time maxima; clamp instead so
-  // corrupt files cannot overrun the fixed-size arrays.
-  if (max_spawn_pnts < 0) max_spawn_pnts = 0;
-  if (max_spawn_pnts > MAX_SPAWN_PNTS) max_spawn_pnts = MAX_SPAWN_PNTS;
-  if (max_prod_types < 0) max_prod_types = 0;
-  if (max_prod_types > MAX_PROD_TYPES) max_prod_types = MAX_PROD_TYPES;
-  if (max_matcen_sounds < 0) max_matcen_sounds = 0;
-  if (max_matcen_sounds > static_cast<int32_t>(std::to_underlying(matcen_sound::count)))
-    max_matcen_sounds = static_cast<int32_t>(std::to_underlying(matcen_sound::count));
+  // The spawn point, production type and sound tables are dynamic, so the
+  // engine's compile-time maxima no longer bound them; the file decides how
+  // many entries follow.
 
   m_name = readLevelName(ifile);
 
-  ifile >> reinterpret_cast<int8_t &>(m_num_prod_types);
-  if (m_num_prod_types < 0) m_num_prod_types = 0;
-  if (m_num_prod_types > MAX_PROD_TYPES) m_num_prod_types = MAX_PROD_TYPES;
+  ifile >> m_num_prod_types;
   ifile >> reinterpret_cast<int8_t &>(m_control_type);
   ifile >> reinterpret_cast<int8_t &>(m_type);
   ifile >> reinterpret_cast<int8_t &>(m_creation_effect);
@@ -698,19 +688,11 @@ void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
 
   ifile >> m_num_spawn_pnts;
 
-  // The engine stores the counts in narrow types; clamp them so a corrupt
-  // file cannot overrun the fixed size tables.
-  if (m_num_spawn_pnts < 0) m_num_spawn_pnts = 0;
-  if (m_num_spawn_pnts > MAX_SPAWN_PNTS) m_num_spawn_pnts = MAX_SPAWN_PNTS;
+  ifile >> m_index;
 
-  m_roomnum = 0;
-  ifile >> m_roomnum;
+  ifile >> m_create_pnt;
 
-  ifile >> m_create_pnt.x() >> m_create_pnt.y() >> m_create_pnt.z();
-
-  int32_t create_room = MATCEN_ERROR;
-  ifile >> create_room;
-  m_create_room = to_roomnum(create_room);
+  ifile >> m_create_room;
 
   m_spawn_pnt.clear();
   m_spawn_vec.clear();
@@ -728,6 +710,9 @@ void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
     ifile >> spawn_normal.x() >> spawn_normal.y() >> spawn_normal.z();
     m_spawn_normal.push_back(spawn_normal);
   }
+
+  if (static_cast<size_t>(m_num_spawn_pnts) > m_spawn_pnt.size())
+    m_num_spawn_pnts = static_cast<int32_t>(m_spawn_pnt.size());
 
   ifile >> m_max_prod;
 
@@ -747,6 +732,9 @@ void matcen::LoadData(byte_istream &ifile, const int *texture_xlate) {
     m_prod_priority.push_back(prod_priority);
     m_max_prod_type.push_back(max_prod);
   }
+
+  if (m_prod_type.size() < m_num_prod_types)
+    m_num_prod_types = static_cast<uint8_t>(m_prod_type.size());
 
   ifile >> m_max_alive_children;
   if (m_max_alive_children < -1) m_max_alive_children = -1;
@@ -858,7 +846,7 @@ void matcen::UpdateActiveSound() {
       return;
 
     if (m_type == matcen_type::object) {
-      object *obj = ObjGet(m_objref);
+      object *obj = ObjGet(index_to_int(m_index));
 
       if (obj)
         m_sound_active_handle = Sound_system.Play3dSound(index_to_int(sound), sound_priority::normal, obj);
@@ -973,12 +961,12 @@ bool matcen::ComputeCreatePnt() {
   if (m_type == matcen_type::room) {
     bool f_computed = false;
 
-    if (m_roomnum < 0 || static_cast<size_t>(m_roomnum) >= Rooms.size() || !Rooms[m_roomnum].used)
+    if (!m_index || *m_index >= Rooms.size() || !Rooms[*m_index].used)
       return false;
 
     if (m_num_spawn_pnts) {
       int32_t num_valid_faces = 0;
-      room_t &rp = Rooms[m_roomnum];
+      room_t &rp = Rooms[*m_index];
 
       m_create_pnt = vector3{};
 
@@ -1028,12 +1016,12 @@ bool matcen::ComputeCreatePnt() {
     }
 
     if (!f_computed) {
-      m_create_pnt = Rooms[m_roomnum].path_pnt;
+      m_create_pnt = Rooms[*m_index].path_pnt;
     }
 
-    m_create_room = to_roomnum(m_roomnum);
+    m_create_room = m_index;
   } else {
-    object *master_obj = ObjGet(m_objref);
+    object *master_obj = ObjGet(index_to_int(m_index));
     if (!master_obj)
       return false;
 
@@ -1233,7 +1221,7 @@ bool matcen::DoObjProd() {
   Q_ASSERT(m_type == matcen_type::room || m_type == matcen_type::object);
 
   if (m_type == matcen_type::object) {
-    object *parent = ObjGet(m_objref);
+    object *parent = ObjGet(index_to_int(m_index));
     Q_ASSERT(parent);
 
     if (parent->control_type == control_type_e::ai || parent->type == object_type_e::player) {
@@ -1400,7 +1388,7 @@ void matcen::DoThinkFrame() {
     return;
 
   if (m_type == matcen_type::object) {
-    object *parent = ObjGet(m_objref);
+    object *parent = ObjGet(index_to_int(m_index));
 
     if (!parent) {
       m_prod_mode_time = 0.0f;

@@ -1519,6 +1519,129 @@ private slots:
     DestroyAllMatcens();
   }
 
+  // The matcen spawn point, production type and sound tables are dynamic, so
+  // a record that declares more entries than the engine's compile-time maxima
+  // must load with every entry intact and re-save with the same counts.
+  void testMatcenDynamicTables()
+  {
+    constexpr int16_t spawn_pnts = 6;  // more than MAX_SPAWN_PNTS
+    constexpr int16_t prod_types = 10; // more than MAX_PROD_TYPES
+    constexpr int16_t sounds = 3;
+
+    std::array<int, MAX_TEXTURES> texture_xlate{};
+    for (size_t i = 0; i < texture_xlate.size(); i++)
+      texture_xlate[i] = static_cast<int>(i);
+
+    std::vector<uint8_t> buffer(8192);
+    posix_ostream os(buffer.data(), buffer.size(), std::ios_base::out | std::ios_base::binary);
+
+    const auto write_name = [](byte_ostream &out, const std::string &name) {
+      out << static_cast<int16_t>(name.size() + 1) << name;
+    };
+
+    os << static_cast<int32_t>(MATCEN_LOADSAVE_VERSION);
+    os << spawn_pnts << prod_types << sounds;
+    write_name(os, "DynamicMatcen");
+    os << static_cast<uint8_t>(prod_types);
+    os << static_cast<uint8_t>(matcen_control_type::script);
+    os << static_cast<uint8_t>(matcen_type::room);
+    os << static_cast<uint8_t>(matcen_effect::line_lightning);
+    os << static_cast<int16_t>(0); // creation texture
+    os << static_cast<int32_t>(spawn_pnts);
+    os << static_cast<int32_t>(0); // attach index
+    os << vector3{};               // create point
+    os << static_cast<int32_t>(-1); // create room
+
+    for (int16_t i = 0; i < spawn_pnts; i++) {
+      os << static_cast<int32_t>(i);
+      os << vector3{static_cast<float>(i), 0.0f, 0.0f};
+      os << vector3{0.0f, 1.0f, 0.0f};
+    }
+
+    os << static_cast<int32_t>(0); // max prod
+
+    for (int16_t i = 0; i < prod_types; i++) {
+      write_name(os, "DynamicProd" + std::to_string(i));
+      os << 1.0f;
+      os << static_cast<int32_t>(100);
+      os << static_cast<int32_t>(3);
+    }
+
+    os << static_cast<int16_t>(0); // max alive children
+    os << 1.5f;                    // pre prod time
+    os << 1.0f;                    // post prod time
+
+    for (int16_t i = 0; i < sounds; i++)
+      write_name(os, "DynamicSound" + std::to_string(i));
+
+    os << 1.0f;                                            // speed multiplier
+    os << static_cast<uint8_t>(matcen_prod_mode::notprod); // prod mode
+    os << 0.0f;                                            // prod mode time
+    os << static_cast<int32_t>(0);                         // status
+    os << static_cast<int32_t>(0);                         // num prod
+    os << static_cast<int32_t>(-1);                        // last prod type index
+    os << 0.0f;                                            // last prod finish time
+    os << static_cast<int32_t>(-1);                        // cached prod index
+    os << 0.0f;                                            // cached prod time
+    os << 0.0f;                                            // next active check time
+    os << static_cast<int8_t>(0);                          // last active check result
+    os << static_cast<int32_t>(-1);                        // last prod objref
+
+    for (int16_t i = 0; i < prod_types; i++)
+      os << static_cast<int32_t>(0); // per type production counter
+
+    os << static_cast<int32_t>(0); // sound active handle
+
+    const size_t written = os.tell();
+    QVERIFY(written > 0);
+    os.close(); // flushes the buffered writes into the memory buffer
+
+    matcen mc;
+    posix_istream is(buffer.data(), written, std::ios_base::in | std::ios_base::binary);
+    mc.LoadData(is, texture_xlate.data());
+
+    // Every declared entry survived the load.
+    QCOMPARE(mc.GetNumSpawnPnts(), static_cast<int32_t>(spawn_pnts));
+    for (int16_t i = 0; i < spawn_pnts; i++)
+      QCOMPARE(mc.GetSpawnPnt(static_cast<int8_t>(i)), static_cast<int32_t>(i));
+
+    QCOMPARE(mc.GetNumProdTypes(), static_cast<int32_t>(prod_types));
+    for (int16_t i = 0; i < prod_types; i++) {
+      int32_t type_id = 0;
+      QVERIFY(mc.GetProdInfo(static_cast<int8_t>(i), type_id, std::nullopt, std::nullopt, std::nullopt));
+    }
+
+    // The accessors are bounded by the loaded tables, not by the engine maxima.
+    QVERIFY(mc.SetNumSpawnPnts(spawn_pnts));
+    QVERIFY(mc.SetNumProdTypes(prod_types));
+
+    // A re-save writes the table sizes back out.
+    std::vector<uint8_t> out_buffer(8192);
+    posix_ostream out(out_buffer.data(), out_buffer.size(), std::ios_base::out | std::ios_base::binary);
+    mc.SaveData(out);
+    const size_t out_written = out.tell();
+    QVERIFY(out_written > 0);
+    out.close(); // flushes the buffered writes into the memory buffer
+
+    posix_istream check(out_buffer.data(), out_written, std::ios_base::in | std::ios_base::binary);
+    int32_t version = 0;
+    int16_t saved_spawn_pnts = 0;
+    int16_t saved_prod_types = 0;
+    int16_t saved_sounds = 0;
+    check >> version >> saved_spawn_pnts >> saved_prod_types >> saved_sounds;
+    QCOMPARE(version, static_cast<int32_t>(MATCEN_LOADSAVE_VERSION));
+    QCOMPARE(saved_spawn_pnts, spawn_pnts);
+    QCOMPARE(saved_prod_types, prod_types);
+    QCOMPARE(saved_sounds, sounds);
+
+    // And the saved record loads back with the same tables.
+    matcen reloaded;
+    posix_istream reread(out_buffer.data(), out_written, std::ios_base::in | std::ios_base::binary);
+    reloaded.LoadData(reread, texture_xlate.data());
+    QCOMPARE(reloaded.GetNumSpawnPnts(), static_cast<int32_t>(spawn_pnts));
+    QCOMPARE(reloaded.GetNumProdTypes(), static_cast<int32_t>(prod_types));
+  }
+
   void testMatcenLifecycleApi() {
     DestroyAllMatcens();
     QVERIFY(Matcen.empty());
@@ -1566,11 +1689,11 @@ private slots:
     DestroyMatcen(static_cast<int32_t>(Matcen.size()), true);
     QCOMPARE(Matcen.size(), before - 1);
 
-    // The table caps at MAX_MATCENS.
+    // The table has no artificial size limit.
     DestroyAllMatcens();
-    for (int i = 0; i < MAX_MATCENS; i++)
+    for (int i = 0; i < 256; i++)
       QVERIFY(CreateMatcen("m" + std::to_string(i), changed) == i);
-    QCOMPARE(CreateMatcen("overflow", changed), MATCEN_ERROR);
+    QCOMPARE(static_cast<size_t>(256), Matcen.size());
 
     // InitMatcens clears everything.
     InitMatcens();

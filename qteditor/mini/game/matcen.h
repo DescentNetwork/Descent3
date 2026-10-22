@@ -28,7 +28,6 @@
 #include "matcen_external.h"
 #include "utils.h"
 
-#define MAX_MATCENS 60
 #define MAX_MATCEN_NAME_LEN 32
 
 #define MATCEN_LOADSAVE_VERSION 3
@@ -61,7 +60,7 @@ private:
   // Static data -- only changes by OSIRIS
   std::string m_name;
 
-  int8_t m_num_prod_types;
+  uint8_t m_num_prod_types;
   matcen_control_type m_control_type;
   matcen_type m_type;
   matcen_effect m_creation_effect;
@@ -70,10 +69,8 @@ private:
 
   int32_t m_num_spawn_pnts;
 
-  union {
-    int32_t m_roomnum;
-    int32_t m_objref;
-  };
+  // The room or object the matcen is attached to; unset means "not attached".
+  index_t m_index;
 
   vector3 m_create_pnt;
   index_t m_create_room;
