@@ -47,6 +47,8 @@
 #include "mem.h"
 #include "game.h"
 #include "physics.h"
+#include "viseffect.h"
+#include "weapon.h"
 #include "renderer.h"
 #include "lightmap.h"
 #include "objinfo.h"
@@ -357,6 +359,19 @@ int AIMakeNextRoomList(int roomnum, int *next_rooms, int max_rooms) { PRINT_STUB
 bool PhysCalcGround(vector3& ground_point, vector3& ground_normal, object& obj, int ground_num) { PRINT_STUB(__FUNCTION__); return false; }
 void ClearAllEvents() { PRINT_STUB(__FUNCTION__); }
 
+// ==================== Physics ====================
+// The mini has no physics simulation; the movement outputs are left alone.
+void PhysicsDoSimLinear(const object& obj, const vector3& pos, const vector3& force, vector3& velocity,
+                        vector3& movementVec, vector3& movementPos, float simTime, int count) { PRINT_STUB(__FUNCTION__); }
+
+// ==================== Weapons ====================
+// The mini has no weapon system; gun points cannot be resolved.
+bool WeaponCalcGun(vector3* gun_point, vector3* gun_normal, object* obj, int gun_num) { PRINT_STUB(__FUNCTION__); return false; }
+
+// ==================== Visual effects ====================
+// The mini has no visual effect system.
+int VisEffectCreate(uint8_t type, uint8_t id, int roomnum, vector3* pos) { PRINT_STUB(__FUNCTION__); return -1; }
+
 // ==================== FVI ====================
 bool Tracking_FVI = false; // FVI debug flag (GameLoop in the full engine toggles it)
 /*
@@ -370,6 +385,17 @@ uint32_t check_point_to_face(vector3 *colp, vector3 *face_normal, int nv, vector
 bool FVI_always_check_ceiling = false;
 */
 // ==================== OSIRIS ====================
+
+// The mini has no scripting runtime; object scripts are never initialized.
+void InitObjectScripts(object *objp, bool do_evt_created) { PRINT_STUB(__FUNCTION__); }
+
+// ==================== Damage ====================
+
+// The mini has no player damage system.
+bool ApplyDamageToPlayer(object *playerobj, object *killer, player_damage_type damage_type, float damage_amount) {
+  PRINT_STUB(__FUNCTION__);
+  return false;
+}
 
 // ==================== Pilot ====================
 void PltClearList() { PRINT_STUB(__FUNCTION__); }

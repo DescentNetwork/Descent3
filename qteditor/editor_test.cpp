@@ -1577,6 +1577,239 @@ private slots:
     QVERIFY(Matcen.empty());
   }
 
+  // The ported matcen accessors must keep the engine's semantics: the range
+  // checks, the status flags that may not be set by script and the manual
+  // creation point.
+  void testMatcenRuntimeAccessors() {
+    DestroyAllMatcens();
+    bool changed = true;
+    QCOMPARE(CreateMatcen("Runtime", changed), 0);
+    matcen &mc = Matcen[0];
+
+    // Attach and control type validation.
+    QCOMPARE(mc.GetAttachType(), matcen_type::unassigned);
+    QVERIFY(mc.SetAttachType(matcen_type::room));
+    QCOMPARE(mc.GetAttachType(), matcen_type::room);
+    QVERIFY(!mc.SetAttachType(static_cast<matcen_type>(99)));
+
+    QCOMPARE(mc.GetControlType(), matcen_control_type::script);
+    QVERIFY(mc.SetControlType(matcen_control_type::while_player_near));
+    QCOMPARE(mc.GetControlType(), matcen_control_type::while_player_near);
+    QVERIFY(!mc.SetControlType(static_cast<matcen_control_type>(99)));
+
+    // done_prod and never_prod are not settable by script, active is.
+    matcen_status_flags_t blocked{};
+    blocked.done_prod = true;
+    blocked.never_prod = true;
+    QVERIFY(mc.SetStatus(blocked, true));
+    QVERIFY(!mc.GetStatus().done_prod);
+    QVERIFY(!mc.GetStatus().never_prod);
+
+    matcen_status_flags_t status{};
+    status.active = true;
+    QVERIFY(mc.SetStatus(status, true));
+    QVERIFY(mc.GetStatus().active);
+
+    // Without any production types the engine marks the matcen as done.
+    QVERIFY(mc.GetStatus().done_prod);
+
+    QVERIFY(mc.SetStatus(status, false));
+    QVERIFY(!mc.GetStatus().active);
+
+    // The creation point is only settable while the manual update flag is on.
+    const vector3 pnt{1.0f, 2.0f, 3.0f};
+    QVERIFY(!mc.SetCreatePnt(pnt));
+
+    matcen_status_flags_t manual{};
+    manual.manual_update_create_pnt = true;
+    QVERIFY(mc.SetStatus(manual, true));
+
+    QVERIFY(mc.SetCreatePnt(pnt));
+    vector3 got{};
+    QVERIFY(mc.GetCreatePnt(got));
+    QCOMPARE(got.x(), 1.0f);
+    QCOMPARE(got.y(), 2.0f);
+    QCOMPARE(got.z(), 3.0f);
+
+    // Spawn point count and entries.
+    QCOMPARE(mc.GetNumSpawnPnts(), 0);
+    QVERIFY(mc.SetNumSpawnPnts(2));
+    QCOMPARE(mc.GetNumSpawnPnts(), 2);
+    QVERIFY(!mc.SetNumSpawnPnts(MAX_SPAWN_PNTS + 1));
+    QVERIFY(!mc.SetNumSpawnPnts(-1));
+
+    QCOMPARE(mc.GetSpawnPnt(0), MATCEN_ERROR);
+    QVERIFY(mc.SetSpawnPnt(0, 3));
+    QCOMPARE(mc.GetSpawnPnt(0), 3);
+    QVERIFY(!mc.SetSpawnPnt(MAX_SPAWN_PNTS, 1));
+    QCOMPARE(mc.GetSpawnPnt(MAX_SPAWN_PNTS), MATCEN_ERROR);
+
+    // Production table.
+    QCOMPARE(mc.GetNumProdTypes(), 0);
+    QVERIFY(mc.SetNumProdTypes(3));
+    QCOMPARE(mc.GetNumProdTypes(), 3);
+    QVERIFY(!mc.SetNumProdTypes(MAX_PROD_TYPES + 1));
+    QVERIFY(!mc.SetNumProdTypes(-1));
+
+    int32_t type_id = MATCEN_ERROR;
+    int32_t priority = 0;
+    float time = 0.0f;
+    int32_t max_prod = 0;
+
+    QVERIFY(mc.GetProdInfo(0, type_id, priority, time, max_prod));
+    QCOMPARE(type_id, MATCEN_ERROR);
+    QCOMPARE(priority, 100);
+    QCOMPARE(time, 1.0f);
+    QCOMPARE(max_prod, 3);
+
+    int32_t new_type = 5;
+    int32_t new_priority = 42;
+    float new_time = 2.5f;
+    int32_t new_max_prod = 7;
+    QVERIFY(mc.SetProdInfo(0, new_type, new_priority, new_time, new_max_prod));
+    QVERIFY(mc.GetProdInfo(0, type_id, priority, time, max_prod));
+    QCOMPARE(type_id, 5);
+    QCOMPARE(priority, 42);
+    QCOMPARE(time, 2.5f);
+    QCOMPARE(max_prod, 7);
+
+    QVERIFY(!mc.GetProdInfo(MAX_PROD_TYPES, type_id, priority, time, max_prod));
+    QVERIFY(!mc.SetProdInfo(MAX_PROD_TYPES, new_type, new_priority, new_time, new_max_prod));
+
+    // Max production and the production multiplier.
+    QVERIFY(mc.SetMaxProd(4));
+    QCOMPARE(mc.GetMaxProd(), 4);
+    QVERIFY(mc.SetMaxProd(-1));
+    QCOMPARE(mc.GetMaxProd(), -1);
+    QVERIFY(!mc.SetMaxProd(-2));
+
+    QVERIFY(mc.SetProdMultiplier(2.0f));
+    QCOMPARE(mc.GetProdMultiplier(), 2.0f);
+    QVERIFY(!mc.SetProdMultiplier(-1.0f));
+
+    // The creation effect drives the pre/post production times.
+    QVERIFY(mc.SetCreationEffect(matcen_effect::line_sine_wave));
+    QCOMPARE(mc.GetCreationEffect(), matcen_effect::line_sine_wave);
+    QCOMPARE(mc.GetPreProdTime(), 0.25f);
+    QCOMPARE(mc.GetPostProdTime(), 0.0f);
+    QVERIFY(!mc.SetCreationEffect(static_cast<matcen_effect>(99)));
+
+    QVERIFY(mc.SetPreProdTime(1.0f));
+    QCOMPARE(mc.GetPreProdTime(), 1.0f);
+    QVERIFY(!mc.SetPreProdTime(-1.0f));
+    QVERIFY(!mc.SetPreProdTime(3.0f));
+
+    QVERIFY(mc.SetPostProdTime(0.5f));
+    QCOMPARE(mc.GetPostProdTime(), 0.5f);
+    QVERIFY(!mc.SetPostProdTime(-1.0f));
+
+    // The alive children limit.
+    QCOMPARE(mc.GetMaxAliveChildren(), -1);
+    QVERIFY(mc.SetMaxAliveChildren(4));
+    QCOMPARE(mc.GetMaxAliveChildren(), 4);
+    QVERIFY(!mc.SetMaxAliveChildren(0));
+    QVERIFY(!mc.SetMaxAliveChildren(MAX_MATCEN_ALIVE_CHILDREN + 1));
+
+    // Sounds are stored per slot; the engine always reports the assignment as
+    // failed, so only the stored value is checked here.
+    mc.SetSound(static_cast<int8_t>(matcen_sound::prod), index_t{9});
+    const index_t sound = mc.GetSound(static_cast<int8_t>(matcen_sound::prod));
+    QVERIFY(sound.has_value());
+    QCOMPARE(*sound, static_cast<uint32_t>(9));
+    QVERIFY(!mc.GetSound(static_cast<int8_t>(matcen_sound::count)).has_value());
+
+    DestroyAllMatcens();
+  }
+
+  // The engine always writes the fixed maximum table sizes into the MTCN
+  // chunk; the port has to do the same so that a level written here matches
+  // what the engine produces.
+  void testMatcenFixedTableCounts() {
+    InitRooms();
+    for (size_t i = 0; i < Objects.size(); i++) {
+      Objects[i] = object{};
+      Objects[i].type = object_type_e::none;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    RoomsReset();
+    Triggers.clear();
+    DestroyAllMatcens();
+
+    // A minimal used room (identical to testMatcenChunkRoundTrip) so the
+    // writer emits a well-framed AABB chunk.
+    RoomsEnsureIndex(0);
+    room_t &r0 = Rooms[0];
+    r0 = room_t{};
+    InitRoom(r0, 4, 2, 0);
+    for (int i = 0; i < 4; i++) {
+      r0.verts[i] = vector3{(float)10 - i * 10, 0, (float)-10 + i * 10};
+      InitRoomFace(r0.faces[i / 2], 4);
+      for (int j = 0; j < 4; j++)
+        r0.faces[i / 2].face_verts[j] = (int16_t)j;
+    }
+    r0.faces[0].tmap = 2;
+    r0.faces[1].tmap = 2;
+    r0.name.clear();
+    RoomsEnsureIndex(0);
+
+    bool changed = true;
+    QCOMPARE(CreateMatcen("Tables", changed), 0);
+    matcen &mc = Matcen[0];
+    mc.SetNumSpawnPnts(2);
+    mc.SetNumProdTypes(3);
+    mc.SetMaxProd(4);
+
+    const QString tmp = QDir::tempPath() + "/_test_matcen_tables";
+    QDir::current().mkpath(tmp);
+    const QString f1 = tmp + "/tables1.d3l";
+    QFile::remove(f1);
+
+    QVERIFY2(SaveLevel(std::filesystem::path(f1.toStdString()), true), "SaveLevel failed");
+
+    DestroyAllMatcens();
+    QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel failed");
+    QCOMPARE(static_cast<size_t>(1), Matcen.size());
+
+    matcen &loaded = Matcen[0];
+    QCOMPARE(loaded.GetName(), std::string("Tables"));
+    QCOMPARE(loaded.GetNumSpawnPnts(), 2);
+    QCOMPARE(loaded.GetNumProdTypes(), 3);
+    QCOMPARE(loaded.GetMaxProd(), 4);
+
+    // The spawn point table is written with MAX_SPAWN_PNTS entries.
+    QVERIFY(loaded.SetSpawnPnt(MAX_SPAWN_PNTS - 1, 5));
+    QCOMPARE(loaded.GetSpawnPnt(MAX_SPAWN_PNTS - 1), 5);
+
+    // The production table is written with MAX_PROD_TYPES entries.
+    int32_t type_id = MATCEN_ERROR;
+    int32_t priority = 0;
+    float time = 0.0f;
+    int32_t max_prod = 0;
+    QVERIFY(loaded.GetProdInfo(MAX_PROD_TYPES - 1, type_id, priority, time, max_prod));
+
+    // The sound table is written with matcen_sound::count entries.
+    loaded.SetSound(static_cast<int8_t>(matcen_sound::count) - 1, index_t{4});
+    const index_t sound = loaded.GetSound(static_cast<int8_t>(matcen_sound::count) - 1);
+    QVERIFY(sound.has_value());
+    QCOMPARE(*sound, static_cast<uint32_t>(4));
+
+    QFile::remove(f1);
+    QDir::current().rmdir(tmp);
+
+    // Clean teardown.
+    InitRooms();
+    for (size_t i = 0; i < Objects.size(); i++) {
+      Objects[i] = object{};
+      Objects[i].type = object_type_e::none;
+      Objects[i].handle = i;
+    }
+    Highest_object_index = -1;
+    RoomsReset();
+    Triggers.clear();
+    DestroyAllMatcens();
+  }
+
   void testBitFlagStructs() {
     // Every converted flags type must keep the exact size of the integer it
     // replaced so existing serialization/script reinterpret_casts stay valid.

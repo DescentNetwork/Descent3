@@ -61,18 +61,18 @@ private:
   // Static data -- only changes by OSIRIS
   std::string m_name;
 
-  char m_num_prod_types;
+  int8_t m_num_prod_types;
   matcen_control_type m_control_type;
   matcen_type m_type;
   matcen_effect m_creation_effect;
   int16_t m_creation_texture;
   uint8_t m_cur_saturation_count;
 
-  int m_num_spawn_pnts;
+  int32_t m_num_spawn_pnts;
 
   union {
-    int m_roomnum;
-    int m_objref;
+    int32_t m_roomnum;
+    int32_t m_objref;
   };
 
   vector3 m_create_pnt;
@@ -83,16 +83,16 @@ private:
   std::vector<vector3> m_spawn_normal;
   std::array<std::array<int16_t, MAX_SPAWN_PNTS>, MAX_MATCEN_EFFECT_SATURATION> m_spawn_vis_effects;
 
-  int m_max_prod;
+  int32_t m_max_prod;
 
   std::vector<index_t> m_prod_type;
   std::vector<float> m_prod_time;
-  std::vector<int> m_prod_priority;
-  std::vector<int> m_max_prod_type;
+  std::vector<int32_t> m_prod_priority;
+  std::vector<int32_t> m_max_prod_type;
 
   int16_t m_max_alive_children;
   int16_t m_num_alive;
-  std::vector<int> m_alive_list; // list of alive children
+  std::vector<int32_t> m_alive_list; // list of alive children
 
   float m_preprod_time;
   float m_postprod_time;
@@ -107,21 +107,21 @@ private:
 
   matcen_status_flags_t m_status;
 
-  int m_num_prod;
-  int m_last_prod_type_index;
+  int32_t m_num_prod;
+  int32_t m_last_prod_type_index;
   float m_last_prod_finish_time;
 
-  int m_cached_prod_index;
+  int32_t m_cached_prod_index;
   float m_cached_prod_time;
 
-  int m_sound_active_handle;
+  int32_t m_sound_active_handle;
 
   float m_next_active_check_time;
   bool m_last_active_check_result;
 
-  int m_last_prod_objref;
+  int32_t m_last_prod_objref;
 
-  std::vector<int> m_num_prod_type;
+  std::vector<int32_t> m_num_prod_type;
 
   // Private functions that are not available outside of the matcen internals
   bool StartObjProd();
@@ -133,7 +133,17 @@ private:
 
   void CheckActivateStatus();
   bool DoAliveListFrame();
-  bool AddToAliveList(int objref);
+  bool AddToAliveList(int32_t objref);
+
+  // The room the matcen produces into; an external (terrain) matcen resolves
+  // to the terrain cell that holds the creation point.
+  index_t ResolveCreateRoom();
+
+  // The sound handle of a matcen sound slot, or an empty handle when unset.
+  index_t GetSoundHandle(matcen_sound sound) const;
+
+  // Starts/stops the looping active sound as the matcen becomes active.
+  void UpdateActiveSound();
 
 public:
   matcen();
@@ -142,25 +152,25 @@ public:
   void SetCreationTexture(int16_t texnum);
   int16_t GetCreationTexture();
 
-  char GetAttachType();
-  bool SetAttachType(char type);
+  matcen_type GetAttachType();
+  bool SetAttachType(matcen_type type);
 
-  char GetControlType();
-  bool SetControlType(char type);
+  matcen_control_type GetControlType();
+  bool SetControlType(matcen_control_type type);
 
-  int GetAttach();
-  bool SetAttach(int attach);
+  int32_t GetAttach();
+  bool SetAttach(int32_t attach);
 
-  bool GetCreatePnt(vector3 *pnt);
-  bool SetCreatePnt(vector3 *pnt);
-  int GetCreateRoom();
-  bool SetCreateRoom(int room);
+  bool GetCreatePnt(vector3 &pnt);
+  bool SetCreatePnt(const vector3 &pnt);
+  index_t GetCreateRoom();
+  bool SetCreateRoom(int32_t room);
 
-  char GetNumSpawnPnts();
-  bool SetNumSpawnPnts(char num_s);
+  int32_t GetNumSpawnPnts();
+  bool SetNumSpawnPnts(int32_t num_s);
 
-  int GetSpawnPnt(int8_t s_index);
-  bool SetSpawnPnt(int8_t s_index, int s_value);
+  int32_t GetSpawnPnt(int8_t s_index);
+  bool SetSpawnPnt(int8_t s_index, int32_t s_value);
 
   void SaveData(byte_ostream &ofile) const;
   void LoadData(byte_istream &ifile, const int *texture_xlate);
@@ -168,29 +178,29 @@ public:
   std::string GetName(void);
   bool SetName(const std::string& name);
 
-  int GetMaxProd();
-  bool SetMaxProd(int max_p);
+  int32_t GetMaxProd();
+  bool SetMaxProd(int32_t max_p);
 
-  char GetNumProdTypes();
-  bool SetNumProdTypes(char num_prod_types);
+  int32_t GetNumProdTypes();
+  bool SetNumProdTypes(int32_t num_prod_types);
 
-  bool GetProdInfo(int8_t index, int *type_id, int *priority, float *time, int *max_prod);
-  bool SetProdInfo(int8_t index, int *type_id, int *priority, float *time, int *max_prod);
+  bool GetProdInfo(int8_t index, optref<int32_t> type_id, optref<int32_t> priority, optref<float> time, optref<int32_t> max_prod);
+  bool SetProdInfo(int8_t index, optref<int32_t> type_id, optref<int32_t> priority, optref<float> time, optref<int32_t> max_prod);
 
   float GetProdMultiplier();
   bool SetProdMultiplier(float multi);
 
-  int GetStatus();
-  bool SetStatus(int status, bool f_enable); // Not all flags are settable
+  matcen_status_flags_t GetStatus();
+  bool SetStatus(matcen_status_flags_t status, bool f_enable); // Not all flags are settable
 
   void DoThinkFrame();
   void DoRenderFrame();
 
-  char GetCreationEffect();
-  bool SetCreationEffect(char effect_index);
+  matcen_effect GetCreationEffect();
+  bool SetCreationEffect(matcen_effect effect);
 
-  int GetMaxAliveChildren();
-  bool SetMaxAliveChildren(int max_alive);
+  int32_t GetMaxAliveChildren();
+  bool SetMaxAliveChildren(int32_t max_alive);
 
   float GetPreProdTime();
   bool SetPreProdTime(float time);
@@ -198,8 +208,8 @@ public:
   float GetPostProdTime();
   bool SetPostProdTime(float time);
 
-  int GetSound(int8_t sound_type);
-  bool SetSound(int8_t sound_type, int sound_index);
+  index_t GetSound(int8_t sound_type);
+  bool SetSound(int8_t sound_type, index_t sound_index);
 
   void Reset();
 };

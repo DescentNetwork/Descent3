@@ -45,4 +45,9 @@ enum class generic_damage_type : uint8_t {
   volatile_hiss = 8,// Touched a volatile substance (such as acid)
 };
 
+struct object;
+
+// Applies damage to a player object; returns true if damage was applied.
+bool ApplyDamageToPlayer(object *playerobj, object *killer, player_damage_type damage_type, float damage_amount);
+
 #endif
