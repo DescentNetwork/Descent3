@@ -1372,9 +1372,7 @@ void ClearDynamicLightmaps() {
   for (auto &dyn_cell : Dynamic_cell_list) {
     int cellnum = dyn_cell.cellnum;
     Terrain_seg[cellnum].flags.dynamic = 0;
-    Terrain_seg[cellnum].r = dyn_cell.r;
-    Terrain_seg[cellnum].g = dyn_cell.g;
-    Terrain_seg[cellnum].b = dyn_cell.b;
+    Terrain_seg[cellnum].color = GR_RGB(dyn_cell.r, dyn_cell.g, dyn_cell.b);
 
     int seg_x = cellnum % TERRAIN_WIDTH;
     int seg_z = cellnum / TERRAIN_WIDTH;
@@ -1385,7 +1383,7 @@ void ClearDynamicLightmaps() {
     const uint32_t tile = ((seg_z / 128) * 2) + (seg_x / 128);
     const index_t whichmap = TerrainLightmaps[tile];
 
-    uint16_t color = OPAQUE_FLAG | GR_RGB16(Terrain_seg[cellnum].r, Terrain_seg[cellnum].g, Terrain_seg[cellnum].b);
+    uint16_t color = OPAQUE_FLAG | GR_COLOR_TO_16(Terrain_seg[cellnum].color);
     std::vector<std::vector<uint16_t>> &data = lm_data(whichmap);
 
     data[subz][subx] = color;
@@ -1474,7 +1472,9 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
 
     // Add a new face to our list
     if (!(tseg.flags.dynamic)) {
-      Dynamic_cell_list.push_back(dynamic_cell{static_cast<uint16_t>(cellnum), tseg.r, tseg.g, tseg.b});
+      Dynamic_cell_list.push_back(
+          dynamic_cell{static_cast<uint16_t>(cellnum), GR_COLOR_RED(tseg.color), GR_COLOR_GREEN(tseg.color),
+                       GR_COLOR_BLUE(tseg.color)});
       tseg.flags.dynamic = 1;
 
       if (GameLightmaps[*whichmap].flags.limits) {
@@ -1498,35 +1498,37 @@ void ApplyLightingToTerrain(const vector3 &pos, int cellnum, float light_dist, f
       }
     }
 
-    int r = tseg.r;
-    int g = tseg.g;
-    int b = tseg.b;
+    int r = GR_COLOR_RED(tseg.color);
+    int g = GR_COLOR_GREEN(tseg.color);
+    int b = GR_COLOR_BLUE(tseg.color);
 
     if (red_scale < 0) {
       // we are subtracting light
-      tseg.r = std::max<float>(0, r + (scalar * red_scale * 255));
+      r = std::max<float>(0, r + (scalar * red_scale * 255));
     } else {
       if (r < red_limit)
-        tseg.r = std::min<float>(red_limit, r + (scalar * red_scale * 255));
+        r = std::min<float>(red_limit, r + (scalar * red_scale * 255));
     }
 
     if (green_scale < 0) {
       // we are subtracting light
-      tseg.g = std::max<float>(0, g + (scalar * green_scale * 255));
+      g = std::max<float>(0, g + (scalar * green_scale * 255));
     } else {
       if (g < green_limit)
-        tseg.g = std::min<float>(green_limit, g + (scalar * green_scale * 255));
+        g = std::min<float>(green_limit, g + (scalar * green_scale * 255));
     }
 
     if (blue_scale < 0) {
       // we are subtracting light
-      tseg.b = std::max<float>(0, b + (scalar * blue_scale * 255));
+      b = std::max<float>(0, b + (scalar * blue_scale * 255));
     } else {
       if (b < blue_limit)
-        tseg.b = std::min<float>(blue_limit, b + (scalar * blue_scale * 255));
+        b = std::min<float>(blue_limit, b + (scalar * blue_scale * 255));
     }
 
-    uint16_t color = OPAQUE_FLAG | GR_RGB16(tseg.r, tseg.g, tseg.b);
+    tseg.color = GR_RGB(static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b));
+
+    uint16_t color = OPAQUE_FLAG | GR_COLOR_TO_16(tseg.color);
     std::vector<std::vector<uint16_t>> &data = lm_data(whichmap);
 
     Q_ASSERT(!data.empty());

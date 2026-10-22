@@ -1560,15 +1560,12 @@ static void LL_ReadTerrainSkyAndLightChunk(byte_istream &ifile, int) {
   LL_ReadCompressedByte(ifile, byte_vals.data(), total);
   for (int i = 0; i < total; i++)
     Terrain_seg[i].l = byte_vals[i];
-  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
+  std::vector<uint8_t> red_vals(total), green_vals(total), blue_vals(total);
+  LL_ReadCompressedByte(ifile, red_vals.data(), total);
+  LL_ReadCompressedByte(ifile, green_vals.data(), total);
+  LL_ReadCompressedByte(ifile, blue_vals.data(), total);
   for (int i = 0; i < total; i++)
-    Terrain_seg[i].r = byte_vals[i];
-  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
-  for (int i = 0; i < total; i++)
-    Terrain_seg[i].g = byte_vals[i];
-  LL_ReadCompressedByte(ifile, byte_vals.data(), total);
-  for (int i = 0; i < total; i++)
-    Terrain_seg[i].b = byte_vals[i];
+    Terrain_seg[i].color = GR_RGB(red_vals[i], green_vals[i], blue_vals[i]);
   LL_ReadCompressedByte(ifile, byte_vals.data(), total);
   for (int i = 0; i < total; i++)
     Terrain_dynamic_table[i] = byte_vals[i];
@@ -1705,15 +1702,15 @@ static void LL_WriteTerrainSkyAndLightChunk(byte_ostream &ofile) {
   for (int i = 0; i < total; i++)
     byte_vals[i] = Terrain_seg[i].l;
   LL_WriteCompressedByte(ofile, byte_vals.data(), total);
-  for (int i = 0; i < total; i++)
-    byte_vals[i] = Terrain_seg[i].r;
-  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
-  for (int i = 0; i < total; i++)
-    byte_vals[i] = Terrain_seg[i].g;
-  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
-  for (int i = 0; i < total; i++)
-    byte_vals[i] = Terrain_seg[i].b;
-  LL_WriteCompressedByte(ofile, byte_vals.data(), total);
+  std::vector<uint8_t> red_vals(total), green_vals(total), blue_vals(total);
+  for (int i = 0; i < total; i++) {
+    red_vals[i] = GR_COLOR_RED(Terrain_seg[i].color);
+    green_vals[i] = GR_COLOR_GREEN(Terrain_seg[i].color);
+    blue_vals[i] = GR_COLOR_BLUE(Terrain_seg[i].color);
+  }
+  LL_WriteCompressedByte(ofile, red_vals.data(), total);
+  LL_WriteCompressedByte(ofile, green_vals.data(), total);
+  LL_WriteCompressedByte(ofile, blue_vals.data(), total);
   for (int i = 0; i < total; i++)
     byte_vals[i] = Terrain_dynamic_table[i];
   LL_WriteCompressedByte(ofile, byte_vals.data(), total);
@@ -1959,15 +1956,10 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
       }
       case "TRIG"_ID:
       {
-        int32_t nt = 0;
+        uint32_t nt = 0;
         ifile >> nt;
         Triggers.resize(nt);
-        for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
-          trigger &tp = Triggers[i];
-          // Value-initialise (NOT memset: trigger contains a std::string name).
-          tp = trigger{};
-          ifile >> tp;
-        }
+        ifile >> Triggers;
         break;
       }
       case "AABB"_ID: LL_ReadRoomAABBChunk(ifile); break;

@@ -2078,9 +2078,7 @@ void DoRadiosityForTerrain() {
 
       Terrain_seg[seg].l = Float_to_ubyte(GetMaxColor(&total));
 
-      Terrain_seg[seg].r = Float_to_ubyte(total.r);
-      Terrain_seg[seg].g = Float_to_ubyte(total.g);
-      Terrain_seg[seg].b = Float_to_ubyte(total.b);
+      Terrain_seg[seg].color = GR_RGB(Float_to_ubyte(total.r), Float_to_ubyte(total.g), Float_to_ubyte(total.b));
     }
   }
 

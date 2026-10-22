@@ -501,9 +501,9 @@ void DeformTerrain(const vector3 &pos, int depth, float size) {
 
       DeformTerrainPoint(t, i, height_change);
 
-      tseg.r = std::max(0, tseg.r + light_change);
-      tseg.g = std::max(0, tseg.g + light_change);
-      tseg.b = std::max(0, tseg.b + light_change);
+      tseg.color = GR_RGB(static_cast<uint8_t>(std::max(0, GR_COLOR_RED(tseg.color) + light_change)),
+                          static_cast<uint8_t>(std::max(0, GR_COLOR_GREEN(tseg.color) + light_change)),
+                          static_cast<uint8_t>(std::max(0, GR_COLOR_BLUE(tseg.color) + light_change)));
 
       int which = ((i / 128) * 2) + (t / 128);
       changed[which] = 1;
@@ -608,9 +608,7 @@ void GenerateTerrainLight() {
   for (i = 0; i < TERRAIN_WIDTH * TERRAIN_DEPTH; i++) {
     float dp = (-vm_DotProduct(camera_light, TerrainNormals[MAX_TERRAIN_LOD - 1][i].normal1) + 1.0) / 2;
     Terrain_seg[i].l = Float_to_ubyte(dp);
-    Terrain_seg[i].r = Terrain_seg[i].l;
-    Terrain_seg[i].g = Terrain_seg[i].l;
-    Terrain_seg[i].b = Terrain_seg[i].l;
+    Terrain_seg[i].color = GR_RGB(Terrain_seg[i].l, Terrain_seg[i].l, Terrain_seg[i].l);
   }
 
   UpdateTerrainLightmaps();
@@ -1031,7 +1029,7 @@ void UpdateSingleTerrainLightmap(int which) {
       int tseg = i * TERRAIN_WIDTH + t;
       const terrain_segment &tp = Terrain_seg[tseg];
 
-      uint16_t color = GR_RGB16(tp.r, tp.g, tp.b);
+      uint16_t color = GR_COLOR_TO_16(tp.color);
       std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
 
       int x = t % 128;
@@ -1055,46 +1053,30 @@ void UpdateTerrainLightmaps() {
 
   // lower-left strip
   for (i = 0; i < 128; i++) {
-    Terrain_seg[i * TERRAIN_WIDTH].r = Terrain_seg[i * TERRAIN_WIDTH + 128].r;
-    Terrain_seg[i * TERRAIN_WIDTH].g = Terrain_seg[i * TERRAIN_WIDTH + 128].g;
-    Terrain_seg[i * TERRAIN_WIDTH].b = Terrain_seg[i * TERRAIN_WIDTH + 128].b;
+    Terrain_seg[i * TERRAIN_WIDTH].color = Terrain_seg[i * TERRAIN_WIDTH + 128].color;
 
-    Terrain_seg[i].r = Terrain_seg[128 * TERRAIN_WIDTH + i].r;
-    Terrain_seg[i].g = Terrain_seg[128 * TERRAIN_WIDTH + i].g;
-    Terrain_seg[i].b = Terrain_seg[128 * TERRAIN_WIDTH + i].b;
+    Terrain_seg[i].color = Terrain_seg[128 * TERRAIN_WIDTH + i].color;
   }
 
   // lower-right strip
   for (i = 0; i < 128; i++) {
-    Terrain_seg[i * TERRAIN_WIDTH + 255].r = Terrain_seg[i * TERRAIN_WIDTH + 127].r;
-    Terrain_seg[i * TERRAIN_WIDTH + 255].g = Terrain_seg[i * TERRAIN_WIDTH + 127].g;
-    Terrain_seg[i * TERRAIN_WIDTH + 255].b = Terrain_seg[i * TERRAIN_WIDTH + 127].b;
+    Terrain_seg[i * TERRAIN_WIDTH + 255].color = Terrain_seg[i * TERRAIN_WIDTH + 127].color;
 
-    Terrain_seg[i + 128].r = Terrain_seg[128 * TERRAIN_WIDTH + i + 128].r;
-    Terrain_seg[i + 128].g = Terrain_seg[128 * TERRAIN_WIDTH + i + 128].g;
-    Terrain_seg[i + 128].b = Terrain_seg[128 * TERRAIN_WIDTH + i + 128].b;
+    Terrain_seg[i + 128].color = Terrain_seg[128 * TERRAIN_WIDTH + i + 128].color;
   }
 
   // upper-left strip
   for (i = 0; i < 128; i++) {
-    Terrain_seg[(i + 128) * TERRAIN_WIDTH].r = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 128].r;
-    Terrain_seg[(i + 128) * TERRAIN_WIDTH].g = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 128].g;
-    Terrain_seg[(i + 128) * TERRAIN_WIDTH].b = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 128].b;
+    Terrain_seg[(i + 128) * TERRAIN_WIDTH].color = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 128].color;
 
-    Terrain_seg[255 * TERRAIN_WIDTH + i].r = Terrain_seg[127 * TERRAIN_WIDTH + i].r;
-    Terrain_seg[255 * TERRAIN_WIDTH + i].g = Terrain_seg[127 * TERRAIN_WIDTH + i].g;
-    Terrain_seg[255 * TERRAIN_WIDTH + i].b = Terrain_seg[127 * TERRAIN_WIDTH + i].b;
+    Terrain_seg[255 * TERRAIN_WIDTH + i].color = Terrain_seg[127 * TERRAIN_WIDTH + i].color;
   }
 
   // upper-right strip
   for (i = 0; i < 128; i++) {
-    Terrain_seg[(i + 128) * TERRAIN_WIDTH + 255].r = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 127].r;
-    Terrain_seg[(i + 128) * TERRAIN_WIDTH + 255].g = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 127].g;
-    Terrain_seg[(i + 128) * TERRAIN_WIDTH + 255].b = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 127].b;
+    Terrain_seg[(i + 128) * TERRAIN_WIDTH + 255].color = Terrain_seg[(i + 128) * TERRAIN_WIDTH + 127].color;
 
-    Terrain_seg[255 * TERRAIN_WIDTH + i + 128].r = Terrain_seg[127 * TERRAIN_WIDTH + i + 128].r;
-    Terrain_seg[255 * TERRAIN_WIDTH + i + 128].g = Terrain_seg[127 * TERRAIN_WIDTH + i + 128].g;
-    Terrain_seg[255 * TERRAIN_WIDTH + i + 128].b = Terrain_seg[127 * TERRAIN_WIDTH + i + 128].b;
+    Terrain_seg[255 * TERRAIN_WIDTH + i + 128].color = Terrain_seg[127 * TERRAIN_WIDTH + i + 128].color;
   }
 
   for (i = 0; i < TERRAIN_DEPTH; i++) {
@@ -1105,7 +1087,7 @@ void UpdateTerrainLightmaps() {
       int y = 127 - (i % 128);
       int which = ((i / 128) * 2) + (t / 128);
 
-      uint16_t color = GR_RGB16(tp.r, tp.g, tp.b);
+      uint16_t color = GR_COLOR_TO_16(tp.color);
       std::vector<std::vector<uint16_t>> &data = lm_data(TerrainLightmaps[which]);
 
       data[y][x] = OPAQUE_FLAG | color;

@@ -3629,8 +3629,7 @@ private slots:
 
     // Sky/lighting and occlusion came out of their sub-chunks.
     QVERIFY(std::isfinite(Terrain_sky.fog_scalar));
-    QVERIFY(Terrain_seg[123].l != 0 || Terrain_seg[123].r != 0 || Terrain_seg[123].g != 0 ||
-            Terrain_seg[123].b != 0);
+    QVERIFY(Terrain_seg[123].l != 0 || Terrain_seg[123].color != GR_BLACK);
 
     // Save -> reload -> save must reproduce byte-identical terrain (and all
     // other chunks).  Compare the second and third passes, which run against

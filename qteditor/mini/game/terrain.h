@@ -93,7 +93,8 @@ struct terrain_segment {
   float y;    // Y position of the lower left corner of the terrain cell
   float mody; // The modified y position of this cell - used for LOD
 
-  uint8_t l, r, g, b;
+  uint8_t l;      // Light level of the cell
+  ddgr_color color; // Cell color
 
   int16_t objects;      // Index of the first object in this cell
   int16_t texseg_index; // index into the tex_segment array
