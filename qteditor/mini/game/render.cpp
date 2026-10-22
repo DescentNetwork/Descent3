@@ -1582,7 +1582,7 @@ void RenderFogFaces(int roomnum) {
   rend_SetZBufferWriteMask(0);
   rend_SetCoplanarPolygonOffset(1);
 
-  rend_SetFlatColor(GR_RGB(uint8_t(rp.fog_r * 255.0f), uint8_t(rp.fog_g * 255.0f), uint8_t(rp.fog_b * 255.0f)));
+  rend_SetFlatColor(GR_RGB(uint8_t(rp.fog.r * 255.0f), uint8_t(rp.fog.g * 255.0f), uint8_t(rp.fog.b * 255.0f)));
   for (int i = 0; i < Num_fog_faces_to_render; i++) {
     const face &fp = rp.faces[Fog_faces[i]];
     for (vn = 0; vn < fp.num_verts; vn++) {

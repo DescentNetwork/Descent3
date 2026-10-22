@@ -104,6 +104,7 @@
 #include <vector>
 #include <posix_stream.h>
 
+#include "color.h"
 #include "vecmat_external.h"
 #include "bnode.h"
 #include "damage_external.h"
@@ -330,7 +331,7 @@ struct room_t {
   int16_t volume_height;
   int16_t volume_depth;
   float fog_depth;           // How far until fog is totally opaque
-  float fog_r, fog_g, fog_b; // Fog color
+  color3f fog;                // Fog color
 
   uint8_t env_reverb;        // environmental reverb preset
   uint8_t room_change_flags; // For multiplayer, detects what characteristics have to be sent

@@ -1571,9 +1571,9 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
       pe.fog_portal_vert = Room_fog_portal_vert;
       pe.fog_plane = Room_fog_plane;
       pe.fog_depth = Rooms[*obj.roomnum].fog_depth;
-      pe.fog.r = Rooms[*obj.roomnum].fog_r;
-      pe.fog.g = Rooms[*obj.roomnum].fog_g;
-      pe.fog.b = Rooms[*obj.roomnum].fog_b;
+      pe.fog.r = Rooms[*obj.roomnum].fog.r;
+      pe.fog.g = Rooms[*obj.roomnum].fog.g;
+      pe.fog.b = Rooms[*obj.roomnum].fog.b;
 
       use_effect = 1;
     }

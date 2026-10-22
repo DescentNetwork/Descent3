@@ -504,9 +504,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
 
   rp.last_render_time = 0;
   rp.fog_depth = 100.0f;
-  rp.fog_r = 1.0f;
-  rp.fog_g = 1.0f;
-  rp.fog_b = 1.0f;
+  rp.fog = color3f{1.0f, 1.0f, 1.0f};
 
   rp.faces.resize(nfaces);
   rp.verts.resize(nverts);
@@ -1242,9 +1240,7 @@ void DoRoomChangeFrame() {
       rp.flags.fog = 1;
       rp.room_change_flags |= RCF_CHANGING_WIND_FOG;
 
-      rp.fog_r = scale_color.x();
-      rp.fog_g = scale_color.y();
-      rp.fog_b = scale_color.z();
+      rp.fog = color3f{scale_color.x(), scale_color.y(), scale_color.z()};
       rp.fog_depth = scale_depth;
     } else {
       vector3 scale_wind =
@@ -1300,9 +1296,9 @@ index_t SetRoomChangeOverTime(int roomnum, bool fog, const vector3 &end, float d
 
   if (fog) {
     Room_changes[index].start_depth = rp.fog_depth;
-    Room_changes[index].start_vector.x() = rp.fog_r;
-    Room_changes[index].start_vector.y() = rp.fog_g;
-    Room_changes[index].start_vector.z() = rp.fog_b;
+    Room_changes[index].start_vector.x() = rp.fog.r;
+    Room_changes[index].start_vector.y() = rp.fog.g;
+    Room_changes[index].start_vector.z() = rp.fog.b;
     Room_changes[index].end_depth = depth_end;
   } else
     Room_changes[index].start_vector = rp.wind;
@@ -1536,7 +1532,7 @@ byte_istream& operator>>(byte_istream& input, room_t& data) {
     data.volume_depth = static_cast<int16_t>(d);
   }
 
-  input >> data.fog_depth >> data.fog_r >> data.fog_g >> data.fog_b;
+  input >> data.fog_depth >> data.fog;
 
   // Mini has no ambient sound page; consume and discard the pattern name.
   std::string ambient;
@@ -1581,7 +1577,7 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
                          data.volume_width * data.volume_height * data.volume_depth);
   }
 
-  output << data.fog_depth << data.fog_r << data.fog_g << data.fog_b;
+  output << data.fog_depth << data.fog;
   output << std::string("");
   output << data.env_reverb;
   return output << data.damage << reinterpret_cast<const uint8_t &>(data.damage_type);
