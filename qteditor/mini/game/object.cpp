@@ -400,9 +400,9 @@ static vector3 ComputeObjectRadiusFromModel(int model_num, float fallback_size) 
 void ObjSetAABB(object& obj) {
   vector3 object_rad;
 
-  if (obj.type == object_type_e::room && obj.id >= 0 && obj.id < MAX_ROOMS) {
-    obj.min_xyz = Rooms[obj.id].min_xyz;
-    obj.max_xyz = Rooms[obj.id].max_xyz;
+  if (obj.type == object_type_e::room && obj.id && *obj.id < MAX_ROOMS) {
+    obj.min_xyz = Rooms[*obj.id].min_xyz;
+    obj.max_xyz = Rooms[*obj.id].max_xyz;
   } else if (obj.flags.polygon_object && obj.type != object_type_e::weapon && obj.type != object_type_e::debris &&
              obj.type != object_type_e::powerup && obj.type != object_type_e::player) {
     vector3 offset_pos;
@@ -454,10 +454,10 @@ static void ObjSetRenderPolyobj(object& obj, int handle) {
 static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   (void)reinitializing;
 
-  if (obj.id >= Object_info.size())
+  if (!obj.id || *obj.id >= Object_info.size())
     return false;
 
-  object_info& oi = Object_info[obj.id];
+  object_info& oi = Object_info[*obj.id];
 
   // Deal with deleted type
   if (oi.type == object_type_e::none)
@@ -483,7 +483,7 @@ static bool ObjInitTypeSpecific(object& obj, bool reinitializing) {
   case object_type_e::player:
   case object_type_e::waypoint:
   case object_type_e::door:
-    ObjSetRenderPolyobj(obj, obj.id);
+    ObjSetRenderPolyobj(obj, index_to_int(obj.id));
     obj.size = oi.size;
     obj.shields = static_cast<float>(oi.hit_points);
     if (obj.type == object_type_e::viewer)

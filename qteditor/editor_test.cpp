@@ -534,14 +534,14 @@ private slots:
 
     QVERIFY(Highest_object_index >= 1);
     QCOMPARE(int(Objects[0].type), int(object_type_e::powerup));
-    QCOMPARE(int(Objects[0].id), 1);
+    QCOMPARE(Objects[0].id, index_t{1});
     QCOMPARE(Objects[0].roomnum, 0);
     QCOMPARE(Objects[0].pos.x(), 5.0f);
     // ObjReInitAll() normalizes each object's type from its object-info page
     // (the same behavior the engine's ReadObject->ObjInit exhibits), so the
     // reloaded robot we saved as {id=7, type=object_type::robot} matches page 7's type.
-    QCOMPARE(int(Objects[1].id), 7);
-    QCOMPARE(int(Objects[1].type), int(Object_info[Objects[1].id].type));
+    QCOMPARE(Objects[1].id, index_t{7});
+    QCOMPARE(int(Objects[1].type), int(Object_info[*Objects[1].id].type));
     QCOMPARE(Objects[1].roomnum, 1);
 
     QCOMPARE(static_cast<int>(Triggers.size()), 1);
@@ -838,7 +838,7 @@ private slots:
 
     QVERIFY2(LoadLevel(std::filesystem::path(f1.toStdString()), nullptr), "LoadLevel pass1 failed");
     QVERIFY(Highest_object_index >= 0);
-    QCOMPARE(int(Objects[0].id), 0); // remapped via the GNNM name table
+    QCOMPARE(Objects[0].id, index_t{0}); // remapped via the GNNM name table
     QCOMPARE(int(Objects[0].type), int(object_type_e::powerup));
 
     // Re-save and confirm the remapped id is stable: pass2 and pass3 are
@@ -853,7 +853,7 @@ private slots:
     RoomsReset();
     Triggers.clear();
     QVERIFY2(LoadLevel(std::filesystem::path(f2.toStdString()), nullptr), "LoadLevel pass2 failed");
-    QCOMPARE(int(Objects[0].id), 0);
+    QCOMPARE(Objects[0].id, index_t{0});
     QVERIFY2(SaveLevel(std::filesystem::path(f3.toStdString()), true), "SaveLevel pass3 failed");
 
     QFile a(f2), b(f3);
@@ -3449,7 +3449,7 @@ private slots:
     QCOMPARE(index_to_int(app.Cur_object_index), 7);
     QCOMPARE(index_to_int(app.Current_trigger), 8);
     QCOMPARE(app.view_mode, state::viewer::terrain);
-    QCOMPARE(app.Editor_viewer_id.value_or(-1), 9);
+    QCOMPARE(app.Editor_viewer_id, index_t{9});
     QCOMPARE(Wireframe_view_mine.dist, 50);
     QCOMPARE(Wireframe_view_mine.orient.fvec.z(), 1);
     QCOMPARE(LightSpacing, 40);
@@ -5263,7 +5263,7 @@ private slots:
     QCOMPARE(app.view_mode, state::viewer::mine);
     // CreateNewMine spawns a viewer for the level (Win32 HFile.cpp:478
     // SetEditorViewer), so the id/object are non-empty afterwards.
-    QCOMPARE(app.Editor_viewer_id.value_or(-1), 0);
+    QCOMPARE(app.Editor_viewer_id, index_t{0});
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object->type), int(object_type_e::viewer));
     QCOMPARE(app.New_mine, true);
@@ -5331,7 +5331,7 @@ private slots:
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object - Objects.data()), viewerSlot);
     QCOMPARE(Viewer_object->id, 4);
-    QCOMPARE(app.Editor_viewer_id.value_or(-1), 4);
+    QCOMPARE(app.Editor_viewer_id, index_t{4});
     QVERIFY(Viewer_object->pos.x() == savedPos.x());
     QVERIFY(Viewer_object->pos.y() == savedPos.y());
     QVERIFY(Viewer_object->pos.z() == savedPos.z());
@@ -5374,7 +5374,7 @@ private slots:
     QVERIFY(Viewer_object != nullptr);
     QCOMPARE(int(Viewer_object->type), int(object_type_e::viewer));
     QCOMPARE(Viewer_object->roomnum, 0);
-    QCOMPARE(app.Editor_viewer_id.value_or(-1), 0);
+    QCOMPARE(app.Editor_viewer_id, index_t{0});
     app.State_changed = app.Viewer_moved = false;
 
     // The new viewer lands at the room's centroid.
@@ -6302,7 +6302,7 @@ private slots:
     const int viewer2 = win.onSpawnNewViewer();
     QVERIFY(viewer2 > 0);
     QCOMPARE(int(Objects[viewer2].type), int(object_type::viewer));
-    QCOMPARE(int(app.Editor_viewer_id.value_or(-1) >= 1), 1);
+    QVERIFY(app.Editor_viewer_id && *app.Editor_viewer_id >= 1);
 
     const int moved = win.onSelectNextViewer();
     QVERIFY(moved >= 0);
@@ -8962,7 +8962,7 @@ private slots:
     vector3 pos = {};
     object obj;
     QVERIFY(ObjInit(obj, object_type_e::robot, id, 0, pos, 0.0f, -1));
-    QCOMPARE(int(obj.id), id);
+    QCOMPARE(obj.id, index_t{static_cast<uint32_t>(id)});
 
     const int bound = static_cast<int>(Object_info.size());
     QVERIFY(!ObjInit(obj, object_type_e::robot, bound, 0, pos, 0.0f, -1));

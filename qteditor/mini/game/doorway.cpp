@@ -564,7 +564,7 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
 
   // Get the opener's keys
   if (opener->type == object_type_e::player)
-    keys = Players[opener->id].keys;
+    keys = Players[*opener->id].keys;
   else if ((opener->type == object_type_e::robot) || ((opener->type == object_type_e::building) && opener->ai_info))
     keys = Global_keys;
   else

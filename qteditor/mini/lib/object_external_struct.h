@@ -783,7 +783,7 @@ private:
 struct object {
   object_type_e type;       // what type of object this is... robot, weapon, hostage, powerup, fireball
   object_type_e dummy_type; // stored type of an object_type::dummy
-  uint16_t id;        // which form of object...which powerup, robot, etc.
+  index_t id;         // which form of object...which powerup, robot, etc.; nullopt = none
   object_flags_t flags;
 
   std::string name; // the name of this object, or NULL

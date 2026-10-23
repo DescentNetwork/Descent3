@@ -37,7 +37,7 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(int objIndex, QWidget *parent)
   if (obj.type == object_type_e::none)
     return;
 
-  if (obj.id < Object_info.size() && Object_info[obj.id].type != object_type_e::none) {
+  if (obj.id && *obj.id < Object_info.size() && Object_info[*obj.id].type != object_type_e::none) {
     PropertyPhysicsDialog *physics = new PropertyPhysicsDialog(obj.id, tabs);
     tabs->addTab(physics, "Physics");
 

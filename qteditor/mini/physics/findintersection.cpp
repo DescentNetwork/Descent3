@@ -2672,7 +2672,7 @@ fvi_hit_type fvi_FindIntersection(fvi_query &fq, fvi_info &hit_data, bool no_sub
   } else {
     if ((this_obj) && this_obj->type == object_type_e::player && fq.rad == this_obj->size) {
       fvi_wall_sphere_rad = fq.rad * PLAYER_SIZE_SCALAR;
-      if (Players[this_obj->id].flags.dead || Players[this_obj->id].flags.dying)
+      if (Players[*this_obj->id].flags.dead || Players[*this_obj->id].flags.dying)
         fvi_wall_sphere_rad *= 0.5f;
       fvi_wall_sphere_offset = vector3{};
       fvi_wall_sphere_p0 = *fq.p0;
@@ -3432,7 +3432,7 @@ void check_hit_obj(index_t objnum) {
               case collision_result::check_sphere_room: {
                 Q_ASSERT(obj.type == object_type_e::room);
 
-                fvi_room(obj.id, -1, index_to_int(*objnum));
+                fvi_room(index_to_int(obj.id), -1, index_to_int(*objnum));
               } break;
 
               case collision_result::check_sphere_poly:

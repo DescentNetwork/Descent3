@@ -2157,7 +2157,7 @@ void DonePolyModelPosInstance() {
 void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
   int i, j;
   const poly_model &pm = Poly_models[obj.rtype.pobj_info().model_num];
-  const object_info& obj_info = Object_info[obj.id];
+  const object_info& obj_info = Object_info[*obj.id];
 
   if (obj.type == object_type_e::player || obj.type == object_type_e::weapon)
     return;

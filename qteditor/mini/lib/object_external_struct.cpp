@@ -174,10 +174,10 @@ static byte_ostream& writeByteString(byte_ostream& output, const std::string& da
 
 byte_istream& operator>>(byte_istream& input, object& data)
 {
-  input >> reinterpret_cast<uint8_t&>(data.type)
-      >> data.id
-      >> data.name
-      >> reinterpret_cast<uint32_t&>(data.flags);
+  input >> reinterpret_cast<uint8_t&>(data.type);
+  uint16_t id = 0;
+  input >> id >> data.name >> reinterpret_cast<uint32_t&>(data.flags);
+  data.id = u16_to_index(id);
 
   if (data.type == object_type_e::door)
   {
@@ -212,7 +212,7 @@ byte_istream& operator>>(byte_istream& input, object& data)
 
 byte_ostream& operator<<(byte_ostream& output, const object& data) {
   output << reinterpret_cast<const uint8_t&>(data.type)
-         << data.id
+         << index_to_u16(data.id)
          << data.name
          << reinterpret_cast<const uint32_t&>(data.flags);
   if (data.type == object_type_e::door)

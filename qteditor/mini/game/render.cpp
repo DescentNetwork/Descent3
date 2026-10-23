@@ -3144,11 +3144,11 @@ void RenderRoomObjects(index_t roomnum) {
       continue;
     float size = obj->size;
     // Special case weapons with streamers
-    if (obj->type == object_type_e::weapon && Weapons[obj->id].flags.streamer)
-      size = Weapons[obj->id].phys_info.velocity.z();
+    if (obj->type == object_type_e::weapon && Weapons[*obj->id].flags.streamer)
+      size = Weapons[*obj->id].phys_info.velocity.z();
     // Check if object is trivially rejected
     bool isVisible = IsPointVisible(obj->pos, size, zdist) ? true : false;
-    if (Render_mirror_for_room || (obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
+    if (Render_mirror_for_room || (obj->type == object_type_e::weapon && Weapons[*obj->id].flags.electrical) || isVisible) {
       obj_sort_list[n_objs].vis_effect = 0;
       obj_sort_list[n_objs].objnum = objnum;
       obj_sort_list[n_objs].dist = zdist;
@@ -3283,15 +3283,15 @@ void CheckToRenderMineObjects(index_t roomnum) {
       if (obj == Viewer_object)
         continue;
       // Don't draw piggybacked objects
-      if (Viewer_object->type == object_type_e::observer && index == Players[Viewer_object->id].piggy_objnum)
+      if (Viewer_object->type == object_type_e::observer && index == Players[*Viewer_object->id].piggy_objnum)
         continue;
       float size = obj->size;
       // Special case weapons with streamers
-      if (obj->type == object_type_e::weapon && (Weapons[obj->id].flags.streamer))
-        size = Weapons[obj->id].phys_info.velocity.z();
+      if (obj->type == object_type_e::weapon && (Weapons[*obj->id].flags.streamer))
+        size = Weapons[*obj->id].phys_info.velocity.z();
       // Check if object is trivially rejected
       int isVisible = IsPointVisible(obj->pos, size, zdist); // calculate zdist
-      if ((obj->type == object_type_e::weapon && Weapons[obj->id].flags.electrical) || isVisible) {
+      if ((obj->type == object_type_e::weapon && Weapons[*obj->id].flags.electrical) || isVisible) {
         // Stuff objects into our postrender list (disabled: post-render system not ported)
         // if (Num_postrenders < MAX_POSTRENDERS) {
         //   Postrender_list[Num_postrenders].type = PRT_OBJECT;

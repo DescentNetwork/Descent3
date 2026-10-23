@@ -2969,8 +2969,8 @@ void ComputeAABB(bool f_full) {
           BigObjAdd(i);
 
       if (Objects[i].type == object_type_e::room) {
-        Objects[i].min_xyz = Rooms[Objects[i].id].min_xyz;
-        Objects[i].max_xyz = Rooms[Objects[i].id].max_xyz;
+        Objects[i].min_xyz = Rooms[*Objects[i].id].min_xyz;
+        Objects[i].max_xyz = Rooms[*Objects[i].id].max_xyz;
       } else {
         ObjSetAABB(Objects[i]);
         ObjSetOrient(Objects[i], Objects[i].orient);

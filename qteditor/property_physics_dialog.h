@@ -33,7 +33,7 @@ QT_END_NAMESPACE
 class PropertyPhysicsDialog : public QDialog {
   Q_OBJECT
 public:
-  explicit PropertyPhysicsDialog(int object_id, QWidget *parent = nullptr);
+  explicit PropertyPhysicsDialog(index_t object_id, QWidget *parent = nullptr);
   ~PropertyPhysicsDialog();
 
 private slots:
@@ -45,6 +45,6 @@ private:
 
   Ui::PropertyPhysicsDialog *ui;
   //physics_info *m_physInfo;
-  int m_object_id;
+  index_t m_object_id;
 };
 

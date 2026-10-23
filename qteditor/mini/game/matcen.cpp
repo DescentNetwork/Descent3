@@ -1308,7 +1308,7 @@ bool matcen::DoObjProd() {
                               obj.type == object_type_e::robot || obj.type == object_type_e::powerup);
 
       if (f_generic) {
-        const index_t ambient_sound = Object_info[obj.id].sounds[generic_sound::ambient];
+        const index_t ambient_sound = Object_info[*obj.id].sounds[generic_sound::ambient];
         if (ambient_sound) {
           Sound_system.Play3dSound(index_to_int(ambient_sound), sound_priority::lowest, &obj);
         }

@@ -254,7 +254,7 @@ void CheckLevelNames() {
 // Parameters:	id - which viewer id
 // Returns:		object number of a viewer object, or nullopt if none
 // (port of editor/HView.cpp:220 FindViewerObject)
-static index_t findViewerObject(int id) {
+static index_t findViewerObject(index_t id) {
   for (int objnum = 0; objnum <= Highest_object_index; objnum++)
     if ((Objects[objnum].type == object_type_e::viewer) && (Objects[objnum].id == id))
       return to_objnum(objnum);
@@ -268,11 +268,10 @@ static index_t findViewerObject(int id) {
 //                  view mode
 // Returns:		object number of a viewer object, or nullopt if none
 // (port of editor/HView.cpp:240 FindNextViewerObject)
-static index_t findNextViewerObject(int id, state::viewer view_mode) {
-  if (id == -1)
-    id = 0;
+static index_t findNextViewerObject(index_t id, state::viewer view_mode) {
+  const int base_id = id ? index_to_int(id) : 0;
 
-  Q_ASSERT((id >= 0) && (id <= MAX_VIEWERS));
+  Q_ASSERT((base_id >= 0) && (base_id <= MAX_VIEWERS));
 
   // Get flags
   const bool terrain_flag = (view_mode == state::viewer::terrain);
@@ -280,8 +279,8 @@ static index_t findNextViewerObject(int id, state::viewer view_mode) {
   // Try all viewer id's, starting at the one passed in
   int i;
   for (i = 0; i < MAX_VIEWERS; i++) {
-    const int check_id = ((id + i) % MAX_VIEWERS);
-    const index_t objnum = findViewerObject(check_id);
+    const int check_id = ((base_id + i) % MAX_VIEWERS);
+    const index_t objnum = findViewerObject(to_objnum(check_id));
 
     if ((objnum.has_value()) &&
         (view_mode == state::viewer::invalid ||
@@ -340,7 +339,7 @@ static index_t createViewerObject(state::viewer view_mode, vector3& pos, index_t
   Objects[objnum] = object{};
   Objects[objnum].type = object_type_e::viewer;
   Objects[objnum].render_type = render_type_e::polyobj;
-  Objects[objnum].id = id;
+  Objects[objnum].id = to_objnum(id);
 
   // The slot was carved straight out of Objects[] (ObjCreate is MFC gated),
   // so re-sync the free list / object count with the type table, exactly as
@@ -379,7 +378,7 @@ void SetEditorViewer() {
   if (app.view_mode == state::viewer::room)
     objnum = findViewerObject(ROOM_VIEWER_ID);
   else
-    objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), app.view_mode);
+    objnum = findNextViewerObject(app.Editor_viewer_id, app.view_mode);
 
   // If no viewer object, create one
   if (!objnum) {
@@ -416,7 +415,7 @@ void SetEditorViewer() {
       if (Viewer_object->type == object_type_e::viewer)
         objnum = to_objnum(OBJNUM(Viewer_object));
       else {
-        objnum = findNextViewerObject(app.Editor_viewer_id.value_or(-1), state::viewer::invalid);
+        objnum = findNextViewerObject(app.Editor_viewer_id, state::viewer::invalid);
         Q_ASSERT(objnum.has_value());
       }
       ObjSetPos(Objects[*objnum], pos, roomnum, std::nullopt, true);

@@ -1055,8 +1055,8 @@ bool SetupTerrainObject(object& obj) {
   rend_SetColorModel(color_model::mono);
   if (obj.render_type == render_type_e::polyobj ||
       (obj.render_type == render_type_e::weapon &&
-       !Weapons[obj.id].flags.image_bitmap &&
-       !Weapons[obj.id].flags.image_vclip))
+       !Weapons[*obj.id].flags.image_bitmap &&
+       !Weapons[*obj.id].flags.image_vclip))
   {
     float scalar_r, scalar_g, scalar_b, scalar;
     if (obj.type == object_type_e::powerup) {
@@ -1076,7 +1076,7 @@ bool SetupTerrainObject(object& obj) {
           scalar_g = std::max<float>(0.1f, scalar_g);
           scalar_b = std::max<float>(0.1f, scalar_b);
         }
-        if (obj.type == object_type_e::player && ((Players[obj.id].flags.headlight)))
+        if (obj.type == object_type_e::player && ((Players[*obj.id].flags.headlight)))
         {
           scalar_r = 1;
           scalar_g = 1;
@@ -1146,7 +1146,7 @@ bool SetupMineObject(object& obj) {
         scalar_b = std::max<float>(0.1f, scalar_b);
       }
 
-      if (obj.type == object_type_e::player && (Players[obj.id].flags.headlight)) {
+      if (obj.type == object_type_e::player && (Players[*obj.id].flags.headlight)) {
         scalar_r = 1;
         scalar_g = 1;
         scalar_b = 1;
@@ -1483,7 +1483,7 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
   polymodel_effect pe = {0};
 
 
-  const object_info& oi = Object_info[obj.id];
+  const object_info& oi = Object_info[*obj.id];
 
   // Do cloak effect on player
   if (UseHardware) {
@@ -1508,11 +1508,11 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     if (obj.type == object_type_e::player) {
       // Draw thrust/afterburner cooler
       pe.type.glow_scalar = true;
-      pe.glow_length_scalar = (Players[obj.id].thrust_mag);
-      pe.glow_size_scalar = (Players[obj.id].thrust_mag);
+      pe.glow_length_scalar = (Players[*obj.id].thrust_mag);
+      pe.glow_size_scalar = (Players[*obj.id].thrust_mag);
 
-      pe.glow_length_scalar += (Players[obj.id].afterburner_mag * 3);
-      pe.glow_size_scalar += (Players[obj.id].afterburner_mag * 0.5f);
+      pe.glow_length_scalar += (Players[*obj.id].afterburner_mag * 3);
+      pe.glow_size_scalar += (Players[*obj.id].afterburner_mag * 0.5f);
       float adjustment = (d3::rand() % 100 - 50);
       adjustment /= 50.0f;
       pe.glow_length_scalar += (0.2f * adjustment);
@@ -1655,10 +1655,10 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
     } else if (obj.type == object_type_e::marker) {
      // model_num = Marker_polynum;
     } else if (obj.type == object_type_e::player &&
-             !(Players[obj.id].flags.dying || Players[obj.id].flags.dead)) {
+             !(Players[*obj.id].flags.dying || Players[*obj.id].flags.dead)) {
       g3Point pnt;
       g3_RotatePoint(pnt, obj.pos);
-      int ship_num = Players[obj.id].ship_index;
+      int ship_num = Players[*obj.id].ship_index;
       float detail_scalar = 1.0f;
       if (Detail_settings.Object_complexity == 0)
         detail_scalar = 0.6f;
@@ -1688,8 +1688,8 @@ void RenderObject_DrawPolymodel(const object& obj, float *normalized_times) {
   } else
     model_num = obj.rtype.pobj_info().model_num;
   if (obj.type == object_type_e::building && obj.flags.use_destroyed_polymodel) {
-    if (Object_info[obj.id].lo_render_handle.has_value())
-      model_num = index_to_int(Object_info[obj.id].lo_render_handle);
+    if (Object_info[*obj.id].lo_render_handle.has_value())
+      model_num = index_to_int(Object_info[*obj.id].lo_render_handle);
   }
   // Set effects
   if (use_effect)
@@ -1839,7 +1839,7 @@ void DrawPlayerDamageDisk(object *obj) {
   Q_ASSERT(obj->type == object_type::player);
   if (obj == Viewer_object)
     return; // don't do me
-  float damage_norm = Players[obj->id].damage_magnitude / MAX_DAMAGE_MAG;
+  float damage_norm = Players[*obj->id].damage_magnitude / MAX_DAMAGE_MAG;
   if (damage_norm > 1.0f)
     damage_norm = 1.0f;
   if (damage_norm < 0.001f)
@@ -1870,15 +1870,15 @@ void DrawPlayerInvulSphere(object *obj) {
   Q_ASSERT(obj->type == object_type::player);
   if (Viewer_object == obj)
     return; // don't do me
-  if (!(Players[obj->id].flags.invulnerable))
+  if (!(Players[*obj->id].flags.invulnerable))
     return;
-  if (Players[obj->id].invul_magnitude < 0.05f)
+  if (Players[*obj->id].invul_magnitude < 0.05f)
     return;
 
   int bm_handle = Fireballs[INVUL_HIT_INDEX].bm_handle;
   // Figure out the position and orientation to draw this
-  vector3 hit_pos = obj->pos + (Players[obj->id].invul_vector * obj->size);
-  vector3 norm_vec = Players[obj->id].invul_vector;
+  vector3 hit_pos = obj->pos + (Players[*obj->id].invul_vector * obj->size);
+  vector3 norm_vec = Players[*obj->id].invul_vector;
   // Check to see that we're ok with the length of the vector
   float mag = vm_GetMagnitudeFast(norm_vec);
   if (mag < 1)
@@ -1888,7 +1888,7 @@ void DrawPlayerInvulSphere(object *obj) {
   // Now draw!
   rend_SetAlphaType(alpha_blend_type::saturate_texture);
   rend_SetZBufferWriteMask(0);
-  rend_SetAlphaValue(0.6f * Players[obj->id].invul_magnitude * 255);
+  rend_SetAlphaValue(0.6f * Players[*obj->id].invul_magnitude * 255);
   rend_SetOverlayType(overlay_type::none);
   rend_SetLighting(light_state::none);
   g3_DrawPlanarRotatedBitmap(&hit_pos, &norm_vec, 0, 3, 3, bm_handle);
@@ -1897,7 +1897,7 @@ void DrawPlayerInvulSphere(object *obj) {
 // Draws a rotating ball around the player
 void DrawPlayerRotatingBall(object *obj) {
   Q_ASSERT(obj->type == object_type::player);
-  if (Players[obj->id].num_balls < 1)
+  if (Players[*obj->id].num_balls < 1)
     return;
   static int first = 1;
   static int bm_handle;
@@ -1916,11 +1916,11 @@ void DrawPlayerRotatingBall(object *obj) {
       bm_handle = GetTextureBitmap(texhandle, 0);
     first = 0;
   }
-  for (int i = 0; i < Players[obj->id].num_balls; i++) {
+  for (int i = 0; i < Players[*obj->id].num_balls; i++) {
     PlayerGetBallPosition(&worldpos, obj->id, i);
     // Get color of balls
     ddgr_color color =
-        GR_RGB(Players[obj->id].ball_r[i] * 255, Players[obj->id].ball_g[i] * 255, Players[obj->id].ball_b[i] * 255);
+        GR_RGB(Players[*obj->id].ball_r[i] * 255, Players[*obj->id].ball_g[i] * 255, Players[*obj->id].ball_b[i] * 255);
     g3_DrawBitmap(worldpos, obj->size / 4, ((obj->size / 4) * bm_h(bm_handle, 0)) / bm_w(bm_handle, 0), bm_handle, color);
   }
   rend_SetZBufferWriteMask(1);

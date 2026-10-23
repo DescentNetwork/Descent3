@@ -73,7 +73,7 @@ QString ObjectTreeDialog::makeInfoStr(const object *obj) {
     str = QString("%1-(0x%2)[%3](%4) ")
               .arg(static_cast<int>(OBJNUM(obj)))
               .arg(obj->handle, 0, 16)
-              .arg(QString::fromStdString(Object_info[obj->id].name))
+              .arg(QString::fromStdString(Object_info[*obj->id].name))
               .arg(QString::fromStdString(obj->name.empty() ? "No Name Given"s : obj->name));
   } else {
     str = QString("%1-(0x%2)[%3](%4) ")

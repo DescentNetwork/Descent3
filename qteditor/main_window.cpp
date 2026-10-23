@@ -1340,8 +1340,8 @@ int MainWindow::onSpawnNewViewer() {
   Objects[slot].type = object_type_e::viewer;
   Objects[slot].render_type = render_type_e::polyobj;
   Objects[slot].orient = Viewer_object->orient;
-  app.Editor_viewer_id = (!app.Editor_viewer_id) ? 0 : app.Editor_viewer_id.value_or(-1) + 1;
-  Objects[slot].id = static_cast<uint16_t>(app.Editor_viewer_id.value_or(0));
+  app.Editor_viewer_id = app.Editor_viewer_id ? index_t{*app.Editor_viewer_id + 1} : index_t{0};
+  Objects[slot].id = app.Editor_viewer_id;
   // The slot was carved straight out of Objects[], so re-sync the free list /
   // object count with the type table (this also sets Highest_object_index,
   // which ObjRelink's assert below relies on).
@@ -1352,7 +1352,7 @@ int MainWindow::onSpawnNewViewer() {
   app.New_mine = true;
   std::fprintf(stderr,
                "[object_ops] SpawnNewViewer -> object %d (id %d)\n", slot,
-               app.Editor_viewer_id.value_or(-1));
+               index_to_int(app.Editor_viewer_id));
   m_editorView->update();
   return slot;
 }
@@ -1367,7 +1367,7 @@ int MainWindow::onSelectNextViewer() {
   // world objects. We do the same here.
   if (Viewer_object == nullptr)
     return -1;
-  const int cur_id = Viewer_object->id;
+  const index_t cur_id = Viewer_object->id;
   int best = -1;
   for (size_t i = 0; i < Objects.size(); ++i) {
     if (Objects[i].type != object_type_e::viewer)
@@ -1383,7 +1383,7 @@ int MainWindow::onSelectNextViewer() {
   app.Editor_viewer_id = Viewer_object->id;
   app.State_changed = app.Viewer_moved = true;
   std::fprintf(stderr, "[object_ops] SelectNextViewer -> object %d (id %d)\n",
-               best, app.Editor_viewer_id.value_or(-1));
+               best, index_to_int(app.Editor_viewer_id));
   m_editorView->update();
   return best;
 }
@@ -1402,7 +1402,7 @@ void MainWindow::onDeleteCurrentViewer() {
   }
   if (cur_slot >= 0) {
     Objects[cur_slot].type = object_type_e::none;
-    Objects[cur_slot].id = -1;
+    Objects[cur_slot].id.reset();
   }
   // Auto-pick the remaining object_type::viewer if any.
   for (size_t i = 0; i < Objects.size(); ++i) {
@@ -1411,7 +1411,7 @@ void MainWindow::onDeleteCurrentViewer() {
       app.Editor_viewer_id = Objects[i].id;
       std::fprintf(stderr,
                    "[object_ops] DeleteCurrentViewer: resync to %d (id %d)\n",
-                   i, app.Editor_viewer_id.value_or(-1));
+                   i, index_to_int(app.Editor_viewer_id));
       return;
     }
   }

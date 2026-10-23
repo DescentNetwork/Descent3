@@ -220,7 +220,7 @@ struct d3edit_state
   index_t Current_trigger;
 
   // The ID of the most recent viewer object (not counting room view)
-  std::optional<int> Editor_viewer_id;
+  index_t Editor_viewer_id;
 
   // Marked room:face selection (the secondary face selection used by bridge,
   // join, rotate and compare operations)
@@ -241,7 +241,7 @@ struct d3edit_state
 
 
   //	object id clipboard.
-  int Copied_object_id = -1;
+  index_t Copied_object_id;
 
   bool Fast_terrain = true;
   bool Flat_terrain = false; // Render the terrain as flat?

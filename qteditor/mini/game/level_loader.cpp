@@ -1014,7 +1014,7 @@ static void LL_ReadEditorInfoChunk(byte_istream &ifile, uint32_t version) {
       app.view_mode = static_cast<state::viewer>(tmp);
     int32_t editor_viewer_id = 0;
     ifile >> editor_viewer_id;
-    app.Editor_viewer_id = editor_viewer_id < 0 ? std::optional<int>() : std::optional<int>(editor_viewer_id);
+    app.Editor_viewer_id = editor_viewer_id < 0 ? index_t{} : index_t{static_cast<uint32_t>(editor_viewer_id)};
     if (version < 47)
       ifile >> tmp; // was Editor_viewer_id[VM_TERRAIN]
   }
@@ -1066,7 +1066,7 @@ static void LL_WriteEditorInfoChunk(byte_ostream &ofile) {
   ofile << static_cast<int32_t>(index_to_int(app.Cur_object_index));
   ofile << static_cast<int32_t>(index_to_int(app.Current_trigger));
   ofile << static_cast<int32_t>(app.view_mode);
-  ofile << static_cast<int32_t>(app.Editor_viewer_id.value_or(-1));
+  ofile << static_cast<int32_t>(index_to_int(app.Editor_viewer_id));
 
   ofile << Wireframe_view_mine.target;
   ofile << Wireframe_view_mine.orient;
@@ -1925,16 +1925,16 @@ bool LoadLevel(const std::filesystem::path& filename, void (*cb_fn)(uint32_t, ui
 
           // GNNM/DRNM name tables map the file's page index to the page index
           // in the loaded game tables, exactly as the engine's ReadObject does.
-          obj.id = static_cast<uint16_t>(TranslateObjectId(obj.type, obj.id));
+          obj.id = u16_to_index(static_cast<uint16_t>(TranslateObjectId(obj.type, index_to_u16(obj.id))));
           // A file id that maps to no loaded page (and has no valid page of its
           // type to fall back on) leaves the object referencing a nonexistent
           // page; drop it rather than index the object table out of range.
-          if (obj.id >= Object_info.size())
+          if (!obj.id || *obj.id >= Object_info.size())
             obj.type = object_type_e::none;
 
           index_t roomnum = obj.roomnum;
           LOG_DEBUG("OBJS[%d]: type=%d id=%d name='%s' flags=%u room=%d pos=(%hf,%hf,%hf)",
-                    objnum, static_cast<int>(obj.type), (int)obj.id, obj.name.c_str(), std::bit_cast<uint32_t>(obj.flags),
+                    objnum, static_cast<int>(obj.type), obj.id ? static_cast<int>(*obj.id) : -1, obj.name.c_str(), std::bit_cast<uint32_t>(obj.flags),
                     roomnum ? static_cast<int>(*roomnum) : -1, obj.pos.x(), obj.pos.y(), obj.pos.z());
           // Give the object a usable handle and link it into the mine, exactly
           // as the original LL_ReadObjects does (object.cpp / LoadLevel.cpp).

@@ -29,12 +29,12 @@
 
 optref<physics_info> PropertyPhysicsDialog::data(void)
 {
-  if(m_object_id < 0)
+  if(!m_object_id)
     return std::nullopt;
-  return Object_info[m_object_id].phys_info;
+  return Object_info[*m_object_id].phys_info;
 }
 
-PropertyPhysicsDialog::PropertyPhysicsDialog(int object_id, QWidget *parent)
+PropertyPhysicsDialog::PropertyPhysicsDialog(index_t object_id, QWidget *parent)
     : QDialog(parent), ui(new Ui::PropertyPhysicsDialog), m_object_id(object_id)
 {
   ui->setupUi(this);
