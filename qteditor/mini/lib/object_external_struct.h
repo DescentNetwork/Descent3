@@ -496,7 +496,7 @@ struct blast_info_s {
 struct dying_info_s {
   int32_t death_flags;      // Info about the death
   float delay_time;         // How long until object dies
-  int32_t killer_playernum; // The player who wille this object, or -1 if not a player
+  index_t killer_playernum; // The player who wille this object; nullopt if not a player
   float last_spark_time;
   float last_fireball_time;
   float last_smoke_time;

@@ -127,7 +127,7 @@ struct player {
   int8_t level;                          // Current level player is playing. (must be signed for secret levels)
   int8_t starting_level;                 // What level the player started on.
   uint8_t keys;                           // Which keys the player has
-  int16_t killer_objnum;                  // Who killed me.... (-1 if no one)
+  index_t killer_objnum;                  // Who killed me.... (nullopt if no one)
   float invulnerable_time;              // Time left invulnerable
   float last_hit_wall_sound_time;       // Last time we played a hit wall sound
   float last_homing_warning_sound_time; // Obvious  :)
@@ -137,7 +137,7 @@ struct player {
   int8_t team;                           // The team number this guy is on
 
   // The current auto-waypoint for this player
-  int32_t current_auto_waypoint_room; // the most recent auto-waypoint, or -1
+  index_t current_auto_waypoint_room; // the most recent auto-waypoint; nullopt if none
 
   // Statistics...
   //	int		score;								// Current score.
