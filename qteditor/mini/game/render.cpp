@@ -810,7 +810,7 @@ void BuildRoomListSub(int start_room_num, clip_wnd &wnd, int depth) {
   // If this room is a closed (non-seethrough) door, don't check any of its portals,
   //...UNLESS this is the first room we're looking at (meaning the viewer is in this room)
   if ((rp.flags.door) && (rp.doorway_data->position == 0.0f) &&
-      !Doors[rp.doorway_data->doornum].flags.seethrough)
+      !Doors[*rp.doorway_data->doornum].flags.seethrough)
     if (depth != 0)
       return;
 
@@ -2657,7 +2657,7 @@ void BuildMirroredRoomListSub(int start_room_num, const clip_wnd &wnd) {
   // If this room is a closed (non-seethrough) door, don't check any of its portals,
   //...UNLESS this is the first room we're looking at (meaning the viewer is in this room)
   if ((rp.flags.door) && (rp.doorway_data->position == 0.0f) &&
-      !Doors[rp.doorway_data->doornum].flags.seethrough)
+      !Doors[*rp.doorway_data->doornum].flags.seethrough)
     return;
   const room_t &mirror_rp = Rooms[Mirror_room];
   const vector3 &mirror_vec = mirror_rp.verts[mirror_rp.faces[mirror_rp.mirror_face].face_verts[0]];

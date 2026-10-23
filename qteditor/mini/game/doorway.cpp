@@ -638,7 +638,7 @@ void DoorwayRebuildActiveList() {
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway_t *DoorwayAdd(index_t roomnum, int doornum) {
+doorway_t *DoorwayAdd(index_t roomnum, index_t doornum) {
   room_t &rp = Rooms[*roomnum];
   Q_ASSERT(!rp.doorway_data);
 

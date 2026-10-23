@@ -90,7 +90,7 @@ void DetachPortal(index_t roomnum, int portal_num);
 void AttachRoom();
 void ComputePlacedRoomMatrix();
 void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, index_t placed_room_door);
-void PlaceDoor(int baseroom, int baseface, uint32_t placed_door);
+void PlaceDoor(int baseroom, int baseface, index_t placed_door);
 
 // Port of editor/RoomUVs.cpp and editor/HTexture.cpp — UV manipulation.
 void GetUVLForRoomPoint(index_t roomnum, index_t facenum, int vertnum, roomUVL *uvl);

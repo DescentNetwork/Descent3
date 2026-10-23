@@ -1367,7 +1367,7 @@ void AttachRoom() {
 
       ObjCreate(object_type_e::door, *app.placed.door, slot, room_center, orient);
 
-      doorway_t *dp = DoorwayAdd(slot, *app.placed.door);
+      doorway_t *dp = DoorwayAdd(slot, app.placed.door);
       (void)dp;
 
       app.placed.door.reset();
@@ -1728,8 +1728,8 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
 // PlaceDoor — editor/edoors.cpp:36
 // Creates a room from a door polymodel (shell + front face submodels) and
 // places it for interactive positioning.
-void PlaceDoor(int baseroom, int baseface, uint32_t placed_door) {
-  poly_model *po = GetPolymodelPointer(GetDoorImage(placed_door));
+void PlaceDoor(int baseroom, int baseface, index_t placed_door) {
+  poly_model *po = GetPolymodelPointer(GetDoorImage(*placed_door));
   if (po == nullptr)
     return;
 

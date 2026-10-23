@@ -7521,7 +7521,7 @@ private slots:
     QCOMPARE(Rooms[*app.placed.room].verts.size(), 8);
     QCOMPARE(Rooms[*app.placed.room].faces.size(), 2);
     QCOMPARE(app.placed.base.room, std::optional<int>(1));
-    QCOMPARE(app.placed.door, std::optional<uint32_t>(0));
+    QCOMPARE(app.placed.door, index_t{0});
     // Front face verts remap onto the shell (same positions).
     for (int i = 0; i < 4; ++i)
       QCOMPARE(Rooms[*app.placed.room].faces[1].face_verts[i], i);

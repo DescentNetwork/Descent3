@@ -97,9 +97,9 @@ void DoorwayKeypad::updateDialog() {
 
   ui->IDC_DOORWAY_POS_EDIT->setText(QString::number(dp->position));
 
-  ui->IDC_DOORWAY_ID->setText(QString::number(dp->doornum));
-  if (dp->doornum >= 0 && dp->doornum < static_cast<int>(Doors.size()) && Doors.is_used(dp->doornum))
-      ui->IDC_DOORWAYSELEDIT->setText(QString::fromStdString(Doors[dp->doornum].name));
+  ui->IDC_DOORWAY_ID->setText(QString::number(index_to_int(dp->doornum)));
+  if (dp->doornum && *dp->doornum < Doors.size() && Doors.is_used(*dp->doornum))
+      ui->IDC_DOORWAYSELEDIT->setText(QString::fromStdString(Doors[*dp->doornum].name));
 }
 
 void DoorwayKeypad::onNextDoor() {

@@ -108,7 +108,7 @@ struct placed_room_state
   // Target room:face in the mine being attached onto.
   face_selection base;
 
-  std::optional<uint32_t> door;
+  index_t door;
   group *grp = nullptr;
 
   float angle = 0;

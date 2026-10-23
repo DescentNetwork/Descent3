@@ -141,7 +141,7 @@ extern std::vector<int> Active_doorways; // active doors in game
 
 // A doorway (room) in the mine
 struct doorway_t {
-  int doornum;       // door type of this doorway
+  index_t doornum;   // index into Doors (door type of this doorway)
   doorway_state state = doorway_state::stopped; // current state of doorway
   doorway_flags_t flags = {}; // flags associated with a doorway
   uint8_t keys_needed; // used by trigger system.  these bits need to be set to activate door
@@ -171,7 +171,7 @@ struct object;
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway_t *DoorwayAdd(index_t roomnum, int doornum);
+doorway_t *DoorwayAdd(index_t roomnum, index_t doornum);
 
 // Updates the animation when the door position is changed
 void DoorwayUpdateAnimation(index_t roomnum);
