@@ -353,7 +353,7 @@ retry:
                              : *roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;
-          fq.thisobjnum = -1;
+          fq.thisobjnum.reset();
           fq.ignore_obj_list = NULL;
           fq.flags = fvi_query_flags_t{};
           fq.flags.check_objs = true;
@@ -441,7 +441,7 @@ retry:
                              : *roomnum;
           fq.p1 = &bnlist->nodes[i].pos;
           fq.rad = min_bn_rad;
-          fq.thisobjnum = -1;
+          fq.thisobjnum.reset();
           fq.ignore_obj_list = nullptr;
         }
 

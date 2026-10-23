@@ -2610,7 +2610,7 @@ SetGlowStatus(*roomnum, LightGlowsThisFrame[i].facenum, center, size, FastCorona
     fq.flags.ignore_weapons = true;
     fq.flags.robots_as_sphere = true;
     fq.flags.players_as_sphere = true;
-    fq.thisobjnum = -1;
+    fq.thisobjnum.reset();
     fq.ignore_obj_list = NULL;
     fvi_hit_type fate = fvi_FindIntersection(fq, hit_info);
     if (fate != fvi_hit_type::none)

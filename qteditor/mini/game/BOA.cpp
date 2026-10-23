@@ -1311,7 +1311,7 @@ bool IsPathPointValid(int room, const vector3 &pos) {
     fq.flags = fvi_query_flags_t{};
     fq.flags.solid_portals = true;
     fq.flags.no_relink = true; // chrishack -- Might want to make ignore_moving_objects into a passed arg
-    fq.thisobjnum = -1;
+    fq.thisobjnum.reset();
     fq.ignore_obj_list = NULL;
 
     fate = fvi_FindIntersection(fq, hit_info);
@@ -1809,7 +1809,7 @@ void MakeBOAVisTable(bool from_lighting) {
                   fq.startroom = i;
                   fq.p1 = &dest_vector;
                   fq.rad = 0.01f;
-                  fq.thisobjnum = -1;
+                  fq.thisobjnum.reset();
                   fq.ignore_obj_list = NULL;
                   // Gaurentees in weird geometry cases (as the ray will hit as it
                   // comes back in the mine) that the ray cannot start outside the

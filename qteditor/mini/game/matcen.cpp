@@ -1072,7 +1072,7 @@ bool matcen::ComputeCreatePnt() {
     fq.startroom = from_roomnum(master_obj->roomnum);
     fq.p1 = &m_create_pnt;
     fq.rad = 0.0f;
-    fq.thisobjnum = -1;
+    fq.thisobjnum.reset();
     fq.ignore_obj_list = nullptr;
     fq.flags.ignore_walls = true;
 
@@ -1107,7 +1107,7 @@ void matcen::CheckActivateStatus() {
       fq.startroom = from_roomnum(ResolveCreateRoom());
       fq.p1 = &Player_object->pos;
       fq.rad = 0.0f;
-      fq.thisobjnum = -1;
+      fq.thisobjnum.reset();
       fq.ignore_obj_list = nullptr;
       fq.flags.no_relink = true;
       fq.flags.check_objs = true;
@@ -1271,7 +1271,7 @@ bool matcen::DoObjProd() {
         fq.flags.ignore_powerups = true;
         fq.flags.ignore_weapons = true;
         fq.flags.ignore_moving_objects = true;
-        fq.thisobjnum = static_cast<int16_t>(obj.index());
+        fq.thisobjnum = obj.index();
         fq.ignore_obj_list = nullptr;
 
         const fvi_hit_type fate = fvi_FindIntersection(fq, hit_info);

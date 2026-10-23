@@ -1962,14 +1962,15 @@ void DrawPlayerTypingIndicator(object *obj) {
   fq.startroom = Player_object->roomnum;
   fq.p1 = &obj->pos;
   fq.rad = 0;
-  fq.thisobjnum = -1;
+  fq.thisobjnum.reset();
   fq.ignore_obj_list = NULL;
   fq.flags = fvi_query_flags_t{};
   fq.flags.check_objs = true;
   fq.flags.ignore_powerups = true;
   fq.flags.ignore_weapons = true;
   fate = fvi_FindIntersection(fq, hit_data);
-  if (fate == fvi_hit_type::none || (fate == fvi_hit_type::sphere_2_poly_object && hit_data.hit_object[0] == (obj - Objects.data()))) {
+  if (fate == fvi_hit_type::none ||
+      (fate == fvi_hit_type::sphere_2_poly_object && index_to_int(hit_data.hit_object[0]) == (obj - Objects.data()))) {
     // Draw this indicator on the hud
     g3Point pnt;
     int bmh, bmw;
@@ -2066,14 +2067,15 @@ void DrawPlayerNameOnHud(object *obj) {
   fq.startroom = Player_object->roomnum;
   fq.p1 = &obj->pos;
   fq.rad = 0;
-  fq.thisobjnum = -1;
+  fq.thisobjnum.reset();
   fq.ignore_obj_list = NULL;
   fq.flags = fvi_query_flags_t{};
   fq.flags.check_objs = true;
   fq.flags.ignore_powerups = true;
   fq.flags.ignore_weapons = true;
   fate = fvi_FindIntersection(fq, hit_data);
-  if (fate == fvi_hit_type::none || (fate == fvi_hit_type::sphere_2_poly_object && hit_data.hit_object[0] == (obj - Objects.data()))) {
+  if (fate == fvi_hit_type::none ||
+      (fate == fvi_hit_type::sphere_2_poly_object && index_to_int(hit_data.hit_object[0]) == (obj - Objects.data()))) {
     int half = Game_window_w / 2;
     // Draw this name on the hud
     g3Point pnt;

@@ -8290,7 +8290,7 @@ private slots:
       fq.p1 = &p1v;
       fq.startroom = 0;
       fq.rad = 0.0f;
-      fq.thisobjnum = -1;
+      fq.thisobjnum.reset();
       fq.ignore_obj_list = nullptr;
       fvi_info info{};
       fvi_hit_type fate = fvi_FindIntersection(fq, info);
@@ -8309,7 +8309,7 @@ private slots:
       fq.p1 = &p1v;
       fq.startroom = 0;
       fq.rad = 0.0f;
-      fq.thisobjnum = -1;
+      fq.thisobjnum.reset();
       fq.ignore_obj_list = nullptr;
       fvi_info info{};
       fvi_hit_type fate = fvi_FindIntersection(fq, info);
@@ -8328,7 +8328,7 @@ private slots:
       fq.p1 = &p1v;
       fq.startroom = 0;
       fq.rad = 0.0f;
-      fq.thisobjnum = -1;
+      fq.thisobjnum.reset();
       fq.ignore_obj_list = nullptr;
       fq.flags = fvi_query_flags_t{};
       fq.flags.ignore_walls = true;

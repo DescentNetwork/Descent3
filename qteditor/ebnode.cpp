@@ -523,7 +523,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
 
   fq.flags = fvi_query_flags_t{};
   fq.flags.ignore_render_through_portals = true;
-  fq.thisobjnum = -1;
+  fq.thisobjnum.reset();
   fq.ignore_obj_list = NULL;
 
   do {
@@ -574,7 +574,7 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
       fq.rad = 3.0f;
       fq.flags = fvi_query_flags_t{};
       fq.flags.no_relink = true;
-      fq.thisobjnum = -1;
+      fq.thisobjnum.reset();
       fq.ignore_obj_list = NULL;
 
       if (fvi_FindIntersection(fq, hit_info) == fvi_hit_type::none)
@@ -668,7 +668,7 @@ void EBNode_MakeDefaultIntraRoomNodes(index_t roomnum) {
       fq.flags = fvi_query_flags_t{};
       fq.flags.solid_portals = true;
       fq.flags.no_relink = true;
-      fq.thisobjnum = -1;
+      fq.thisobjnum.reset();
       fq.ignore_obj_list = NULL;
 
       if (fvi_FindIntersection(fq, hit_info) != fvi_hit_type::none)
@@ -833,7 +833,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
     fq.rad = 0.0f;
     fq.flags = fvi_query_flags_t{};
     fq.flags.ignore_render_through_portals = true;
-    fq.thisobjnum = -1;
+    fq.thisobjnum.reset();
     fq.ignore_obj_list = NULL;
 
     fate = fvi_FindIntersection(fq, hit_info);
@@ -903,7 +903,7 @@ void EBNode_Move(bool f_offset, index_t roomnum, int pnt, vector3 *pos) {
     fq.flags = fvi_query_flags_t{};
     fq.flags.solid_portals = true;
     fq.flags.no_relink = true;
-    fq.thisobjnum = -1;
+    fq.thisobjnum.reset();
     fq.ignore_obj_list = NULL;
 
     fvi_FindIntersection(fq, hit_info);

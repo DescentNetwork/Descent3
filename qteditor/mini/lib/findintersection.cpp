@@ -941,9 +941,9 @@ bool pointInsideRoom(const room *rp, const vector3 &pnt) {
 
 int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
   (void)no_subdivision;
-  memset(ans, 0, sizeof(fvi_info));
+  *ans = fvi_info{};
   ans->hit_face[0] = -1;
-  ans->hit_object[0] = -1;
+  ans->hit_object[0] = {};
 
   const vector3 p0 = *fq->p0;
   const vector3 p1 = *fq->p1;

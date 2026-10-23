@@ -85,7 +85,7 @@ bool MoveObject(object& obj, vector3& newpos) {
   fq.p0 = &obj.pos;
   fq.startroom = obj.roomnum ? static_cast<int>(*obj.roomnum) : -1;
   fq.p1 = &newpos;
-  fq.thisobjnum = OBJNUM(&obj);
+  fq.thisobjnum = to_objnum(static_cast<int>(OBJNUM(&obj)));
   fq.ignore_obj_list = NULL;
   fq.flags = fvi_query_flags_t{};
   fq.flags.ignore_render_through_portals = true;

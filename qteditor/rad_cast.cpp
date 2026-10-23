@@ -248,7 +248,7 @@ int ShootRayToVolumePoint(vector3& src, vector3& dest, int start_room) {
   fq.flags.ignore_non_lightmap_objects = true;
   fq.flags.no_relink = true;
   fq.flags.ignore_render_through_portals = true;
-  fq.thisobjnum = -1;
+  fq.thisobjnum.reset();
   fq.ignore_obj_list = NULL;
 
   fvi_hit_type fate = fvi_FindIntersection(fq, hit_info);
@@ -409,7 +409,7 @@ int ShootRayFromPoint(vector3& src, vector3& dest, rad_surface *src_surf, rad_su
   fq.flags.ignore_non_lightmap_objects = true;
   fq.flags.no_relink = true;
   fq.flags.ignore_render_through_portals = true;
-  fq.thisobjnum = -1;
+  fq.thisobjnum.reset();
   fq.ignore_obj_list = NULL;
 
   fvi_hit_type fate = fvi_FindIntersection(fq, hit_info);

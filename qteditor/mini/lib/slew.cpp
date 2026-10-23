@@ -420,7 +420,7 @@ int SlewFrame(object *obj, int movement_limitations) {
         fq.startroom = from_roomnum(obj->roomnum);
         fq.p1 = &new_pos;
         fq.rad = 0;
-        fq.thisobjnum = OBJNUM(obj);
+        fq.thisobjnum = to_objnum(static_cast<int>(OBJNUM(obj)));
         fq.ignore_obj_list = NULL;
         fq.flags = fvi_query_flags_t{};
         fq.flags.ignore_render_through_portals = true;

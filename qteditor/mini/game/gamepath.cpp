@@ -96,7 +96,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
   fq.startroom = from_roomnum(GamePaths[pathnum].pathnodes[nodenum].roomnum);
   fq.p1 = attempted_pos;
   fq.rad = 0.0f;
-  fq.thisobjnum = -1;
+  fq.thisobjnum.reset();
   fq.ignore_obj_list = NULL;
   fq.flags = fvi_query_flags_t{};
   fq.flags.transpoint = true;
@@ -110,7 +110,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
     fq1.startroom = from_roomnum(GamePaths[pathnum].pathnodes[nodenum - 1].roomnum);
     fq1.p1 = &hit_info.hit_pnt;
     fq1.rad = 0.0f;
-    fq1.thisobjnum = -1;
+    fq1.thisobjnum.reset();
     fq1.ignore_obj_list = NULL;
     fq1.flags = fvi_query_flags_t{};
     fq1.flags.transpoint = true;
@@ -129,7 +129,7 @@ int MovePathNodeToPos(int pathnum, int nodenum, vector3 *attempted_pos) {
     fq1.startroom = from_roomnum(GamePaths[pathnum].pathnodes[nodenum + 1].roomnum);
     fq1.p1 = &hit_info.hit_pnt;
     fq1.rad = 0.0f;
-    fq1.thisobjnum = -1;
+    fq1.thisobjnum.reset();
     fq1.ignore_obj_list = NULL;
     fq1.flags = fvi_query_flags_t{};
     fq1.flags.transpoint = true;

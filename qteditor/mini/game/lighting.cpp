@@ -950,14 +950,14 @@ void ApplyVolumeLightToObject(const vector3 &pos, object &obj, float light_dist,
 // Applies lighting to all objects in a certain distance
 void ApplyLightingToObjects(const vector3 &pos, index_t roomnum, float light_dist, float red_scale, float green_scale,
                             float blue_scale, optref<const vector3> light_direction, float dot_range) {
-  int16_t objlist[MAX_DYNAMIC_FACES];
+  index_t objlist[MAX_DYNAMIC_FACES];
   int num_objects, i;
   float normalized_time[MAX_SUBOBJECTS];
 
   num_objects = fvi_QuickDistObjectList(pos, *roomnum, light_dist, objlist, MAX_DYNAMIC_FACES, false, false, true);
 
   for (i = 0; i < num_objects; i++) {
-    object *obj = &Objects[objlist[i]];
+    object *obj = &Objects[*objlist[i]];
 
     if (obj->type == object_type_e::room) {
       ApplyLightingToExternalRoom(pos, obj->id, light_dist, red_scale, green_scale, blue_scale, light_direction,
