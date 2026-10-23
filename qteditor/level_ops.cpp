@@ -499,7 +499,7 @@ std::string RenderLevelStats() {
       total_volume_bytes += GetVolumeSizeOfRoom(i);
 
     for (int t = 0; t < rp.faces.size(); t++) {
-      const face &fp = rp.faces[t];
+      const face_t &fp = rp.faces[t];
       if (fp.special_handle.has_value() &&
           (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
            GameTextures[fp.tmap].flags.plastic) &&

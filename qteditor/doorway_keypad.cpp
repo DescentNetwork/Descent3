@@ -62,14 +62,14 @@ DoorwayKeypad::DoorwayKeypad(QWidget *parent)
 
 DoorwayKeypad::~DoorwayKeypad() { delete ui; }
 
-doorway *currentDoorway() {
+doorway_t *currentDoorway() {
   if (!app.current.room)
     return nullptr;
   return Rooms[*app.current.room].doorway_data.get();
 }
 
 void DoorwayKeypad::updateDialog() {
-  doorway *dp = currentDoorway();
+  doorway_t *dp = currentDoorway();
   // Win32 disables the doorway editing controls when no room is current.
   const bool active = (dp != nullptr);
   const QList<QWidget *> all = this->findChildren<QWidget *>();
@@ -117,7 +117,7 @@ void DoorwayKeypad::onPrevDoor() {
 }
 
 void DoorwayKeypad::onLockedToggled(bool checked) {
-  if (doorway *dp = currentDoorway()) {
+  if (doorway_t *dp = currentDoorway()) {
     if (checked)
       dp->flags.locked = true;
     else
@@ -126,7 +126,7 @@ void DoorwayKeypad::onLockedToggled(bool checked) {
 }
 
 void DoorwayKeypad::onAutoToggled(bool checked) {
-  if (doorway *dp = currentDoorway()) {
+  if (doorway_t *dp = currentDoorway()) {
     if (checked)
       dp->flags.automatic = true;
     else
@@ -135,13 +135,13 @@ void DoorwayKeypad::onAutoToggled(bool checked) {
 }
 
 void DoorwayKeypad::onIgnoreLockedToggled(bool checked) {
-  if (doorway *dp = currentDoorway()) {
+  if (doorway_t *dp = currentDoorway()) {
       dp->flags.gb_ignore_locked = checked;
   }
 }
 
 void DoorwayKeypad::onKeyToggled() {
-  doorway *dp = currentDoorway();
+  doorway_t *dp = currentDoorway();
   if (dp == nullptr)
     return;
   uint8_t keys = 0;
@@ -165,7 +165,7 @@ void DoorwayKeypad::onKeyToggled() {
 }
 
 void DoorwayKeypad::onKeyAll() {
-  doorway *dp = currentDoorway();
+  doorway_t *dp = currentDoorway();
   if (dp == nullptr)
     return;
   ui->IDC_KEY1_CHECK->setChecked(true);
@@ -181,7 +181,7 @@ void DoorwayKeypad::onKeyAll() {
 }
 
 void DoorwayKeypad::onKeyOnlyOne() {
-  doorway *dp = currentDoorway();
+  doorway_t *dp = currentDoorway();
   if (dp == nullptr)
     return;
   ui->IDC_KEY2_CHECK->setChecked(false);
@@ -197,7 +197,7 @@ void DoorwayKeypad::onKeyOnlyOne() {
 }
 
 void DoorwayKeypad::onPosEdited() {
-  if (doorway *dp = currentDoorway())
+  if (doorway_t *dp = currentDoorway())
     dp->position = ui->IDC_DOORWAY_POS_EDIT->text().toFloat();
 }
 

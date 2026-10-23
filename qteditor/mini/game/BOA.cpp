@@ -192,7 +192,7 @@ static void compute_costs();
 static void update_path_info(const std::vector<q_item *> &node_list, int start, int end);
 static void compute_next_segs();
 static void compute_blockage_info();
-static void ComputeBOAVisFaceUpperLeft(index_t roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
+static void ComputeBOAVisFaceUpperLeft(index_t roomnum, const face_t &fp, vector3 &upper_left, float &xdiff, float &ydiff,
                                        vector3 &center);
 static int BOAGetRoomChecksum(int i);
 static bool IsPathPointValid(int room, const vector3 &pos);
@@ -225,7 +225,7 @@ bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_mak
   }
 
   Q_ASSERT(room >= 0 && room < Rooms.size() && Rooms[room].used);
-  const face &fp = Rooms[room].faces[Rooms[room].portals[portal_index].portal_face];
+  const face_t &fp = Rooms[room].faces[Rooms[room].portals[portal_index].portal_face];
 
   if (!Rooms[room].portals[portal_index].connected_room)
     return false;
@@ -1211,7 +1211,7 @@ int BOAGetMineChecksum() {
       continue;
 
     for (t = 0; t < rp.faces.size(); t++) {
-      const face &fp = rp.faces[t];
+      const face_t &fp = rp.faces[t];
 
       for (k = 0; k < fp.num_verts; k++) {
         int x, y, z;
@@ -1261,7 +1261,7 @@ int BOAGetRoomChecksum(int i) {
       return 0;
 
     for (t = 0; t < rp.faces.size(); t++) {
-      const face &fp = rp.faces[t];
+      const face_t &fp = rp.faces[t];
 
       for (k = 0; k < fp.num_verts; k++) {
         total += rp.verts[fp.face_verts[k]].x();
@@ -1387,7 +1387,7 @@ void BOA_ComputePathPoints(char *message, int len) {
 }
 
 // Given a face, computes the upper left corner of the face
-void ComputeBOAVisFaceUpperLeft(index_t roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff,
+void ComputeBOAVisFaceUpperLeft(index_t roomnum, const face_t &fp, vector3 &upper_left, float &xdiff, float &ydiff,
                                 vector3 &center) {
   const room_t &rp = Rooms[*roomnum];
   matrix face_matrix, trans_matrix;
@@ -1693,7 +1693,7 @@ void MakeBOAVisTable(bool from_lighting) {
       int done = 0;
 
       for (t = 0; t < rp.portals.size() && !done; t++) {
-        const face &src_fp = rp.faces[rp.portals[t].portal_face];
+        const face_t &src_fp = rp.faces[rp.portals[t].portal_face];
         float src_width, src_height;
         vector3 src_upper_left, src_center;
         matrix src_matrix;
@@ -1726,7 +1726,7 @@ void MakeBOAVisTable(bool from_lighting) {
         }
 
         for (j = 0; j < Rooms[check_room].portals.size() && !done; j++) {
-          const face &dest_fp = Rooms[check_room].faces[Rooms[check_room].portals[j].portal_face];
+          const face_t &dest_fp = Rooms[check_room].faces[Rooms[check_room].portals[j].portal_face];
           float dest_width, dest_height;
           vector3 dest_upper_left, dest_center;
           matrix dest_matrix;
@@ -1945,7 +1945,7 @@ void find_small_portals() {
   for (i = 0; i < Rooms.size(); i++) {
     if (Rooms[i].used) {
       for (j = 0; j < Rooms[i].portals.size(); j++) {
-        const face &fp = Rooms[i].faces[Rooms[i].portals[j].portal_face];
+        const face_t &fp = Rooms[i].faces[Rooms[i].portals[j].portal_face];
 
         vector3 upper_left;
         vector3 center;
@@ -2204,7 +2204,7 @@ void ComputeAABB(bool f_full) {
         rp.min_xyz.x() = rp.min_xyz.y() = rp.min_xyz.z() = 9999999.0f;
 
         for (int t = 0; t < rp.faces.size(); t++) {
-          face &fp = rp.faces[t];
+          face_t &fp = rp.faces[t];
 
           if (fp.max_xyz.x() > rp.max_xyz.x())
             rp.max_xyz.x() = fp.max_xyz.x();
@@ -2320,7 +2320,7 @@ void ComputeAABB(bool f_full) {
             if (r_struct_list[i][t] != count)
               continue;
 
-            const face &fp = rp.faces[t];
+            const face_t &fp = rp.faces[t];
 
             if (fp.max_xyz.x() > s_max_xyz[count].x())
               s_max_xyz[count].x() = fp.max_xyz.x();
@@ -2451,7 +2451,7 @@ void ComputeAABB(bool f_full) {
         }
 
         for (count = 0; count < rp.faces.size(); count++) {
-          const face &fp = rp.faces[count];
+          const face_t &fp = rp.faces[count];
           bool f_part = false;
           bool list[6];
           int x;
@@ -2627,7 +2627,7 @@ void ComputeAABB(bool f_full) {
           rp.bbf_list_min_xyz[count].x() = rp.bbf_list_min_xyz[count].y() = rp.bbf_list_min_xyz[count].z() = 9999999.0f;
 
           for (int t = 0; t < rp.num_bbf[count]; t++) {
-            face &fp = rp.faces[rp.bbf_list[count][t]];
+            face_t &fp = rp.faces[rp.bbf_list[count][t]];
 
             if (fp.max_xyz.x() > rp.bbf_list_max_xyz[count].x())
               rp.bbf_list_max_xyz[count].x() = fp.max_xyz.x();
@@ -2810,7 +2810,7 @@ void ComputeAABB(bool f_full) {
           rp.bbf_list_min_xyz[count].x() = rp.bbf_list_min_xyz[count].y() = rp.bbf_list_min_xyz[count].z() = 9999999.0f;
 
           for (int t = 0; t < rp.num_bbf[count]; t++) {
-            face &fp = rp.faces[rp.bbf_list[count][t]];
+            face_t &fp = rp.faces[rp.bbf_list[count][t]];
 
             if (fp.max_xyz.x() > rp.bbf_list_max_xyz[count].x())
               rp.bbf_list_max_xyz[count].x() = fp.max_xyz.x();
@@ -2846,7 +2846,7 @@ void ComputeAABB(bool f_full) {
 
         for (j = 0; j < rp.num_bbf_regions; j++) {
           for (count = 0; count < rp.num_bbf[j]; count++) {
-            const face &fp = rp.faces[rp.bbf_list[j][count]];
+            const face_t &fp = rp.faces[rp.bbf_list[j][count]];
             bool list[6];
             int x;
 
@@ -2939,7 +2939,7 @@ void ComputeAABB(bool f_full) {
       rp.min_xyz.x() = rp.min_xyz.y() = rp.min_xyz.z() = 9999999.0f;
 
       for (int t = 0; t < rp.faces.size(); t++) {
-        face &fp = rp.faces[t];
+        face_t &fp = rp.faces[t];
 
         if (fp.max_xyz.x() > rp.max_xyz.x())
           rp.max_xyz.x() = fp.max_xyz.x();

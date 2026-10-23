@@ -219,12 +219,12 @@ extern float Room_fog_distance;
 extern float Room_fog_eye_distance;
 extern vector3 Room_fog_plane, Room_fog_portal_vert;
 
-struct face;
+struct face_t;
 
 struct fog_portal_data {
   index_t roomnum;
   float close_dist;
-  face *close_face;
+  face_t *close_face;
 };
 
 extern std::vector<fog_portal_data> Fog_portal_data;

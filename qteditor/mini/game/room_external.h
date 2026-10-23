@@ -167,7 +167,7 @@ struct roomUVL {
 };
 
 // an n-sided polygon used as part of a room or portal
-struct face {
+struct face_t {
   face_flags_t flags;         // flags for this face (see above)
   uint8_t num_verts;  // how many vertices in this face
   int8_t portal_num; // which portal this face is part of, or -1 if none
@@ -222,7 +222,7 @@ struct portal {
 
 #define ROOM_NAME_LEN 19 // how long a room name can be (not counting null terminator)
 
-struct doorway;
+struct doorway_t;
 
 struct [[gnu::packed]] room_flags_t
 {
@@ -290,12 +290,12 @@ static_assert(sizeof(room_flags_t) == sizeof(uint32_t));
 struct room_t {
   room_flags_t flags;
 
-  std::vector<face> faces;     // list of faces
+  std::vector<face_t> faces;     // list of faces
   std::vector<portal> portals; // list of portals
   std::vector<vector3> verts;  // array of vertices for this room
   std::vector<vector4> verts4; // array of 16byte vertices for this room (Katmai)
 
-  std::unique_ptr<doorway> doorway_data;   // this room's doorway data, or null if not a doorway
+  std::unique_ptr<doorway_t> doorway_data;   // this room's doorway data, or null if not a doorway
   std::string name;              // name of this room, or NULL
   index_t objects;             // index of first object in this room
   vector3 max_xyz, min_xyz; // for external room visibility checking
@@ -344,8 +344,8 @@ struct room_t {
 // on-disk layouts (file version >= 127) and are the exact mirror of the
 // engine's readers/writers for those versions.  Older-file quirks are handled
 // by the version-gated helpers in level_loader.cpp.
-byte_istream& operator>>(byte_istream& input, face& data);
-byte_ostream& operator<<(byte_ostream& output, const face& data);
+byte_istream& operator>>(byte_istream& input, face_t& data);
+byte_ostream& operator<<(byte_ostream& output, const face_t& data);
 
 byte_istream& operator>>(byte_istream& input, portal& data);
 byte_ostream& operator<<(byte_ostream& output, const portal& data);

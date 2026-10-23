@@ -217,7 +217,7 @@ void CopySqueezeDataForRooms(index_t roomnum, int facenum, std::vector<std::vect
         lmi_ptr.y1 = dest_y + 1;
 
         // We have to alter our uvs for this face to reflect our change
-        face &fp = this_rp.faces[j];
+        face_t &fp = this_rp.faces[j];
         for (int k = 0; k < fp.num_verts; k++) {
           fp.face_uvls[k].u2 *= u_scalar;
           fp.face_uvls[k].u2 += dest_u;
@@ -358,7 +358,7 @@ void CheckCombinePortals(int terrain) {
 
     for (int t = 0; t < rp.portals.size(); t++) {
       portal &portal_a = rp.portals[t];
-      const face &face_a = rp.faces[portal_a.portal_face];
+      const face_t &face_a = rp.faces[portal_a.portal_face];
 
       if (portal_a.flags.combined)
         continue;
@@ -371,7 +371,7 @@ void CheckCombinePortals(int terrain) {
 
       for (int k = 0; k < rp.portals.size(); k++) {
         portal &portal_b = rp.portals[k];
-        const face &face_b = rp.faces[portal_b.portal_face];
+        const face_t &face_b = rp.faces[portal_b.portal_face];
 
         if (portal_b.flags.combined)
           continue;
@@ -466,7 +466,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
     // Go through each face
     for (t = 0; t < rp.faces.size(); t++) {
-      const face &fp = rp.faces[t];
+      const face_t &fp = rp.faces[t];
       int lmi_handle = fp.lmi_handle;
 
       if (!fp.flags.lightmap)
@@ -495,7 +495,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
       } else {
         // Can't find an empty slot, so search through all the other remaining faces
         for (k = t; k < rp.faces.size(); k++) {
-          const face &fp = rp.faces[k];
+          const face_t &fp = rp.faces[k];
           int lmi_handle = fp.lmi_handle;
 
           if (!fp.flags.lightmap)
@@ -738,7 +738,7 @@ void ComputeSurfaceRes(rad_surface *surf, index_t roomnum, int facenum) {
   const room_t &rp = Rooms[*roomnum];
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
-  const face &fp = rp.faces[facenum];
+  const face_t &fp = rp.faces[facenum];
   int lw = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
   int lh = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
 
@@ -1276,7 +1276,7 @@ void DoRadiosityForCurrentRoom(index_t roomnum) {
 
 // Allocates and sets a lightmap based on the surface elements given
 void AssignRoomSurfaceToLightmap(index_t roomnum, int facenum, rad_surface *sp) {
-  face &fp = Rooms[*roomnum].faces[facenum];
+  face_t &fp = Rooms[*roomnum].faces[facenum];
   const room_t &rp = Rooms[*roomnum];
 
   int i, t, lmi_handle;
@@ -2473,7 +2473,7 @@ void BuildLightmapUVs(int *room_list, int *face_list, int count, vector3 *lightm
 
     for (t = 0; t < Rooms[room_list[i]].faces[face_list[i]].num_verts; t++) {
       room_t &rp = Rooms[room_list[i]];
-      face &fp = rp.faces[face_list[i]];
+      face_t &fp = rp.faces[face_list[i]];
       vector3 vert = rp.verts[fp.face_verts[t]];
 
       vert -= avg_vert;
@@ -2701,7 +2701,7 @@ int TestLightAdjacency(index_t roomnum, int facenum, int external) {
 
   int i, t, k;
   room_t *arp = &Rooms[*roomnum];
-  face &afp = arp->faces[facenum];
+  face_t &afp = arp->faces[facenum];
 
   vector3 averts[MAX_VERTS_PER_FACE * 5];
   vector3 bverts[MAX_VERTS_PER_FACE * 5];
@@ -2764,7 +2764,7 @@ StartOver:
         continue;
 
       room_t &brp = Rooms[i];
-      face &bfp = brp.faces[t];
+      face_t &bfp = brp.faces[t];
 
       // Don't do combine light sources
       // if (GameTextures[bfp->tmap].r>0 || GameTextures[bfp->tmap].g>0 || GameTextures[bfp->tmap].b>0)
@@ -3117,7 +3117,7 @@ void CleanupSpecularLighting(int external) {
       }
 
       for (t = 0; t < rp.faces.size(); t++) {
-        face *fp = &rp.faces[t];
+        face_t *fp = &rp.faces[t];
         if (GameTextures[fp->tmap].flags.metal || GameTextures[fp->tmap].flags.marble ||
             GameTextures[fp->tmap].flags.plastic) {
           Q_ASSERT(fp->special_handle.has_value());
@@ -3130,12 +3130,12 @@ void CleanupSpecularLighting(int external) {
 
             int found = 0;
             float strongest_light = 0;
-            face *best_face;
+            face_t *best_face;
 
             for (l = 0; l < fp->num_verts; l++) {
               int vert_to_check = fp->face_verts[l];
               for (j = 0; j < rp.faces.size(); j++) {
-                face *this_fp = &rp.faces[j];
+                face_t *this_fp = &rp.faces[j];
 
                 if (this_fp == fp)
                   continue; // don't do self
@@ -3215,7 +3215,7 @@ void SetupSpecularLighting(int external) {
         vm_MakeZero(normal);
 
         for (int k = 0; k < rp.faces.size(); k++) {
-          const face &fp = rp.faces[k];
+          const face_t &fp = rp.faces[k];
           for (int j = 0; j < fp.num_verts; j++) {
             if (fp.face_verts[j] == t) {
               total++;
@@ -3235,7 +3235,7 @@ void SetupSpecularLighting(int external) {
       }
 
       for (t = 0; t < rp.faces.size(); t++) {
-        face &fp = rp.faces[t];
+        face_t &fp = rp.faces[t];
         if (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
             GameTextures[fp.tmap].flags.plastic) {
           Q_ASSERT(!fp.special_handle);

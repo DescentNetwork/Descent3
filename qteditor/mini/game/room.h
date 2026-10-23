@@ -458,7 +458,7 @@ extern bool Render_floating_triggers;
 void InitRoom(room_t &rp, int nverts, int nfaces, int nportals);
 
 // Initialize a room face structure, allocating memory for vertlist and uvls
-void InitRoomFace(face &fp, int nverts);
+void InitRoomFace(face_t &fp, int nverts);
 
 // Frees a room in the Rooms table, deallocating its memory and marking it as unused
 void FreeRoom(index_t roomnum);
@@ -501,7 +501,7 @@ void ComputePortalCenter(vector3 &vp, index_t roomnum, int portal_index);
 void ComputeCenterPointOnFace(vector3 &vp, index_t roomnum, int facenum);
 
 // Free the memory used by a room face structure
-void FreeRoomFace(face &fp);
+void FreeRoomFace(face_t &fp);
 
 // Removes all room lightmaps from memory and sets indoor faces accordingly
 void ClearAllRoomLightmaps(int external);
@@ -534,7 +534,7 @@ struct face_physics_flags_t {
 // Parameters:	roomnum - the Rooms slot the face's room occupies
 //					fp - the face we're interested in
 // Returns:	bitmask of flags (see above).
-face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face &fp);
+face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face_t &fp);
 
 // Computes a bounding sphere for the current room
 // Parameters: center - filled in with the center point of the sphere

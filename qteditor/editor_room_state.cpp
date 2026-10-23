@@ -89,7 +89,7 @@ void AssignDefaultUVsToRoomFace(index_t roomnum, index_t facenum) {
     return;
   if (!facenum || *facenum >= Rooms[*roomnum].faces.size())
     return;
-  face &fp = Rooms[*roomnum].faces[*facenum];
+  face_t &fp = Rooms[*roomnum].faces[*facenum];
   if (fp.num_verts < 3)
     return;
 

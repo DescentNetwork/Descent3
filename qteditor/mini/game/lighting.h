@@ -89,7 +89,7 @@ int GetVolumeSizeOfRoom(index_t roomnum, optref<int> w = std::nullopt, optref<in
                         optref<int> d = std::nullopt);
 
 // Returns a lightmap that can be applied for specular lighting
-int GetSpecularLightmapForFace(const vector3 &pos, index_t roomnum, const face &fp);
+int GetSpecularLightmapForFace(const vector3 &pos, index_t roomnum, const face_t &fp);
 
 // Kills the lighting that a face casts and dampens all the faces that light influences
 void DestroyLight(index_t roomnum, int facenum);

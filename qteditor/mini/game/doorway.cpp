@@ -197,7 +197,7 @@ void AddActiveDoorway(index_t roomnum) {
 }
 #endif
 // Given an object handle, returns the doorway number
-doorway *GetDoorwayFromObject(int door_obj_handle) {
+doorway_t *GetDoorwayFromObject(int door_obj_handle) {
   object *objp = ObjGet(door_obj_handle);
 
   if (!objp)
@@ -514,7 +514,7 @@ object *GetDoorObject(index_t roomnum) {
 
 // Returns true if the doorway is locked, else false
 bool DoorwayLocked(int door_obj_handle) {
-  doorway *dp = GetDoorwayFromObject(door_obj_handle);
+  doorway_t *dp = GetDoorwayFromObject(door_obj_handle);
 
   if (!dp)
     return 0;
@@ -527,7 +527,7 @@ bool DoorwayLockedForRoom(index_t roomnum) {
   const room_t &rp = Rooms[*roomnum];
   Q_ASSERT(rp.flags.door);
 
-  doorway *dp = rp.doorway_data.get();
+  doorway_t *dp = rp.doorway_data.get();
   Q_ASSERT(dp != NULL);
 
   return dp->flags.locked;
@@ -538,7 +538,7 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
   int keys;
 
   // Get pointer to doorway
-  doorway *dp = GetDoorwayFromObject(door_obj_handle);
+  doorway_t *dp = GetDoorwayFromObject(door_obj_handle);
   if (!dp)
     return 0;
 
@@ -579,7 +579,7 @@ bool DoorwayOpenable(int door_obj_handle, int opener_handle) {
 
 // Returns the current state of the specified door
 doorway_state DoorwayState(int door_obj_handle) {
-  doorway *dp = GetDoorwayFromObject(door_obj_handle);
+  doorway_t *dp = GetDoorwayFromObject(door_obj_handle);
 
   if (!dp)
     return doorway_state::stopped;
@@ -589,7 +589,7 @@ doorway_state DoorwayState(int door_obj_handle) {
 
 // Locks or unlocks a given doorway
 void DoorwayLockUnlock(int door_obj_handle, bool state) {
-  doorway *dp = GetDoorwayFromObject(door_obj_handle);
+  doorway_t *dp = GetDoorwayFromObject(door_obj_handle);
 
   if (!dp)
     return;
@@ -602,7 +602,7 @@ void DoorwayLockUnlock(int door_obj_handle, bool state) {
 
 // Returns the current position of the door.  0.0 = totally closed, 1.0 = totally open
 float DoorwayPosition(int door_obj_handle) {
-  doorway *dp = GetDoorwayFromObject(door_obj_handle);
+  doorway_t *dp = GetDoorwayFromObject(door_obj_handle);
 
   if (!dp)
     return 0.0f;
@@ -638,14 +638,14 @@ void DoorwayRebuildActiveList() {
 
 // Adds a doorway to the specified room
 // Returns a pointer to the doorway struct
-doorway *DoorwayAdd(index_t roomnum, int doornum) {
+doorway_t *DoorwayAdd(index_t roomnum, int doornum) {
   room_t &rp = Rooms[*roomnum];
   Q_ASSERT(!rp.doorway_data);
 
   rp.flags.door = 1;
 
-  rp.doorway_data = std::make_unique<doorway>();
-  doorway *dp = rp.doorway_data.get();
+  rp.doorway_data = std::make_unique<doorway_t>();
+  doorway_t *dp = rp.doorway_data.get();
 
   // Initialize
   dp->doornum = doornum;

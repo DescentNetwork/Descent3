@@ -389,7 +389,7 @@ struct PickFixture {
     }
 
     for (int f = 0; f < rp->faces.size(); ++f) {
-      face &fp = rp->faces[f];
+      face_t &fp = rp->faces[f];
       fp.min_xyz = fp.max_xyz = rp->verts[fp.face_verts[0]];
       for (int cv = 1; cv < fp.num_verts; ++cv) {
         const vector3 &p = rp->verts[fp.face_verts[cv]];
@@ -5772,7 +5772,7 @@ private slots:
   // Room operations tests (room_ops.cpp)
   // ------------------------------------------------------------------
   void testCopyFace() {
-    face src, dst;
+    face_t src, dst;
     memset(&src, 0, sizeof(src));
     InitRoomFace(src, 4);
     src.flags.goalface = true;
@@ -6628,7 +6628,7 @@ private slots:
       if (!rp.used)
         continue;
       for (int f = 0; f < rp.faces.size() && !pickedSomething; f++) {
-        const face &fp = rp.faces[f];
+        const face_t &fp = rp.faces[f];
         if (fp.portal_num != -1)
           continue;
         vector3 center{};
@@ -6678,7 +6678,7 @@ private slots:
       if (!rp.used)
         continue;
       for (int f = 0; f < rp.faces.size(); f++) {
-        const face &fp = rp.faces[f];
+        const face_t &fp = rp.faces[f];
         const int nv = fp.num_verts;
         if (nv < 3)
           continue;
@@ -7235,7 +7235,7 @@ private slots:
           continue;
       }
       for (int f = 0; f < rp.faces.size(); f++) {
-        const face &fp = rp.faces[f];
+        const face_t &fp = rp.faces[f];
         const int nv = fp.num_verts;
         if (nv < 3 || nv > 64)
           continue;

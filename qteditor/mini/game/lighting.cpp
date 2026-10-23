@@ -271,7 +271,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
 
   // Now the Light_position is in the submodels frame of reference
   for (i = 0; i < rp.faces.size(); i++) {
-    const face &fp = rp.faces[i];
+    const face_t &fp = rp.faces[i];
 
     // check to see if this face is within reach
     if (Light_max_xyz.y() < fp.min_xyz.y() || fp.max_xyz.y() < Light_min_xyz.y() || Light_max_xyz.x() < fp.min_xyz.x() ||
@@ -1040,7 +1040,7 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
 
   for (i = 0; i < num_faces; i++) {
     const room_t &rp = Rooms[facelist[i].room_index];
-    const face &fp = rp.faces[facelist[i].face_index];
+    const face_t &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].faces.size());
@@ -1928,7 +1928,7 @@ int GetSpecularLightmapForFace (vector3 *pos,room *rp,face *fp)
 void DestroyLight(index_t roomnum, int facenum) {
   vector3 vecs[MAX_VERTS_PER_FACE], center;
   const room_t &destroy_rp = Rooms[*roomnum];
-  const face &destroy_fp = destroy_rp.faces[facenum];
+  const face_t &destroy_fp = destroy_rp.faces[facenum];
   float r, g, b;
   fvi_face_room_list facelist[MAX_DYNAMIC_FACES];
   int num_faces, i;
@@ -1978,7 +1978,7 @@ void DestroyLight(index_t roomnum, int facenum) {
 
   for (i = 0; i < num_faces; i++) {
     const room_t &rp = Rooms[facelist[i].room_index];
-    const face &fp = rp.faces[facelist[i].face_index];
+    const face_t &fp = rp.faces[facelist[i].face_index];
 
     Q_ASSERT(Rooms[facelist[i].room_index].used);
     Q_ASSERT(facelist[i].face_index < Rooms[facelist[i].room_index].faces.size());

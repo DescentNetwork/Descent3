@@ -494,7 +494,7 @@ void EditorView::renderRooms() {
       if (!rpc.used)
         continue;
       for (int i = 0; i < rpc.faces.size(); i++) {
-        const face &fp = rpc.faces[i];
+        const face_t &fp = rpc.faces[i];
         int fnv = fp.num_verts;
         if (fnv > 16)
           fnv = 16;
@@ -554,7 +554,7 @@ void EditorView::renderRooms() {
       const bool isCurRoom = (app.current.room && *app.current.room == r);
 
       for (int i = 0; i < rp.faces.size(); i++) {
-        const face &fp = rp.faces[i];
+        const face_t &fp = rp.faces[i];
         int fnv = fp.num_verts;
         if (fnv > 16)
           fnv = 16;
@@ -629,7 +629,7 @@ void EditorView::renderRooms() {
       if (selected && !isCurRoom) {
         resetEdgeTable();
         for (int i = 0; i < rp.faces.size(); i++) {
-          const face &fp = rp.faces[i];
+          const face_t &fp = rp.faces[i];
           if ((fp.flags.floating_trig) || fp.portal_num != -1)
             continue;
           int fnv = fp.num_verts;
@@ -650,7 +650,7 @@ void EditorView::renderRooms() {
         const portal &pp = rp.portals[p];
         if (pp.connected_room != -1)
           continue;
-        const face &fp = rp.faces[pp.portal_face];
+        const face_t &fp = rp.faces[pp.portal_face];
         int pnv = fp.num_verts;
         if (pnv > 16)
           pnv = 16;
@@ -675,7 +675,7 @@ void EditorView::renderRooms() {
     } else {
       // Textured / solid mode.
       for (int i = 0; i < rp.faces.size(); i++) {
-        const face &fp = rp.faces[i];
+        const face_t &fp = rp.faces[i];
 
         float sx[16], sy[16], d[16];
         int nv = fp.num_verts;
@@ -790,7 +790,7 @@ void EditorView::renderOverlays() {
         Rooms[*app.current.room].used &&
         app.current.room == app.current_room &&
         *app.current.face < Rooms[*app.current.room].faces.size()) {
-      const face &fp = Rooms[*app.current.room].faces[*app.current.face];
+      const face_t &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
       if (nv > 16)
@@ -820,7 +820,7 @@ void EditorView::renderOverlays() {
   // over them where they overlap (DrawWorld, editor/drawworld.cpp:851-863).
   if (liveRoom(app.marked.room) && Rooms[*app.marked.room].used) {
     if (app.marked.face && *app.marked.face < Rooms[*app.marked.room].faces.size()) {
-      const face &fp = Rooms[*app.marked.room].faces[*app.marked.face];
+      const face_t &fp = Rooms[*app.marked.room].faces[*app.marked.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
       if (nv > 16)
@@ -872,7 +872,7 @@ void EditorView::renderOverlays() {
     glColor3fv(kWfCurRoomColor);
     glLineWidth(1.0f);
     for (int i = 0; i < Rooms[*app.current.room].faces.size(); i++) {
-      const face &fp = Rooms[*app.current.room].faces[i];
+      const face_t &fp = Rooms[*app.current.room].faces[i];
       if ((fp.flags.floating_trig) || fp.portal_num != -1)
         continue;
       float sx[16], sy[16];
@@ -898,7 +898,7 @@ void EditorView::renderOverlays() {
     if (app.current.portal && *app.current.portal < Rooms[*app.current.room].portals.size()) {
       int faceIdx = Rooms[*app.current.room].portals[*app.current.portal].portal_face;
       if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].faces.size()) {
-        const face &fp = Rooms[*app.current.room].faces[faceIdx];
+        const face_t &fp = Rooms[*app.current.room].faces[faceIdx];
         float sx[16], sy[16];
         int nv = fp.num_verts;
         if (nv > 16)
@@ -924,7 +924,7 @@ void EditorView::renderOverlays() {
 
     // Current face in yellow.
     if (app.current.face && *app.current.face < Rooms[*app.current.room].faces.size()) {
-      const face &fp = Rooms[*app.current.room].faces[*app.current.face];
+      const face_t &fp = Rooms[*app.current.room].faces[*app.current.face];
       float sx[16], sy[16];
       int nv = fp.num_verts;
       if (nv > 16)
@@ -1861,7 +1861,7 @@ EditorView::PickResult EditorView::pickAtImpl(int screenX, int screenY, index_t 
       continue;
 
     for (int f = 0; f < rp.faces.size(); f++) {
-      const face &fp = rp.faces[f];
+      const face_t &fp = rp.faces[f];
       int nv = fp.num_verts;
       if (nv < 3 || nv > MAX_VERTS_PER_FACE)
         continue;

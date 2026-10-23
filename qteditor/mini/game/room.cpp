@@ -548,7 +548,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
 }
 
 // Initialize a room face structure.
-void InitRoomFace(face &fp, int nverts) {
+void InitRoomFace(face_t &fp, int nverts) {
   fp.flags = {};
   fp.num_verts = nverts;
   fp.portal_num = -1;
@@ -649,7 +649,7 @@ void FreeAllRooms() {
 }
 
 // Free the memory used by a room face structure
-void FreeRoomFace(face &fp) {
+void FreeRoomFace(face_t &fp) {
   if (fp.lmi_handle != BAD_LMI_INDEX) {
     FreeLightmapInfo(fp.lmi_handle);
     fp.lmi_handle = BAD_LMI_INDEX;
@@ -687,7 +687,7 @@ void ComputeRoomCenter(vector3 &vp, index_t roomnum) {
 // Computes the center point on a face by averaging the points in the face
 void ComputeCenterPointOnFace(vector3 &vp, index_t roomnum, int facenum) {
   room_t &rp = Rooms[*roomnum];
-  const face &fp = rp.faces[facenum];
+  const face_t &fp = rp.faces[facenum];
   int i;
 
   vp = vector3{};
@@ -708,7 +708,7 @@ void ComputeCenterPointOnFace(vector3 &vp, index_t roomnum, int facenum) {
 // Returns:		true if the normal is ok
 //					false if the normal has a very small (pre-normalization) magnitude
 bool ComputeFaceNormal(room_t &rp, int facenum) {
-  face &fp = rp.faces[facenum];
+  face_t &fp = rp.faces[facenum];
   bool ok;
 
   ok = ComputeNormal(fp.normal, fp.num_verts, fp.face_verts, rp.verts);
@@ -777,7 +777,7 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 void ComputePortalCenter(vector3 &vp, index_t roomnum, int portal_index) {
   room_t &rp = Rooms[*roomnum];
   const portal &pp = rp.portals[portal_index];
-  const face &fp = rp.faces[pp.portal_face];
+  const face_t &fp = rp.faces[pp.portal_face];
   int i;
 
   vm_MakeZero(vp);
@@ -883,7 +883,7 @@ float GetAreaForFace(index_t roomnum, int facenum) {
   Q_ASSERT(rp.used > 0);
   Q_ASSERT(facenum >= 0 && facenum < rp.faces.size());
 
-  const face &fp = rp.faces[facenum];
+  const face_t &fp = rp.faces[facenum];
   int i;
   vector3 normal;
   float area = 0;
@@ -951,7 +951,7 @@ void GetIJ(const vector3& normal, int& ii, int& jj) {
 //					pnt - the point we're checking
 //					roomnum - the Rooms slot that pnt is in
 //					fp - pointer to the face that pnt is on
-void FindPointUV(float &u, float &v, const vector3 &pnt, index_t roomnum, const face &fp) {
+void FindPointUV(float &u, float &v, const vector3 &pnt, index_t roomnum, const face_t &fp) {
   const room_t &rp = Rooms[*roomnum];
   int ii, jj;
   vector3 vec0, vec1;
@@ -995,7 +995,7 @@ void FindPointUV(float &u, float &v, const vector3 &pnt, index_t roomnum, const 
 int CheckTransparentPoint(const vector3 &pnt, index_t roomnum, const int facenum) {
   int bm_handle;
   const room_t &rp = Rooms[*roomnum];
-  const face &fp = rp.faces[facenum];
+  const face_t &fp = rp.faces[facenum];
   float u, v;
   int w, h, x, y;
 
@@ -1188,7 +1188,7 @@ bool ChangeRoomFaceTexture(index_t room_num, int face_num, int texture) {
     return false;
   }
 
-  face &fp = rp.faces[face_num];
+  face_t &fp = rp.faces[face_num];
 
   fp.tmap = texture;
   fp.flags.texture_changed = true;
@@ -1369,7 +1369,7 @@ static byte_istream& skipSpecialFace(byte_istream& input, int format) {
   return input;
 }
 
-byte_istream& operator>>(byte_istream& input, face& data) {
+byte_istream& operator>>(byte_istream& input, face_t& data) {
   uint8_t nverts = 0;
   input >> nverts;
   InitRoomFace(data, nverts);
@@ -1406,7 +1406,7 @@ byte_istream& operator>>(byte_istream& input, face& data) {
   return skipSpecialFace(input, 127);
 }
 
-byte_ostream& operator<<(byte_ostream& output, const face& data) {
+byte_ostream& operator<<(byte_ostream& output, const face_t& data) {
   output << static_cast<uint8_t>(data.num_verts);
   for (int i = 0; i < data.num_verts; i++)
     output << data.face_verts[i];
@@ -1585,7 +1585,7 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
 }
 
 
-face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face &fp) {
+face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face_t &fp) {
   face_physics_flags_t ret{};
   ret.solid = 0;
   ret.transparent = 0;

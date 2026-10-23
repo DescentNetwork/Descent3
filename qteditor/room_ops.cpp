@@ -97,7 +97,7 @@ static inline bool NormalsAreSame(const vector3 *n0, const vector3 *n1) {
 // Changes the number of verts in a face.  Frees and reallocates face_verts &
 // face_uvls arrays.
 // ============================================================================
-void ReInitRoomFace(face *fp, int nverts) {
+void ReInitRoomFace(face_t *fp, int nverts) {
   Q_ASSERT(nverts != 0);
 
   fp->num_verts = nverts;
@@ -167,7 +167,7 @@ bool ResetRoomFaceNormals(index_t roomnum) {
 // CopyFace — editor/Erooms.cpp:1171
 // Copies the contents of one face to another.  Sets portal_num to -1.
 // ============================================================================
-void CopyFace(face *dfp, face *sfp) {
+void CopyFace(face_t *dfp, face_t *sfp) {
   InitRoomFace(*dfp, sfp->num_verts);
 
   dfp->flags = sfp->flags;
@@ -189,7 +189,7 @@ void CopyFace(face *dfp, face *sfp) {
 // CopyFaceFlags — editor/Erooms.cpp:2813
 // Copy goal face flags from one face to another.
 // ============================================================================
-void CopyFaceFlags(face *dfp, face *sfp) {
+void CopyFaceFlags(face_t *dfp, face_t *sfp) {
   dfp->flags = {};
   if (sfp->flags.goalface)
     dfp->flags.goalface = true;
@@ -212,7 +212,7 @@ void CopyRoom(int destroom, int srcroom) {
     destp.verts[i] = srcp.verts[i];
 
   if (srcp.doorway_data) {
-    destp.doorway_data = std::make_unique<doorway>(*srcp.doorway_data);
+    destp.doorway_data = std::make_unique<doorway_t>(*srcp.doorway_data);
   }
 
   destp.flags = srcp.flags;
@@ -279,7 +279,7 @@ int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3&
 // FindSharedEdge — editor/Erooms.cpp:1543
 // Finds a shared edge between two faces.  Returns true if found.
 // ============================================================================
-bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1) {
+bool FindSharedEdge(face_t *fp0, face_t *fp1, int *vn0, int *vn1) {
   for (int i = 0; i < fp0->num_verts; i++) {
     int a0 = fp0->face_verts[i];
     int b0 = fp0->face_verts[(i + 1) % fp0->num_verts];
@@ -359,7 +359,7 @@ void DeleteRoomPortal(index_t roomnum, index_t portalnum) {
     return;
   room_t &rp = Rooms[*roomnum];
   const portal &pp = rp.portals[*portalnum];
-  face &fp = rp.faces[pp.portal_face];
+  face_t &fp = rp.faces[pp.portal_face];
 
   Q_ASSERT(fp.portal_num == static_cast<int32_t>(*portalnum));
   fp.portal_num = -1;
@@ -456,7 +456,7 @@ void FlipFace(index_t roomnum, index_t facenum) {
   if (!roomnum || !facenum)
     return;
   room_t &rp = Rooms[*roomnum];
-  face &fp = rp.faces[*facenum];
+  face_t &fp = rp.faces[*facenum];
 
   Q_ASSERT(fp.portal_num == -1);
 
@@ -485,7 +485,7 @@ void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uv
   if (!roomnum || !facenum)
     return;
   room_t &rp = Rooms[*roomnum];
-  face &fp = rp.faces[*facenum];
+  face_t &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   int vlo, vhi;
   vector3 fvec, rvec, tvec;
@@ -575,7 +575,7 @@ void FixConcaveFaces(index_t roomnum, int *facelist, int facecount) {
   room_t &rp = Rooms[*roomnum];
 
   for (int i = 0; i < facecount; i++) {
-    face &fp = rp.faces[facelist[i]];
+    face_t &fp = rp.faces[facelist[i]];
     if (!FaceIsPlanar(fp.num_verts, fp.face_verts, fp.normal, rp.verts)) {
       int concave_verts[MAX_VERTS_PER_FACE];
       int concave_count = rp.faces[facelist[i]].num_verts;
@@ -643,7 +643,7 @@ bool CombineFaces(index_t roomnum, index_t face0, index_t face1) {
   if (!roomnum || !face0 || !face1)
     return false;
   room_t &rp = Rooms[*roomnum];
-  face *fp0 = &rp.faces[*face0], *fp1 = &rp.faces[*face1];
+  face_t *fp0 = &rp.faces[*face0], *fp1 = &rp.faces[*face1];
   int nv0 = fp0->num_verts, nv1 = fp1->num_verts;
   int v0, v1;
   std::vector<int16_t> vertlist(MAX_VERTS_PER_FACE);
@@ -782,7 +782,7 @@ void RotateRooms(angle p, angle h, angle b) {
 
   ComputePortalCenter(rotpoint, index_to_int(app.current.room), cur_portalnum);
   vm_AnglesToMatrix(rotmat, p, h, b);
-  face *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
+  face_t *fp = &curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
   ComputeNormal(portal_normal, fp->num_verts, fp->face_verts, curroomp.verts);
   portal_normal *= -1.0f;
 
@@ -793,7 +793,7 @@ void RotateRooms(angle p, angle h, angle b) {
     room_t &rp = Rooms[*Selected_rooms[i]];
 
     if (Selected_rooms[i] == app.current.room) {
-      const face &cfp = curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
+      const face_t &cfp = curroomp.faces[curroomp.portals[cur_portalnum].portal_face];
       for (int v = 0; v < rp.verts.size(); v++) {
         for (int t = 0; t < cfp.num_verts; t++)
           if (v == cfp.face_verts[t])
@@ -963,7 +963,7 @@ static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_ve
 // ============================================================================
 static void AddVertToFace(index_t roomnum, int facenum, int new_v, int after_v) {
   room_t &rp = Rooms[*roomnum];
-  face &fp = rp.faces[facenum];
+  face_t &fp = rp.faces[facenum];
   int old_verts[MAX_VERTS_PER_FACE];
   roomUVL old_uvls[MAX_VERTS_PER_FACE];
   int t;
@@ -1009,7 +1009,7 @@ static void AddVertToFace(index_t roomnum, int facenum, int new_v, int after_v) 
 static void AddVertToAllEdges(index_t roomnum, int v0, int v1, int new_v) {
   room_t &rp = Rooms[*roomnum];
   for (int f = 0; f < rp.faces.size(); f++) {
-    const face &fp = rp.faces[f];
+    const face_t &fp = rp.faces[f];
     for (int v = 0; v < fp.num_verts; v++) {
       int cur = fp.face_verts[v];
       int nxt = fp.face_verts[(v + 1) % fp.num_verts];
@@ -1100,8 +1100,8 @@ static void ClipAgainstEdge(int nv, int16_t *vertnums, clip_vertex *vertices, in
 static bool ClipFace(int aroom, int afacenum, int broom, int bfacenum) {
   room_t &arp = Rooms[aroom];
   room_t &brp = Rooms[broom];
-  face &afp = arp.faces[afacenum];
-  const face &bfp = brp.faces[bfacenum];
+  face_t &afp = arp.faces[afacenum];
+  const face_t &bfp = brp.faces[bfacenum];
   int16_t vbuf0[MAX_VERTS_PER_FACE], vbuf1[MAX_VERTS_PER_FACE];
   int16_t newface_verts[MAX_VERTS_PER_FACE][MAX_VERTS_PER_FACE];
   int newface_nvs[MAX_VERTS_PER_FACE];
@@ -1161,7 +1161,7 @@ static bool ClipFace(int aroom, int afacenum, int broom, int bfacenum) {
   int first_new_face = RoomAddFaces(aroom, num_newfaces);
 
   for (int i = 0; i < num_newfaces; i++) {
-    face &fp = arp.faces[first_new_face + i];
+    face_t &fp = arp.faces[first_new_face + i];
     InitRoomFace(fp, newface_nvs[i]);
     for (int j = 0; j < newface_nvs[i]; j++) {
       fp.face_verts[j] = newvertnums[newface_verts[i][j]];
@@ -1197,8 +1197,8 @@ static bool ClipFacePair(int room0, int face0, int room1, int face1) {
 static int MatchPortalFaces(int room0, int facenum0, int room1, int facenum1, bool check_only = false) {
   room_t &rp0 = Rooms[room0];
   room_t &rp1 = Rooms[room1];
-  const face &fp0 = rp0.faces[facenum0];
-  const face &fp1 = rp1.faces[facenum1];
+  const face_t &fp0 = rp0.faces[facenum0];
+  const face_t &fp1 = rp1.faces[facenum1];
   int n0, n1, i, j, prev_vn0, prev_vn1, max_nv;
   int points_added = 0;
 
@@ -1367,7 +1367,7 @@ void AttachRoom() {
 
       ObjCreate(object_type_e::door, *app.placed.door, slot, room_center, orient);
 
-      doorway *dp = DoorwayAdd(slot, *app.placed.door);
+      doorway_t *dp = DoorwayAdd(slot, *app.placed.door);
       (void)dp;
 
       app.placed.door.reset();
@@ -1390,7 +1390,7 @@ void GetUVLForRoomPoint(index_t roomnum, index_t facenum, int vertnum, roomUVL *
   if (!roomnum || !facenum)
     return;
   room_t &rp = Rooms[*roomnum];
-  const face &fp = rp.faces[*facenum];
+  const face_t &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
 
   matrix face_matrix, trans_matrix;
@@ -1458,7 +1458,7 @@ void StretchRoomUVs(index_t roomnum, index_t facenum, int edge) {
   if (!roomnum || !facenum)
     return;
   room_t &rp = Rooms[*roomnum];
-  const face &fp = rp.faces[*facenum];
+  const face_t &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   int v0 = edge;
   int v1 = (v0 + 1) % nv;
@@ -1475,7 +1475,7 @@ void ScaleFaceUVs(index_t roomnum, index_t facenum, float scale) {
   if (!roomnum || !facenum)
     return;
   room_t &rp = Rooms[*roomnum];
-  face &fp = rp.faces[*facenum];
+  face_t &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
 
   float midu = 0, midv = 0;
@@ -1514,7 +1514,7 @@ void HTextureRotate(index_t roomnum, index_t facenum, float angle_rad) {
   room_t &rp = Rooms[*roomnum];
   if (!rp.used)
     return;
-  face &fp = rp.faces[*facenum];
+  face_t &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   if (nv <= 0)
     return;
@@ -1568,7 +1568,7 @@ void HTextureRoomStretch(index_t roomnum, index_t facenum, index_t edge, int dir
   if (!roomnum || !facenum || !edge)
     return;
   room_t &rp = Rooms[*roomnum];
-  face &fp = rp.faces[*facenum];
+  face_t &fp = rp.faces[*facenum];
   int nv = fp.num_verts;
   if (*edge >= static_cast<uint32_t>(nv))
     return;
@@ -1630,8 +1630,8 @@ int HTexturePropagateToFace(index_t destroom, index_t destface, index_t srcroom,
     return 0;
   room_t &destrp = Rooms[*destroom];
   room_t &srcrp = Rooms[*srcroom];
-  face &dfp = destrp.faces[*destface];
-  face &sfp = srcrp.faces[*srcface];
+  face_t &dfp = destrp.faces[*destface];
+  face_t &sfp = srcrp.faces[*srcface];
   int v0, v1;
 
   if (!FindSharedEdge(&dfp, &sfp, &v0, &v1))
@@ -1653,8 +1653,8 @@ int HTextureCopyUVsToFace(index_t destroom, index_t destface, index_t srcroom, i
     return 0;
   room_t &destrp = Rooms[*destroom];
   room_t &srcrp = Rooms[*srcroom];
-  face &dfp = destrp.faces[*destface];
-  face &sfp = srcrp.faces[*srcface];
+  face_t &dfp = destrp.faces[*destface];
+  face_t &sfp = srcrp.faces[*srcface];
 
   if (dfp.num_verts != sfp.num_verts)
     return 0;

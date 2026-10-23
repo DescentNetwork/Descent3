@@ -179,7 +179,7 @@ void AddScorch(index_t roomnum, int facenum, vector3 *pos, index_t texture_handl
     return;
 
   room_t &rp = Rooms[*roomnum];
-  face &fp = rp.faces[facenum];
+  face_t &fp = rp.faces[facenum];
 
   // Check if face is a light, and if so don't add the scorch
   if (GameTextures[fp.tmap].flags.light || GameTextures[fp.tmap].flags.procedural)

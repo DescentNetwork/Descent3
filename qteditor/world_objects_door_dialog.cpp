@@ -84,7 +84,7 @@ bool verifyDoorModel(index_t handle) {
       for (int f = 0; f < sm.num_faces; f++) {
         polyface &polyface = sm.faces[f];
 
-        face &check_face = check_room.faces[0];
+        face_t &check_face = check_room.faces[0];
         check_face.num_verts = polyface.nverts;
         if (polyface.nverts > 0)
           check_face.face_verts.assign(polyface.vertnums.data(), polyface.vertnums.data() + polyface.nverts);

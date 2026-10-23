@@ -25,7 +25,7 @@
 #include "utils.h"
 
 
-struct face;
+struct face_t;
 struct roomUVL;
 
 // Vars for the list of selected rooms
@@ -62,16 +62,16 @@ int FindFreeRoomSlot();
 void AssignDefaultUVsToRoomFace(index_t roomnum, index_t facenum);
 
 // Port of editor/Erooms.cpp — room operations.
-void CopyFace(face *dfp, face *sfp);
-void CopyFaceFlags(face *dfp, face *sfp);
+void CopyFace(face_t *dfp, face_t *sfp);
+void CopyFaceFlags(face_t *dfp, face_t *sfp);
 void CopyRoom(int destroom, int srcroom);
-void ReInitRoomFace(face *fp, int nverts);
+void ReInitRoomFace(face_t *fp, int nverts);
 int RoomAddVertices(index_t roomnum, int num_new_verts);
 int RoomAddFaces(index_t roomnum, int num_new_faces);
 bool ResetRoomFaceNormals(index_t roomnum);
 bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
 int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
-bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
+bool FindSharedEdge(face_t *fp0, face_t *fp1, int *vn0, int *vn1);
 void DeleteRoomFace(index_t roomnum, index_t facenum);
 void DeleteRoomPortal(index_t roomnum, index_t portalnum);
 int AddPortal(index_t roomnum);

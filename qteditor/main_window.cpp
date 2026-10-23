@@ -891,7 +891,7 @@ static void setViewerFromRoomFace(index_t roomnum, index_t facenum, bool room_ce
       vm_VectorToMatrix(orient, vp, std::nullopt, std::nullopt);
     }
   } else {
-    const face &fp = rp.faces[*facenum];
+    const face_t &fp = rp.faces[*facenum];
 
     newpos = vp + fp.normal * kFaceViewDist;
 
@@ -1623,7 +1623,7 @@ bool MainWindow::onAddRoom()
                  index_to_int(app.current.face));
     return false;
   }
-  face &cfp = Rooms[*app.current.room].faces[*app.current.face];
+  face_t &cfp = Rooms[*app.current.room].faces[*app.current.face];
   if (cfp.portal_num != -1) {
     std::fprintf(stderr,
                  "[room_ops] AddRoom: face already connected (portal %d)\n",

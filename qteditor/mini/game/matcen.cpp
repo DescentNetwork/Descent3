@@ -977,7 +977,7 @@ bool matcen::ComputeCreatePnt() {
 
         const int32_t spawn_pnt = index_to_int(m_spawn_pnt[i]);
         if (spawn_pnt >= 0 && spawn_pnt < static_cast<int32_t>(rp.faces.size())) {
-          face &fp = rp.faces[spawn_pnt];
+          face_t &fp = rp.faces[spawn_pnt];
 
           m_spawn_vec[num_valid_faces] = vector3{};
 

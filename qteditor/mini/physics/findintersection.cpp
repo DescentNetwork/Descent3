@@ -1870,7 +1870,7 @@ inline bool object_movement_AABB(const object &obj) {
   return overlap;
 }
 
-inline bool object_room_AABB(const object &obj, const face &room_face) {
+inline bool object_room_AABB(const object &obj, const face_t &room_face) {
   bool overlap = true;
 
   if (obj.max_xyz.y() < room_face.min_xyz.y() || room_face.max_xyz.y() < obj.min_xyz.y() ||
@@ -1881,7 +1881,7 @@ inline bool object_room_AABB(const object &obj, const face &room_face) {
   return overlap;
 }
 
-inline bool room_movement_AABB(const face &room_face) {
+inline bool room_movement_AABB(const face_t &room_face) {
   bool overlap = true;
 
   if (fvi_wall_max_xyz.y() < room_face.min_xyz.y() || room_face.max_xyz.y() < fvi_wall_min_xyz.y() ||
@@ -1892,7 +1892,7 @@ inline bool room_movement_AABB(const face &room_face) {
   return overlap;
 }
 
-inline bool room_manual_AABB(const face &room_face, const vector3 &min_xyz, const vector3 &max_xyz) {
+inline bool room_manual_AABB(const face_t &room_face, const vector3 &min_xyz, const vector3 &max_xyz) {
   bool overlap = true;
 
   if (max_xyz.y() < room_face.min_xyz.y() || room_face.max_xyz.y() < min_xyz.y() || max_xyz.x() < room_face.min_xyz.x() ||
@@ -4387,7 +4387,7 @@ void fvi_rooms_objs(void) {
 // transparence Returns:		bitmask describing the alpha blending for the face
 // the return value is an alpha_blend_type value assembled from the
 // alpha_flags_t source bits in renderer.h
-inline alpha_blend_type GetFaceAlpha(const face &fp, int bm_handle) {
+inline alpha_blend_type GetFaceAlpha(const face_t &fp, int bm_handle) {
   if (GameTextures[fp.tmap].flags.saturate) {
     if (fp.flags.vertex_alpha)
       return alpha_blend_type::saturate_texture_vertex;
@@ -4419,7 +4419,7 @@ bool PhysPastPortal(index_t roomnum, const portal &pp) {
     return true;
 
   // Check if the face's texture has transparency
-  const face &fp = rp.faces[pp.portal_face];
+  const face_t &fp = rp.faces[pp.portal_face];
   int bm_handle = GetTextureBitmap(fp.tmap, 0);
 
   if (GetFaceAlpha(fp, bm_handle) != alpha_blend_type::always)
@@ -4571,7 +4571,7 @@ fvi_hit_type fvi_room(int room_index, int from_portal, index_t room_obj) {
           int16_t count;
           bool f_backface;
           int face_info;
-          face *cur_face;
+          face_t *cur_face;
 
           i = region_faces[sort_list_cur];
           cur_face = &cur_room.faces[region_faces[sort_list_cur]];
