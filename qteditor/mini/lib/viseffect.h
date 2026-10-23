@@ -125,25 +125,25 @@ extern int Highest_vis_effect_index;
 int VisEffectAllocate();
 
 // Frees up a viseffect for use
-int VisEffectFree(int visnum);
+int VisEffectFree(index_t visnum);
 
 int VisEffectInitType(vis_effect *vis);
 
 // initialize a new viseffect.  adds to the list for the given room
 // returns the object number
-int VisEffectCreate(uint8_t type, uint8_t id, index_t roomnum, vector3 *pos);
+index_t VisEffectCreate(uint8_t type, uint8_t id, index_t roomnum, vector3 *pos);
 
 // link the viseffect  into the list for its room
 // Does nothing for effects over terrain
-void VisEffectLink(int visnum, index_t roomnum);
+void VisEffectLink(index_t visnum, index_t roomnum);
 
 // Unlinks a viseffect from a room
 // Does nothing for terrain
-void VisEffectUnlink(int visnum);
+void VisEffectUnlink(index_t visnum);
 
 // when an effect has moved into a new room, this function unlinks it
 // from its old room and links it into the new room
-void VisEffectRelink(int visnum, int newroomnum);
+void VisEffectRelink(index_t visnum, index_t newroomnum);
 
 // Frees all the vis effects that are currently in use
 void FreeAllVisEffects();
@@ -152,7 +152,7 @@ void FreeAllVisEffects();
 void InitVisEffects();
 
 // remove viseffect from the world
-void VisEffectDelete(int visnum);
+void VisEffectDelete(index_t visnum);
 
 // Kills all the effects that are dead
 void VisEffectDeleteDead();
@@ -172,7 +172,7 @@ void CreateRandomLineSparks(int num_sparks, vector3 *pos, index_t roomnum, uint1
 // Creates vis effects but has the caller set their parameters
 // initialize a new viseffect.  adds to the list for the given room
 // returns the vis number
-int VisEffectCreateControlled(uint8_t type, object *parent, uint8_t id, index_t roomnum, vector3 *pos, float lifetime,
+index_t VisEffectCreateControlled(uint8_t type, object *parent, uint8_t id, index_t roomnum, vector3 *pos, float lifetime,
                               vector3 *velocity, int phys_flags = 0, float size = 0, float mass = 0.0f,
                               float drag = 0.0f, bool isreal = 0);
 

@@ -420,7 +420,7 @@ extern std::vector<room_t> Rooms; // global array of rooms; grown on demand.  Sl
 void RoomsReset();
 
 // Grows Rooms so index `roomnum` is valid, initialising any new slots so their
-// object/vis-effect chains are empty (objects == vis_effects == -1).  Returns
+// object/vis-effect chains are empty (objects/vis_effects have no value). Returns
 // false when roomnum lies outside [0, MAX_ROOMS + MAX_PALETTE_ROOMS); in that
 // case Rooms is left unchanged.
 bool RoomsEnsureIndex(index_t roomnum);

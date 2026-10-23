@@ -370,7 +370,7 @@ bool WeaponCalcGun(vector3* gun_point, vector3* gun_normal, object* obj, int gun
 
 // ==================== Visual effects ====================
 // The mini has no visual effect system.
-int VisEffectCreate(uint8_t type, uint8_t id, index_t roomnum, vector3* pos) { PRINT_STUB(__FUNCTION__); return -1; }
+index_t VisEffectCreate(uint8_t type, uint8_t id, index_t roomnum, vector3* pos) { PRINT_STUB(__FUNCTION__); return std::nullopt; }
 
 // ==================== FVI ====================
 bool Tracking_FVI = false; // FVI debug flag (GameLoop in the full engine toggles it)

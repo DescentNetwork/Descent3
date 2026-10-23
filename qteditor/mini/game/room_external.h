@@ -320,7 +320,7 @@ struct room_t {
   uint8_t pulse_offset;        // each room has a timer offset for which it pulses
   vector3 wind;               // Wind vector for the room
   int32_t ambient_sound;         // Index of ambient sound pattern for this room, or -1 if none
-  int16_t vis_effects;         // index of first visual effect in this room
+  index_t vis_effects;         // index of first visual effect in this room
   int16_t mirror_face;         // Index of face that this room is to be mirrored by
   std::vector<uint16_t> mirror_faces_list; // the list of faces in this room that have the same texture as the mirror
   float damage;              // The damage per second applied to players (& maybe others) in room

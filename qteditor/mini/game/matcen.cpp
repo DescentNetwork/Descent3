@@ -1502,13 +1502,13 @@ void matcen::DoRenderFrame() {
         for (int32_t i = 0; i < m_num_spawn_pnts; i++) {
           const int32_t croom = from_roomnum(ResolveCreateRoom());
 
-          m_spawn_vis_effects[m_cur_saturation_count][i] = -1;
+          m_spawn_vis_effects[m_cur_saturation_count][i] = {};
 
-          const int visnum =
+          const index_t visnum =
               VisEffectCreate(VIS_FIREBALL, static_cast<uint8_t>(fireball_texture::lightning_bolt_index), croom,
                               &m_create_pnt);
-          if (visnum >= 0) {
-            vis_effect &vis = VisEffects[visnum];
+          if (visnum) {
+            vis_effect &vis = VisEffects[*visnum];
             vis.lifeleft = 0.8f;
             vis.lifetime = 0.8f;
             vis.end_pos = m_spawn_vec[i];
@@ -1516,7 +1516,7 @@ void matcen::DoRenderFrame() {
             vis.flags.expand = true;
             vis.velocity.x() = 0.8f;
             vis.velocity.y() = 1.0f;
-            m_spawn_vis_effects[m_cur_saturation_count][i] = static_cast<int16_t>(visnum);
+            m_spawn_vis_effects[m_cur_saturation_count][i] = visnum;
           }
         }
         m_cur_saturation_count++;
@@ -1524,13 +1524,13 @@ void matcen::DoRenderFrame() {
 
       for (uint8_t i = 0; i < m_cur_saturation_count; i++) {
         for (int32_t t = 0; t < m_num_spawn_pnts; t++) {
-          const int16_t visnum = m_spawn_vis_effects[i][t];
-          if (visnum == -1)
+          const index_t visnum = m_spawn_vis_effects[i][t];
+          if (!visnum)
             continue;
 
-          Q_ASSERT(visnum >= 0 && visnum < MAX_VIS_EFFECTS);
+          Q_ASSERT(visnum && *visnum < MAX_VIS_EFFECTS);
 
-          vis_effect &vis = VisEffects[visnum];
+          vis_effect &vis = VisEffects[*visnum];
 
           vis.pos = m_create_pnt;
           vis.end_pos = m_spawn_vec[t];
@@ -1557,13 +1557,13 @@ void matcen::DoRenderFrame() {
         for (int32_t i = 0; i < m_num_spawn_pnts; i++) {
           const int32_t croom = from_roomnum(ResolveCreateRoom());
 
-          m_spawn_vis_effects[m_cur_saturation_count][i] = -1;
+          m_spawn_vis_effects[m_cur_saturation_count][i] = {};
 
-          const int visnum =
+          const index_t visnum =
               VisEffectCreate(VIS_FIREBALL, static_cast<uint8_t>(fireball_texture::sine_wave_index), croom,
                               &m_create_pnt);
-          if (visnum >= 0) {
-            vis_effect &vis = VisEffects[visnum];
+          if (visnum) {
+            vis_effect &vis = VisEffects[*visnum];
             vis.lifeleft = 1.0f;
             vis.lifetime = 1.0f;
             vis.end_pos = m_spawn_vec[i];
@@ -1571,7 +1571,7 @@ void matcen::DoRenderFrame() {
             vis.flags.expand = true;
             vis.velocity.x() = 1.0f;
             vis.velocity.y() = 1.0f;
-            m_spawn_vis_effects[m_cur_saturation_count][i] = static_cast<int16_t>(visnum);
+            m_spawn_vis_effects[m_cur_saturation_count][i] = visnum;
           }
         }
 
@@ -1580,14 +1580,14 @@ void matcen::DoRenderFrame() {
 
       for (uint8_t i = 0; i < m_cur_saturation_count; i++) {
         for (int32_t t = 0; t < m_num_spawn_pnts; t++) {
-          const int16_t visnum = m_spawn_vis_effects[i][t];
+          const index_t visnum = m_spawn_vis_effects[i][t];
 
-          if (visnum == -1)
+          if (!visnum)
             continue;
 
-          Q_ASSERT(visnum >= 0 && visnum < MAX_VIS_EFFECTS);
+          Q_ASSERT(visnum && *visnum < MAX_VIS_EFFECTS);
 
-          vis_effect &vis = VisEffects[visnum];
+          vis_effect &vis = VisEffects[*visnum];
 
           vis.pos = m_create_pnt;
           vis.end_pos = m_spawn_vec[t];
@@ -1611,13 +1611,13 @@ void matcen::DoRenderFrame() {
         for (int32_t i = 0; i < m_num_spawn_pnts; i++) {
           const int32_t croom = from_roomnum(ResolveCreateRoom());
 
-          m_spawn_vis_effects[m_cur_saturation_count][i] = -1;
+          m_spawn_vis_effects[m_cur_saturation_count][i] = {};
 
-          const int visnum =
+          const index_t visnum =
               VisEffectCreate(VIS_FIREBALL, static_cast<uint8_t>(fireball_texture::thick_lightning_index), croom,
                               &m_create_pnt);
-          if (visnum >= 0) {
-            vis_effect &vis = VisEffects[visnum];
+          if (visnum) {
+            vis_effect &vis = VisEffects[*visnum];
 
             vis.end_pos = m_spawn_vec[i];
             vis.lifeleft = 1.0f;
@@ -1634,7 +1634,7 @@ void matcen::DoRenderFrame() {
 
             vis.custom_handle = m_creation_texture;
             vis.size = vm_VectorDistanceQuick(vis.pos, vis.end_pos);
-            m_spawn_vis_effects[m_cur_saturation_count][i] = static_cast<int16_t>(visnum);
+            m_spawn_vis_effects[m_cur_saturation_count][i] = visnum;
           }
         }
         m_cur_saturation_count++;
@@ -1642,14 +1642,14 @@ void matcen::DoRenderFrame() {
 
       for (uint8_t i = 0; i < m_cur_saturation_count; i++) {
         for (int32_t t = 0; t < m_num_spawn_pnts; t++) {
-          const int16_t visnum = m_spawn_vis_effects[i][t];
+          const index_t visnum = m_spawn_vis_effects[i][t];
 
-          if (visnum == -1)
+          if (!visnum)
             continue;
 
-          Q_ASSERT(visnum >= 0 && visnum < MAX_VIS_EFFECTS);
+          Q_ASSERT(visnum && *visnum < MAX_VIS_EFFECTS);
 
-          vis_effect &vis = VisEffects[visnum];
+          vis_effect &vis = VisEffects[*visnum];
           vis.pos = m_create_pnt;
           vis.end_pos = m_spawn_vec[t];
         }

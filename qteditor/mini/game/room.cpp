@@ -451,7 +451,7 @@ bool RoomsEnsureIndex(index_t roomnum) {
   Rooms.resize(*roomnum + 1);
   for (size_t i = old_size; i < Rooms.size(); ++i) {
     Rooms[i].objects = index_t{};
-    Rooms[i].vis_effects = -1;
+    Rooms[i].vis_effects = {};
   }
   return true;
 }
@@ -489,7 +489,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
   // initialize room fields
   rp.flags = {};
   rp.objects = index_t{};
-  rp.vis_effects = -1;
+  rp.vis_effects = {};
   rp.volume_lights.clear();
   rp.mirror_face = -1;
   rp.mirror_faces_list.clear();

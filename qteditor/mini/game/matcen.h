@@ -78,7 +78,7 @@ private:
   std::vector<index_t> m_spawn_pnt;
   std::vector<vector3> m_spawn_vec;
   std::vector<vector3> m_spawn_normal;
-  std::array<std::array<int16_t, MAX_SPAWN_PNTS>, MAX_MATCEN_EFFECT_SATURATION> m_spawn_vis_effects;
+  std::array<std::array<index_t, MAX_SPAWN_PNTS>, MAX_MATCEN_EFFECT_SATURATION> m_spawn_vis_effects;
 
   int32_t m_max_prod;
 

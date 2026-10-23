@@ -3127,8 +3127,8 @@ uint8_t Trick_type = 0;
 // Render the objects and viseffects in a room.  Do a simple sort
 void RenderRoomObjects(index_t roomnum) {
   const room_t &rp = Rooms[*roomnum];
-  int n_objs = 0, i, visnum;
-  index_t objnum;
+  int n_objs = 0, i;
+  index_t objnum, visnum;
   float zdist;
   if (!Render_mirror_for_room && UseHardware)
     return; // This function only works for mirrors now
@@ -3156,21 +3156,21 @@ void RenderRoomObjects(index_t roomnum) {
     }
   }
   // Add vis effects to sort list
-  for (visnum = rp.vis_effects; (visnum != -1) && (n_objs < MAX_OBJECTS_PER_ROOM); visnum = VisEffects[visnum].next) {
-    Q_ASSERT(visnum != VisEffects[visnum].next);
-    if (VisEffects[visnum].type == VIS_NONE || VisEffects[visnum].flags.dead)
+  for (visnum = rp.vis_effects; visnum && (n_objs < MAX_OBJECTS_PER_ROOM); visnum = VisEffects[*visnum].next) {
+    Q_ASSERT(visnum != VisEffects[*visnum].next);
+    if (VisEffects[*visnum].type == VIS_NONE || VisEffects[*visnum].flags.dead)
       continue;
 
-    bool pointIsVisible = IsPointVisible(VisEffects[visnum].pos, VisEffects[visnum].size, zdist) ? true : false;
+    bool pointIsVisible = IsPointVisible(VisEffects[*visnum].pos, VisEffects[*visnum].size, zdist) ? true : false;
     if (Render_mirror_for_room || pointIsVisible) {
       obj_sort_list[n_objs].vis_effect = 1;
-      obj_sort_list[n_objs].objnum = index_t{static_cast<uint32_t>(visnum)};
+      obj_sort_list[n_objs].objnum = visnum;
       obj_sort_list[n_objs].dist = zdist;
       n_objs++;
     }
   }
   Q_ASSERT(!objnum); // if still set, ran out of space in render_order[]
-  Q_ASSERT(visnum == -1); // if not -1, ran out of space in render_order[]
+  Q_ASSERT(!visnum); // if still set, ran out of space in render_order[]
   // Sort the objects
   qsort(obj_sort_list, n_objs, sizeof(*obj_sort_list), (int (*)(const void *, const void *))obj_sort_func);
 #ifdef _DEBUG
@@ -3301,11 +3301,11 @@ void CheckToRenderMineObjects(index_t roomnum) {
       }
     }
     // Now do viseffects
-    for (int index = Rooms[*roomnum].vis_effects; index != -1; index = VisEffects[index].next) {
-      if (VisEffects[index].type == VIS_NONE || VisEffects[index].flags.dead)
+    for (index_t index = Rooms[*roomnum].vis_effects; index; index = VisEffects[*index].next) {
+      if (VisEffects[*index].type == VIS_NONE || VisEffects[*index].flags.dead)
         continue;
 
-      if (IsPointVisible(VisEffects[index].pos, VisEffects[index].size, zdist)) {
+      if (IsPointVisible(VisEffects[*index].pos, VisEffects[*index].size, zdist)) {
         // Stuff viseffects into our postrender list (disabled: post-render system not ported)
         // if (Num_postrenders < MAX_POSTRENDERS) {
         //   Postrender_list[Num_postrenders].type = PRT_VISEFFECT;

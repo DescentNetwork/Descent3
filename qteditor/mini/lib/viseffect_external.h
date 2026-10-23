@@ -129,8 +129,8 @@ struct vis_effect {
 
   vis_effect_flags_t flags = {};
 
-  int16_t next;
-  int16_t prev;
+  index_t next;
+  index_t prev;
 
   vis_attach_info attach_info;
   axis_billboard_info billboard_info;
