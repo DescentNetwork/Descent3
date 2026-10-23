@@ -235,7 +235,7 @@ bool HObjectPlace(object_type_e obj_type, uint16_t obj_id) {
   // If we have a ground plane, use current cell or face for position
   if ((obj.render_type == render_type_e::polyobj) &&
       ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
-      pm->n_ground) {
+      !pm->ground_slots.empty()) {
     vector3 *surface_norm;
     vector3 pos;
     index_t roomnum;
@@ -334,7 +334,7 @@ void ResetGroundObject(object& obj) {
   poly_model *pm;
   if (!((obj.render_type == render_type_e::polyobj) &&
         ((pm = GetPolymodelPointer(obj.rtype.pobj_info().model_num)) != nullptr) &&
-        pm->n_ground))
+        !pm->ground_slots.empty()))
     return;
 
   vector3 surface_norm;

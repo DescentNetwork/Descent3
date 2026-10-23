@@ -685,7 +685,7 @@ static void FreeAllModels();
 static void SetModelAnglesAndPosTimed(poly_model &po, float *normalized_time, uint32_t subobj_flags);
 static void BuildModelAngleMatrix(matrix &mat, angle ang, const vector3 &axis);
 
-void WBClearInfo(poly_model &pm) { pm.num_wbs = 0; }
+void WBClearInfo(poly_model &pm) { pm.poly_wb.clear(); }
 
 inline void RecursiveAssignWB(poly_model &pm, int sm_index, int wb_index) {
   int i;
@@ -711,7 +711,7 @@ void FindWBSubobjects(poly_model &pm) {
       int j;
       found = false;
 
-      for (j = 0; j < pm.num_wbs; j++) {
+      for (j = 0; j < static_cast<int>(pm.poly_wb.size()); j++) {
         int k;
 
         for (k = 0; k < pm.poly_wb[j].num_turrets; k++) {
@@ -1170,7 +1170,7 @@ void FindMinMaxForModel(poly_model &pm) {
 
   for (int i = 0; i < pm.n_models; i++) {
     const bsp_info &sm = pm.submodel[i];
-    if (sm.parent == -1)
+    if (!sm.parent)
       MinMaxSubmodel(pm, sm, zero_vec);
   }
 }
@@ -1219,7 +1219,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     pm->frame_max = 0;
   }
 
-  pm->n_attach = 0;
+  pm->attach_slots.clear();
 
   memset(&pm->view_pos, 0, sizeof(pm->view_pos));
 
@@ -1285,7 +1285,9 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       pm->submodel[n].min.fill(90000);
       pm->submodel[n].max.fill(-90000);
 
-      infile >> pm->submodel[n].parent;
+      int parent = 0;
+      infile >> parent;
+      pm->submodel[n].parent = (parent == -1) ? index_t{} : index_t{static_cast<uint32_t>(parent)};
       infile >> pm->submodel[n].norm;
 
       infile >> d;
@@ -1465,10 +1467,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         int textured = 0;
         infile >> textured;
         if (textured) {
-          infile >> pm->submodel[n].faces[i].texnum;
+          uint16_t texnum = 0;
+          infile >> texnum;
+          pm->submodel[n].faces[i].texnum = u16_to_index(texnum);
 
         } else {
-          pm->submodel[n].faces[i].texnum = -1;
+          pm->submodel[n].faces[i].texnum = std::nullopt;
           uint8_t r, g, b;
           r = (uint8_t)infile.get();
           g = (uint8_t)infile.get();
@@ -1522,11 +1526,13 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     }
 
     case "GPNT"_ID: // gun points
-      infile >> pm->n_weapons;
-      pm->weapon_slots.resize(pm->n_weapons);
-      Q_ASSERT(pm->weapon_slots.size() == (size_t)pm->n_weapons);
+    {
+      int n_weapons = 0;
+      infile >> n_weapons;
+      pm->weapon_slots.resize(n_weapons);
+      Q_ASSERT(pm->weapon_slots.size() == (size_t)n_weapons);
 
-      for (i = 0; i < pm->n_weapons; i++) {
+      for (i = 0; i < n_weapons; i++) {
         weapon_bank &bank = pm->weapon_slots[i];
 
         // In Version 19.08 and beyond, gunpoints are associated to their parent object.
@@ -1540,14 +1546,17 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         infile >> bank.norm;
       }
       break;
+    }
 
     case "ATCH"_ID: // Attach points
-      infile >> pm->n_attach;
-      if (pm->n_attach) {
-        pm->attach_slots.resize(pm->n_attach);
-        Q_ASSERT(pm->attach_slots.size() == (size_t)pm->n_attach);
+    {
+      int n_attach = 0;
+      infile >> n_attach;
+      if (n_attach) {
+        pm->attach_slots.resize(n_attach);
+        Q_ASSERT(pm->attach_slots.size() == (size_t)n_attach);
 
-        for (i = 0; i < pm->n_attach; i++) {
+        for (i = 0; i < n_attach; i++) {
           attach_bank &bank = pm->attach_slots[i];
 
           infile >> bank.parent;
@@ -1557,6 +1566,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         }
       }
       break;
+    }
 
     case "NATH"_ID: // Attach normals (uvecs)
     {
@@ -1564,13 +1574,13 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       int num_normals = 0;
 
       infile >> num_normals;
-      if (pm->n_attach == num_normals)
+      if (pm->attach_slots.size() == static_cast<size_t>(num_normals))
         f_uvec = true;
       else {
         LOG_WARNING("Ingoring ATTACH normals - total number doesn't match number of attach points");
         // Q_ASSERT(false);
-        LOG_ERROR("Model <%s> specifies %d attach points but only contains %d attach normals\n", pm->name, pm->n_attach,
-                  num_normals);
+        LOG_ERROR("Model <%s> specifies %d attach points but only contains %d attach normals\n", pm->name,
+                  static_cast<int>(pm->attach_slots.size()), num_normals);
       }
 
       if (num_normals) {
@@ -1598,13 +1608,14 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       int j;
 
       // Get the number of weapon batteries on this object
-      infile >> pm->num_wbs;
+      int num_wbs = 0;
+      infile >> num_wbs;
 
-      if (pm->num_wbs) {
-        pm->poly_wb.resize(pm->num_wbs);
+      if (num_wbs) {
+        pm->poly_wb.resize(num_wbs);
 
         // Get each individual wb info struct
-        for (i = 0; i < pm->num_wbs; i++) {
+        for (i = 0; i < num_wbs; i++) {
           infile >> pm->poly_wb[i].num_gps;
           for (j = 0; j < pm->poly_wb[i].num_gps; j++) {
             int gp = 0;
@@ -1632,11 +1643,13 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     }
 
     case "GRND"_ID: // Ground Plane info
-      infile >> pm->n_ground;
-      pm->ground_slots.resize(pm->n_ground);
-      Q_ASSERT(pm->ground_slots.size() == (size_t)pm->n_ground);
+    {
+      int n_ground = 0;
+      infile >> n_ground;
+      pm->ground_slots.resize(n_ground);
+      Q_ASSERT(pm->ground_slots.size() == (size_t)n_ground);
 
-      for (i = 0; i < pm->n_ground; i++) {
+      for (i = 0; i < n_ground; i++) {
         weapon_bank &bank = pm->ground_slots[i];
 
         infile >> bank.parent;
@@ -1645,6 +1658,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
         infile >> bank.norm;
       }
       break;
+    }
 
     case "TXTR"_ID:           // Texture filename list
     {
@@ -1822,7 +1836,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
 
   matrix base_matrix, dest_matrix, temp_matrix;
   int cur_angle;
-  int parent;
+  index_t parent;
 
   for (i = 0; i < pm->n_models; i++) {
     vm_MakeIdentity(base_matrix);
@@ -1841,12 +1855,12 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
     // Build children
     parent = pm->submodel[i].parent;
 
-    if (parent == i) {
-      pm->submodel[i].parent = -1;
+    if (parent == static_cast<uint32_t>(i)) {
+      pm->submodel[i].parent = std::nullopt;
 
-    } else if (parent != -1) {
-      pm->submodel[parent].children[pm->submodel[parent].num_children] = i;
-      pm->submodel[parent].num_children++;
+    } else if (parent) {
+      pm->submodel[*parent].children[pm->submodel[*parent].num_children] = i;
+      pm->submodel[*parent].num_children++;
     }
 
     if (pm->submodel[i].num_key_angles == 0 && (pm->submodel[i].flags.rotate)) {
@@ -2036,7 +2050,7 @@ if (!(Poly_models[polynum].flags.not_resident)) {
 
   infile.reset();
 
-  Poly_models[polynum].id = polynum;
+  Poly_models[polynum].id = static_cast<uint32_t>(polynum);
 
   if (ret)
     return static_cast<uint32_t>(polynum); // loaded successfully
@@ -2204,7 +2218,7 @@ void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
 
   // Now, override angles of weapon bank turrets
   if (obj.dynamic_wb) {
-    for (i = 0; i < pm.num_wbs; i++) {
+    for (i = 0; i < static_cast<int>(pm.poly_wb.size()); i++) {
       for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
         int sobj_index;
 
@@ -2213,7 +2227,7 @@ void SetNormalizedTimeObjTimed(const object& obj, float *normalized_time) {
       }
     }
   } else {
-    for (i = 0; i < pm.num_wbs; i++) {
+    for (i = 0; i < static_cast<int>(pm.poly_wb.size()); i++) {
       for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
         int sobj_index;
 
@@ -2247,7 +2261,7 @@ void SetNormalizedTimeObj(const object &obj, float *normalized_time) {
          obj.type == object_type_e::door || obj.type == object_type_e::clutter);
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < Poly_models[obj.rtype.pobj_info().model_num].num_wbs; i++) {
+  for (i = 0; i < static_cast<int>(Poly_models[obj.rtype.pobj_info().model_num].poly_wb.size()); i++) {
     for (j = 0; j < Poly_models[obj.rtype.pobj_info().model_num].poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
@@ -2276,7 +2290,7 @@ void SetNormalizedTimeAnimTimed(float frame, float *normalized_time, const poly_
   }
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < pm.num_wbs; i++) {
+  for (i = 0; i < static_cast<int>(pm.poly_wb.size()); i++) {
     for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
@@ -2304,7 +2318,7 @@ void SetNormalizedTimeAnim(float anim_frame, float *normalized_time, const poly_
     normalized_time[i] = norm_anim_frame;
 
   // Now, override angles of weapon bank turrets
-  for (i = 0; i < pm.num_wbs; i++) {
+  for (i = 0; i < static_cast<int>(pm.poly_wb.size()); i++) {
     for (j = 0; j < pm.poly_wb[i].num_turrets; j++) {
       int sobj_index;
 
@@ -3050,7 +3064,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos
 
     pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-    mn = pm.submodel[mn].parent;
+    mn = index_to_int(pm.submodel[mn].parent);
   }
 
   // now instance for the entire object
@@ -3095,7 +3109,7 @@ void GetPolyModelPointInWorld(vector3& dest, poly_model& pm, const vector3& wpos
 
     pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-    mn = pm.submodel[mn].parent;
+    mn = index_to_int(pm.submodel[mn].parent);
   }
 
   // now instance for the entire object

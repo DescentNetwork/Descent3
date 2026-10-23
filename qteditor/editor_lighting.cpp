@@ -247,7 +247,7 @@ void CopySqueezeDataForRooms(index_t roomnum, int facenum, std::vector<std::vect
 void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data,
                               int dest_x, int dest_y) {
   const lightmap_object_face &fp = obj->lm_object.lightmap_faces[subnum][facenum];
-  lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+  lightmap_info &lmi_ptr = LightmapInfo[*fp.lmi_handle];
   const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
   int t, k;
 
@@ -279,13 +279,12 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
 
       for (k = 0; k < this_obj.lm_object.num_faces[t]; k++) {
         lightmap_object_face &this_fp = this_obj.lm_object.lightmap_faces[t][k];
-        int lmi_handle = this_fp.lmi_handle;
-        if (lmi_handle == BAD_LMI_INDEX)
+        if (!this_fp.lmi_handle)
           continue;
-        if (Lmi_spoken_for[lmi_handle])
+        if (Lmi_spoken_for[*this_fp.lmi_handle])
           continue;
 
-        if (lmi_handle == fp.lmi_handle) {
+        if (this_fp.lmi_handle == fp.lmi_handle) {
           lmi_ptr.x1 = dest_x + 1;
           lmi_ptr.y1 = dest_y + 1;
 
@@ -302,8 +301,8 @@ void CopySqueezeDataForObject(object *obj, int subnum, int facenum, std::vector<
     }
   }
 
-  Q_ASSERT(fp.lmi_handle != BAD_LMI_INDEX);
-  Lmi_spoken_for[fp.lmi_handle] = 1;
+  Q_ASSERT(fp.lmi_handle);
+  Lmi_spoken_for[*fp.lmi_handle] = 1;
 
   // Free our old lightmap (the original overwrote the refcount with 1 and
   // freed; dropping extra references first reproduces that forced release).
@@ -548,9 +547,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
         for (int j = 0; j < obj.lm_object.num_faces[t]; j++) {
           const lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][j];
-          int lmi_handle = fp.lmi_handle;
-          if (lmi_handle == BAD_LMI_INDEX)
+          if (!fp.lmi_handle)
             continue;
+          int lmi_handle = index_to_int(fp.lmi_handle);
           if (Lmi_spoken_for[lmi_handle])
             continue;
 
@@ -584,9 +583,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
                 for (int c = 0; c < obj.lm_object.num_faces[b]; c++) {
                   const lightmap_object_face &fp = obj.lm_object.lightmap_faces[b][c];
-                  int lmi_handle = fp.lmi_handle;
-                  if (lmi_handle == BAD_LMI_INDEX)
+                  if (!fp.lmi_handle)
                     continue;
+                  int lmi_handle = index_to_int(fp.lmi_handle);
                   if (Lmi_spoken_for[lmi_handle])
                     continue;
 
@@ -650,9 +649,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
           continue;
         for (k = 0; k < obj.lm_object.num_faces[t]; k++) {
           const lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][k];
-          int lmi_handle = fp.lmi_handle;
-          if (lmi_handle == BAD_LMI_INDEX)
+          if (!fp.lmi_handle)
             continue;
+          int lmi_handle = index_to_int(fp.lmi_handle);
           if (Lmi_spoken_for[lmi_handle])
             continue;
 
@@ -686,9 +685,9 @@ void SqueezeLightmaps(int external, int target_roomnum) {
                   continue;
                 for (int c = 0; c < obj.lm_object.num_faces[b]; c++) {
                   const lightmap_object_face &fp = obj.lm_object.lightmap_faces[b][c];
-                  int lmi_handle = fp.lmi_handle;
-                  if (lmi_handle == BAD_LMI_INDEX)
+                  if (!fp.lmi_handle)
                     continue;
+                  int lmi_handle = index_to_int(fp.lmi_handle);
                   if (Lmi_spoken_for[lmi_handle])
                     continue;
 

@@ -2063,7 +2063,8 @@ void collide_generic_and_player(object *robotobj, object *playerobj, vector3 *co
   // Check for lava surface on an object
   if ((robotobj->type == object_type::building) && hit_info) {
     poly_model *pm = GetPolymodelPointer(robotobj->rtype.pobj_info().model_num);
-    int tmap = pm->textures[pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]].texnum];
+    const polyface &hit_face = pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]];
+    int tmap = hit_face.texnum ? pm->textures[*hit_face.texnum] : 0;
 
     if (GameTextures[tmap].flags.lava) {
         int id = FindWeaponName("NapalmBlob");
@@ -2135,7 +2136,8 @@ void collide_generic_and_weapon(object *robotobj, object *weapon, vector3 *colli
   // Check for lava & volatile surfaces on an object
   if ((robotobj->type == object_type::building) && hit_info) {
     poly_model *pm = GetPolymodelPointer(robotobj->rtype.pobj_info().model_num);
-    int tmap = pm->textures[pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]].texnum];
+    const polyface &hit_face = pm->submodel[hit_info->hit_subobject[0]].faces[hit_info->hit_face[0]];
+    int tmap = hit_face.texnum ? pm->textures[*hit_face.texnum] : 0;
     vector3& normal = &hit_info->hit_wallnorm[0];
 
     DoWallEffects(weapon, tmap);

@@ -24,7 +24,9 @@
 #include "polymodel_external.h"
 
 byte_istream& operator>>(byte_istream& input, lightmap_object_face& data) {
-  input >> data.lmi_handle;
+  uint16_t lmi_handle = 0;
+  input >> lmi_handle;
+  data.lmi_handle = u16_to_index(lmi_handle);
   input >> data.rvec >> data.uvec;
 
   uint8_t num_verts = 0;
@@ -38,7 +40,7 @@ byte_istream& operator>>(byte_istream& input, lightmap_object_face& data) {
 }
 
 byte_ostream& operator<<(byte_ostream& output, const lightmap_object_face& data) {
-  output << data.lmi_handle;
+  output << index_to_u16(data.lmi_handle);
   output << data.rvec << data.uvec;
   output << data.num_verts;
   output << data.u2 << data.v2;

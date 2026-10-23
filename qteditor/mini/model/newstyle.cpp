@@ -194,8 +194,8 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
     custom = 1;
 
   // Setup texturing
-  if (fp.texnum != -1)
-    texp = &GameTextures[pm.textures[fp.texnum]];
+  if (fp.texnum)
+    texp = &GameTextures[pm.textures[*fp.texnum]];
 
   if (texp && custom && Polymodel_use_effect && (Polymodel_effect.type.custom_texture))
     texp = &GameTextures[Polymodel_effect.custom_texture];
@@ -203,7 +203,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
   // Set radiosity lightmaps if needed
   if (Polymodel_light_type == polymodel_light_type::lightmap) {
     rend_SetOverlayMap(
-        LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
+        LightmapInfo[*Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle);
   }
 
   // Do bump mapping
@@ -211,7 +211,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
       Polymodel_light_type == polymodel_light_type::gouraud) {
     rend_SetOverlayType(overlay_type::none);
     rend_SetBumpmapReadyState(1, static_cast<int>(*texp->bumpmap));
-    if (GameTextures[fp.texnum].flags.smooth_specular)
+    if (GameTextures[*fp.texnum].flags.smooth_specular)
       smooth = 1;
   }
 
@@ -486,7 +486,7 @@ inline void RenderSubmodelLightmapFace(poly_model &pm, bsp_info &sm, int facenum
   int modelnum = &sm - pm.submodel.data();
   int t;
 
-  index_t lm_handle = LightmapInfo[Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle;
+  index_t lm_handle = LightmapInfo[*Polylighting_lightmap_object->lightmap_faces[modelnum][facenum].lmi_handle].lm_handle;
   float xscalar = (float)GameLightmaps[*lm_handle].width / (float)GameLightmaps[*lm_handle].square_res;
   float yscalar = (float)GameLightmaps[*lm_handle].height / (float)GameLightmaps[*lm_handle].square_res;
 
@@ -571,7 +571,7 @@ inline void RenderSubmodelFaceSpecular(poly_model &pm, bsp_info &sm, int facenum
   int t;
   bool smooth = 0;
 
-  if ((Polymodel_effect.type.specular_faces) && GameTextures[fp.texnum].flags.smooth_specular)
+  if ((Polymodel_effect.type.specular_faces) && fp.texnum && GameTextures[*fp.texnum].flags.smooth_specular)
     smooth = 1;
 
   for (t = 0; t < fp.nverts; t++) {
@@ -719,8 +719,8 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
     if ((vector3::dot(tempv, fp.normal)) < 0)
       continue;
 
-    if (fp.texnum != -1) {
-      texp = &GameTextures[pm.textures[fp.texnum]];
+    if (fp.texnum) {
+      texp = &GameTextures[pm.textures[*fp.texnum]];
 
       if (texp->flags.alpha || texp->flags.saturate) {
         alpha_faces[num_alpha_faces++] = i;
@@ -731,7 +731,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
     if (StateLimited) {
       state_limited_element state_element;
       state_element.facenum = index_t{static_cast<uint32_t>(i)};
-      state_element.sort_key = pm.textures[fp.texnum];
+      state_element.sort_key = pm.textures[*fp.texnum];
       state_elements.push_back(state_element);
     } else
       RenderSubmodelFace(pm, sm, i);
@@ -779,7 +779,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
                       continue;*/
 
       if ((Polymodel_effect.type.specular_model) ||
-          (fp.texnum != -1 && GameTextures[pm.textures[fp.texnum]].flags.smooth_specular))
+          (fp.texnum && GameTextures[pm.textures[*fp.texnum]].flags.smooth_specular))
         RenderSubmodelFaceSpecular(pm, sm, i);
     }
 
@@ -1018,12 +1018,12 @@ void RenderSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub) {
       rend_SetColorModel(color_model::mono);
       rend_SetOverlayType(overlay_type::none);
 
-      int bm_handle = GetTextureBitmap(pm.textures[sm.faces[0].texnum], 0);
-      rend_SetAlphaValue(GameTextures[pm.textures[sm.faces[0].texnum]].alpha * 255);
+      int bm_handle = GetTextureBitmap(pm.textures[*sm.faces[0].texnum], 0);
+      rend_SetAlphaValue(GameTextures[pm.textures[*sm.faces[0].texnum]].alpha * 255);
 
       vm_MakeZero(pos);
 
-      if (GameTextures[pm.textures[sm.faces[0].texnum]].flags.saturate)
+      if (GameTextures[pm.textures[*sm.faces[0].texnum]].flags.saturate)
         rend_SetAlphaType(alpha_blend_type::saturate_texture);
       else
         rend_SetAlphaType(alpha_blend_type::constant_texture);
@@ -1067,7 +1067,7 @@ int RenderPolygonModel(poly_model &pm, uint32_t f_render_sub) {
   FacingPass = 0;
   for (i = 0; i < pm.n_models; i++) {
     bsp_info &sm = pm.submodel[i];
-    if (sm.parent == -1)
+    if (!sm.parent)
       RenderSubmodel(pm, sm, f_render_sub);
   }
 
@@ -1078,7 +1078,7 @@ int RenderPolygonModel(poly_model &pm, uint32_t f_render_sub) {
     rend_SetOverlayType(overlay_type::none);
     for (i = 0; i < pm.n_models; i++) {
       bsp_info &sm = pm.submodel[i];
-      if (sm.parent == -1)
+      if (!sm.parent)
         RenderSubmodel(pm, sm, f_render_sub);
     }
   }
@@ -1145,7 +1145,7 @@ float ComputeDefaultSizeFunc(index_t handle, optref<float> size_ptr, optref<vect
 
             pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-            mn = pm.submodel[mn].parent;
+            mn = index_to_int(pm.submodel[mn].parent);
           }
 
           //				Maybe use for other code -- Accounts for world coordinates
@@ -1215,7 +1215,7 @@ float ComputeDefaultSizeFunc(index_t handle, optref<float> size_ptr, optref<vect
 
           pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-          mn = pm.submodel[mn].parent;
+          mn = index_to_int(pm.submodel[mn].parent);
         }
 
         //				Maybe use for other code -- Accounts for world coordinates

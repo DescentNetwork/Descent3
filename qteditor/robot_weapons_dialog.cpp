@@ -281,7 +281,7 @@ void RobotEditWeaponsDialog::loadData() {
 void RobotEditWeaponsDialog::updateDialog() {
   otype_wb_info *wb = m_wb;
   int num_gps = 0;
-  if (m_pm != nullptr && m_pm->num_wbs > 0)
+  if (m_pm != nullptr && !m_pm->poly_wb.empty())
     num_gps = m_pm->poly_wb[0].num_gps;
 
   const int num_masks = ui->IDC_GB_NUM_MASKS_EDIT->text().toInt();
@@ -415,7 +415,7 @@ void RobotEditWeaponsDialog::updateDialog() {
   ui->IDC_MAX_DISTANCE_EDIT->setEnabled(custom_dist);
 
   // Turret info (static read-only display).
-  if (m_pm != nullptr && m_pm->num_wbs > 0 && m_pm->poly_wb[0].num_turrets > 0) {
+  if (m_pm != nullptr && !m_pm->poly_wb.empty() && m_pm->poly_wb[0].num_turrets > 0) {
     const int turret = m_pm->poly_wb[0].turret_index[0];
     ui->IDC_TURRET_SOBJ_STATIC->setText(QString::number(turret));
     ui->IDC_TURRET_FOV_STATIC->setText(QString::number(m_pm->submodel[turret].fov * 720.0f));

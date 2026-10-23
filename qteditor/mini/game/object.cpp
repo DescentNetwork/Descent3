@@ -805,7 +805,7 @@ void GetObjectPointInWorld(vector3& dest, object& obj, int subnum, int vertnum) 
 
     pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-    mn = pm.submodel[mn].parent;
+    mn = index_to_int(pm.submodel[mn].parent);
   }
 
   // Now instance for the entire object

@@ -397,9 +397,9 @@ void WorldObjectsGenericDialog::updateDialog() {
       const bsp_info &sm = pm.submodel[i];
       for (int t = 0; t < sm.num_faces; t++) {
         const polyface &fp = sm.faces[t];
-        if (fp.texnum != -1 && !already_used[fp.texnum]) {
-          already_used[fp.texnum] = 1;
-          const int texnum = pm.textures[fp.texnum];
+        if (fp.texnum && !already_used[*fp.texnum]) {
+          already_used[*fp.texnum] = 1;
+          const int texnum = pm.textures[*fp.texnum];
           const texture &texp = GameTextures[texnum];
           if (texnum == 0)
             continue;
@@ -472,7 +472,7 @@ void WorldObjectsGenericDialog::updateDialog() {
     combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < static_cast<int>(Object_info.size()) ? sp2 : -1));
   }
 
-  ui->IDC_GENERIC_WEAPON_INFO_BUTTON->setEnabled(Poly_models[*oi->render_handle].num_wbs > 0);
+  ui->IDC_GENERIC_WEAPON_INFO_BUTTON->setEnabled(!Poly_models[*oi->render_handle].poly_wb.empty());
 
   ui->IDC_GENERIC_SIZE_EDIT->setText(QString::number(oi->size, 'f', 2));
 

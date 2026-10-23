@@ -616,14 +616,15 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 
     // Ok, now we know that this light touches this face
     const lightmap_object_face &fp = obj.lm_object.lightmap_faces[subnum][i];
+    const int lmi_handle = index_to_int(fp.lmi_handle);
 
-    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
+    if (Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
-    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
     
 
     // Check for backfaces
@@ -703,7 +704,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
       if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
         GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -718,9 +719,9 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       GameLightmaps[*lm_handle].flags.changed = true;
       GameLightmaps[*lm_handle].flags.limits = true;
 
-      if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
-        lmilist[num_spoken_for] = fp.lmi_handle;
-        Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+      if (!(Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))) {
+        lmilist[num_spoken_for] = lmi_handle;
+        Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
         num_spoken_for++;
       }
     } else // Start a new dynamic lightmap
@@ -736,7 +737,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -745,7 +746,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
         }
       }
 
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
@@ -770,14 +771,14 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
       GameLightmaps[*lm_handle].flags.changed = true;
       GameLightmaps[*lm_handle].flags.limits = true;
 
-      Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
+      Dynamic_face_list.push_back(dynamic_face{lmi_handle});
 
-      lmilist[num_spoken_for] = fp.lmi_handle;
-      Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+      lmilist[num_spoken_for] = lmi_handle;
+      Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend.push_back(fp.lmi_handle);
+      Edges_to_blend.push_back(lmi_handle);
     }
 
     vector3 element_vec;
@@ -791,7 +792,7 @@ void ApplyLightingToSubmodel(const object &obj, const poly_model &pm, const bsp_
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1000,7 +1001,7 @@ void ApplyLightingToObjects(const vector3 &pos, index_t roomnum, float light_dis
 
     for (int t = 0; t < pm.n_models; t++) {
       const bsp_info &sm = pm.submodel[t];
-      if (sm.parent == -1)
+      if (!sm.parent)
         ApplyLightingToSubmodel(*obj, pm, sm, light_dist, red_scale, green_scale, blue_scale, dot_range);
     }
 

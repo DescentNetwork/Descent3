@@ -99,7 +99,7 @@ struct attach_bank {
 
 struct lightmap_object_face {
   uint8_t num_verts;
-  uint16_t lmi_handle;
+  index_t lmi_handle;
   vector3 rvec, uvec;
   std::vector<float> u2, v2;
 };
@@ -129,7 +129,7 @@ struct polyface {
   // float *u2,*v2;						// For lightmaps only
 
   ddgr_color color;
-  int16_t texnum;
+  index_t texnum;
 
   vector3 normal;
 };
@@ -224,7 +224,7 @@ struct bsp_info {
   int num_faces; // amount of faces (NEWSTYLE);
 
   int8_t children[MAX_SUBOBJECTS]; // children of this submodel
-  int parent;                     // what is parent for each submodel
+  index_t parent;                 // what is parent for each submodel
   uint8_t num_children;
 
   vector3 min;
@@ -291,7 +291,7 @@ struct poly_model {
 
   polymodel_flags_t flags;
   uint8_t new_style; // if 1, then this polymodel is in the new outrage format (oof)
-  int id;          // what the polygon model number is.  (Index in Poly_models)
+  index_t id;      // what the polygon model number is.  (Index in Poly_models)
   int version;
   std::string name;
 
@@ -319,16 +319,12 @@ struct poly_model {
 
   int frame_min, frame_max; // For TIMED polymodels, the min/max frames
 
-  int n_weapons;
   std::vector<weapon_bank> weapon_slots; // array of gun banks
 
-  int n_ground;
   std::vector<weapon_bank> ground_slots; // array of ground planes
 
-  int n_attach;
   std::vector<attach_bank> attach_slots;
 
-  int num_wbs;
   std::vector<poly_wb_info> poly_wb; // array of weapon batteries
 
   std::vector<int> render_order; // internal use

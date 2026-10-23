@@ -164,9 +164,9 @@ static void CollideSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
       if (ns_movement_manual_AABB(sm.face_min[i], sm.face_max[i])) {
         const polyface &fp = sm.faces[i];
 
-        if (fp.texnum >= 0 &&
-            !GameTextures[pm.textures[fp.texnum]].flags.fly_thru &&
-            !GameTextures[pm.textures[fp.texnum]].flags.pass_thru)
+        if (fp.texnum &&
+            !GameTextures[pm.textures[*fp.texnum]].flags.fly_thru &&
+            !GameTextures[pm.textures[*fp.texnum]].flags.pass_thru)
         {
           Q_ASSERT(fp.nverts <= 32);
 
@@ -344,7 +344,7 @@ void CollidePolygonModel(vector3 &pos, matrix &orient, int model_num, float *nor
 
   for (int i = 0; i < po->n_models; i++) {
     bsp_info &sm = po->submodel[i];
-    if (sm.parent == -1)
+    if (!sm.parent)
       CollideSubmodel(*po, sm, f_render_sub);
   }
 
@@ -435,7 +435,7 @@ bool PolyCollideObject(object& obj) {
 
       pnt = tpnt + pm.submodel[mn].offset + pm.submodel[mn].mod_pos;
 
-      mn = pm.submodel[mn].parent;
+      mn = index_to_int(pm.submodel[mn].parent);
     }
 
     fvi_hit_data_ptr->hit_face_pnt[0] = pnt;

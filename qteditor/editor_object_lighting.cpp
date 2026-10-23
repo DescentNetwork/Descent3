@@ -40,8 +40,8 @@ void ComputeObjectSurfaceRes(rad_surface *surf, object *obj, int subnum, int fac
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   const lightmap_object_face &lfp = obj->lm_object.lightmap_faces[subnum][facenum];
-  int lw = static_cast<int>(lmi_w(lfp.lmi_handle).value_or(0));
-  int lh = static_cast<int>(lmi_h(lfp.lmi_handle).value_or(0));
+  int lw = static_cast<int>(lmi_w(index_to_int(lfp.lmi_handle)).value_or(0));
+  int lh = static_cast<int>(lmi_h(index_to_int(lfp.lmi_handle)).value_or(0));
 
   for (i = 0; i < lfp.num_verts; i++) {
     if (lfp.u2[i] < left)
@@ -93,8 +93,8 @@ void ApplyLightmapToObjectSurface(object *obj, int subnum, int facenum, rad_surf
   xres = sp->xresolution;
   yres = sp->yresolution;
 
-  Q_ASSERT(fp.lmi_handle != BAD_LMI_INDEX);
-  lmi_handle = fp.lmi_handle;
+  Q_ASSERT(fp.lmi_handle);
+  lmi_handle = index_to_int(fp.lmi_handle);
 
   lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
   lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
@@ -173,7 +173,7 @@ void GetPointInObjectSpace(vector3& dest, vector3& pos, object& obj, int subnum,
   while (mn != -1) {
     rotate_list[num_to_rotate] = mn;
     num_to_rotate++;
-    mn = pm.submodel[mn].parent;
+    mn = index_to_int(pm.submodel[mn].parent);
   }
 
   // Subtract and rotate position
@@ -230,19 +230,20 @@ void AssignLightmapsToObjectSurfaces(int surface_index, int terrain) {
           // Rotate the lightmap  upper left
           object& obj = Objects[i];
           const lightmap_object_face &fp = obj.lm_object.lightmap_faces[t][j];
-          lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+          const int lmi_handle = index_to_int(fp.lmi_handle);
+          lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
 
-          if (!rotated[fp.lmi_handle]) {
+          if (!rotated[lmi_handle]) {
             vector3 uleft, rvec, uvec, norm;
             GetPointInObjectSpace(uleft, lmi_ptr.upper_left, obj, t, 1);
             GetPointInObjectSpace(norm, lmi_ptr.normal, obj, t, 0);
             lmi_ptr.normal = norm;
             lmi_ptr.upper_left = uleft;
 
-            GetPointInObjectSpace(rvec, ScratchRVecs[fp.lmi_handle], obj, t, 0);
-            GetPointInObjectSpace(uvec, ScratchUVecs[fp.lmi_handle], obj, t, 0);
+            GetPointInObjectSpace(rvec, ScratchRVecs[lmi_handle], obj, t, 0);
+            GetPointInObjectSpace(uvec, ScratchUVecs[lmi_handle], obj, t, 0);
 
-            rotated[fp.lmi_handle] = 1;
+            rotated[lmi_handle] = 1;
 
             // Find all the faces in this submodel that have this lightmap info handle
             for (int k = 0; k < sm.num_faces; k++) {
@@ -330,16 +331,16 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
           Light_surfaces[surface_index].flags.lightsource = 0;
           Light_surfaces[surface_index].flags.touches_terrain = 0;
 
-          if (sm.faces[j].texnum == -1) {
+          if (!sm.faces[j].texnum) {
             Light_surfaces[surface_index].emittance.r = 0.0f;
             Light_surfaces[surface_index].emittance.g = 0.0f;
             Light_surfaces[surface_index].emittance.b = 0.0f;
             Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[sm.faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[sm.faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[sm.faces[j].texnum]].b;
-            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[sm.faces[j].texnum]].reflectivity;
+            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[*sm.faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[*sm.faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[*sm.faces[j].texnum]].b;
+            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[*sm.faces[j].texnum]].reflectivity;
             if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > 0.005f)
               Light_surfaces[surface_index].flags.lightsource = 1;
           }
@@ -350,7 +351,7 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
             Light_surfaces[surface_index].surface_type = rad_surface_type::room_object;
 
           Light_surfaces[surface_index].normal =
-              LightmapInfo[Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
+              LightmapInfo[*Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
           Light_surfaces[surface_index].roomnum = Objects[i].roomnum;
 
           if (Light_surfaces[surface_index].surface_type == rad_surface_type::room_object) {
@@ -412,22 +413,22 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, index_t roomnum) {
           else
             Light_surfaces[surface_index].elements.clear();
 
-          if (sm.faces[j].texnum == -1) {
+          if (!sm.faces[j].texnum) {
             Light_surfaces[surface_index].emittance.r = 0.0f;
             Light_surfaces[surface_index].emittance.g = 0.0f;
             Light_surfaces[surface_index].emittance.b = 0.0f;
             Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[sm.faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[sm.faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[sm.faces[j].texnum]].b;
-            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[sm.faces[j].texnum]].reflectivity;
+            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[*sm.faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[*sm.faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[*sm.faces[j].texnum]].b;
+            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[*sm.faces[j].texnum]].reflectivity;
           }
 
           Light_surfaces[surface_index].surface_type = rad_surface_type::room_object;
 
           Light_surfaces[surface_index].normal =
-              LightmapInfo[Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
+              LightmapInfo[*Objects[i].lm_object.lightmap_faces[t][j].lmi_handle].normal;
           Light_surfaces[surface_index].roomnum = Objects[i].roomnum;
 
           // Set the vertices for each element
@@ -683,7 +684,7 @@ void BuildObjectLightmapUVs(object& obj, int *sublist, int *facelist, int count,
 
   // Rotate all the face points
   for (i = 0; i < count; i++) {
-    obj.lm_object.lightmap_faces[sublist[i]][facelist[i]].lmi_handle = lmi_handle;
+    obj.lm_object.lightmap_faces[sublist[i]][facelist[i]].lmi_handle = static_cast<uint32_t>(lmi_handle);
     bsp_info &sm = pm.submodel[sublist[i]];
     polyface &fp = sm.faces[facelist[i]];
     lightmap_object_face &lfp = obj.lm_object.lightmap_faces[sublist[i]][facelist[i]];
@@ -745,14 +746,14 @@ void BuildElementListForObjectFace(object& obj, int subnum, int facenum, rad_sur
 
   Q_ASSERT(pm.used);
   Q_ASSERT(fp.nverts >= 3);
-  Q_ASSERT(obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle);
 
   Q_ASSERT(fp.nverts < 32);
 
   for (i = 0; i < fp.nverts; i++)
     GetObjectPointInWorld(world_verts[i], obj, subnum, fp.vertnums[i]);
 
-  lmi_handle = obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle;
+  lmi_handle = index_to_int(obj.lm_object.lightmap_faces[subnum][facenum].lmi_handle);
   avg_vert = ScratchCenters[lmi_handle];
 
   // Make the orientation matrix
@@ -857,9 +858,9 @@ int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type
   int face_combine_list[MAX_COMBINES];
   int submodel_combine_list[MAX_COMBINES];
 
-  if (afp.texnum == -1)
+  if (!afp.texnum)
     return 0;
-  int tex = pm.textures[afp.texnum];
+  int tex = pm.textures[*afp.texnum];
 
   if (GameTextures[tex].r > 0 || GameTextures[tex].g > 0 || GameTextures[tex].b > 0)
     return 0;
@@ -904,7 +905,7 @@ StartOver:
 
       // Don't do combine light sources
 
-      tex = pm.textures[bfp.texnum];
+      tex = pm.textures[*bfp.texnum];
       if (GameTextures[tex].r > 0 || GameTextures[tex].g > 0 || GameTextures[tex].b > 0)
         continue;
 
