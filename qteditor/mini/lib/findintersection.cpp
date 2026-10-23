@@ -875,7 +875,7 @@ namespace {
 
 // True when pnt (which lies on the plane of face f) is inside the face polygon.
 bool pointInsideFace(const room *rp, int faceIndex, const vector3 &pnt) {
-  const face &fp = rp->faces[faceIndex];
+  const face_t &fp = rp->faces[faceIndex];
   const int n = fp.num_verts;
   if (n < 3)
     return false;
@@ -927,7 +927,7 @@ bool facePlaneIntersect(const vector3 &p0, const vector3 &seg, const vector3 &v0
 // side of every face plane.
 bool pointInsideRoom(const room *rp, const vector3 &pnt) {
   for (int f = 0; f < rp->num_faces; ++f) {
-    const face &fp = rp->faces[f];
+    const face_t &fp = rp->faces[f];
     if (fp.num_verts < 3)
       continue;
     const vector3 rel = pnt - rp->verts[fp.face_verts[0]];
@@ -1003,7 +1003,7 @@ int fvi_FindIntersection(fvi_query *fq, fvi_info *ans, bool no_subdivision) {
     float bestPortalT = 2.0f;
     int bestPortalFace = -1;
     for (int f = 0; f < rp.num_faces; ++f) {
-      const face &fp = rp.faces[f];
+      const face_t &fp = rp.faces[f];
       const int nv = fp.num_verts;
       if (nv < 3)
         continue;

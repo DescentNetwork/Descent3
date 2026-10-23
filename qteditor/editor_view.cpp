@@ -365,7 +365,7 @@ void EditorView::projectMine(QVector<QVector<ProjectedVertex>> *outFaces) const 
     if (!rp.used)
       continue;
     for (int f = 0; f < rp.faces.size(); f++) {
-      const face &fp = rp.faces[f];
+      const face_t &fp = rp.faces[f];
       QVector<ProjectedVertex> face;
       bool ok = true;
       for (int v = 0; v < fp.num_verts; v++) {

@@ -770,7 +770,7 @@ static inline bool object_object_AABB(const object &obj1, const object &obj2) {
   return overlap;
 }
 // Given a face, computes the upper left corner of the face
-void ComputeDebugVisFaceUpperLeft(index_t roomnum, const face &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
+void ComputeDebugVisFaceUpperLeft(index_t roomnum, const face_t &fp, vector3 &upper_left, float &xdiff, float &ydiff, vector3 &center) {
   const room &rp = Rooms[*roomnum];
   matrix face_matrix, trans_matrix;
   vector3 fvec;
@@ -867,7 +867,7 @@ void DrawRoomVisPnts(const object &obj) {
     int t;
     int j;
     for (t = 0; t < rp.num_portals; t++) {
-      const face &src_fp = rp.faces[rp.portals[t].portal_face];
+      const face_t &src_fp = rp.faces[rp.portals[t].portal_face];
       float src_width, src_height;
       vector3 src_upper_left, src_center;
       matrix src_matrix;
