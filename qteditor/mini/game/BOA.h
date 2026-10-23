@@ -229,7 +229,12 @@ public:
 inline int BOA_TERRAIN_INDEX() { return static_cast<int>(Rooms.size()); }
 inline int BOA_NO_PATH() { return static_cast<int>(Rooms.size()) - 1 + 9; }
 inline int BOA_INDEX(index_t roomnum) {
-  return roomnum_outside(roomnum) ? static_cast<int>(Terrain_seg[*roomnum].flags.region + Rooms.size()) : *roomnum;
+  if (!roomnum || *roomnum == 0xFFFFFFFFu)
+    return -1;
+
+  return roomnum_outside(roomnum)
+             ? static_cast<int>(Terrain_seg[roomnum_cell(roomnum)].flags.region + Rooms.size())
+             : static_cast<int>(*roomnum);
 }
 
 // Visibility Info
@@ -265,7 +270,7 @@ void MakeBOA(void);
 
 // Searches for a path between two rooms and records the result in BOA_Array.
 // When no path exists the entry is marked with BOA_NO_PATH().
-void BOA_FindPath(int start_room, int end_room);
+void BOA_FindPath(index_t start_room, index_t end_room);
 
 // Goes through all the rooms and determines their visibility in relation to one another
 void MakeBOAVisTable(bool from_lighting = 0);
@@ -273,16 +278,17 @@ void MakeBOAVisTable(bool from_lighting = 0);
 // Computes the AABBs for the level
 void ComputeAABB(bool f_full);
 
-bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, float &dist, optref<int> num_blockages = std::nullopt);
-bool BOA_IsSoundAudible(int start_room, int end_room);
-bool BOA_IsVisible(int start_room, int end_room);
-bool BOA_HasPossibleBlockage(int start_room, int end_room);
-index_t BOA_GetNextRoom(int start_room, int end_room);
-index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
-                                                     optref<vector3> end_pos, bool f_for_sound = false,
-                                                     bool f_making_robot_path_invalid_list = false,
-                                                     optref<int> blocked_portal = std::nullopt);
-bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound = false,
+bool BOA_ComputeMinDist(index_t start_room, index_t end_room, float max_check_dist, float &dist,
+                        optref<int> num_blockages = std::nullopt);
+bool BOA_IsSoundAudible(index_t start_room, index_t end_room);
+bool BOA_IsVisible(index_t start_room, index_t end_room);
+bool BOA_HasPossibleBlockage(index_t start_room, index_t end_room);
+index_t BOA_GetNextRoom(index_t start_room, index_t end_room);
+index_t BOA_DetermineStartRoomPortal(index_t start_room, optref<vector3> start_pos, index_t end_room,
+                                     optref<vector3> end_pos, bool f_for_sound = false,
+                                     bool f_making_robot_path_invalid_list = false,
+                                     optref<index_t> blocked_portal = std::nullopt);
+bool BOA_PassablePortal(index_t room, index_t portal_index, bool f_for_sound = false,
                         bool f_making_robot_path_invalid_list = false);
 bool BOA_LockedDoor(object *obj, index_t roomnum);
 void BOA_ComputePathPoints(char *message = NULL, int len = 0);

@@ -201,12 +201,13 @@ static void verify_connections();
 static void find_small_portals();
 static void compute_robot_path_info();
 
-bool BOA_PassablePortal(int room, int portal_index, bool f_for_sound, bool f_making_robot_path_invalid_list) {
+bool BOA_PassablePortal(index_t roomnum, index_t portal, bool f_for_sound, bool f_making_robot_path_invalid_list) {
+  int room = BOA_INDEX(roomnum);
+  int portal_index = index_to_int(portal);
+
   if (room == -1) {
     return false;
   }
-
-  room = BOA_INDEX(room);
 
   if (room >= Rooms.size() && room < Rooms.size() + BOA_num_terrain_regions) {
     int tr;
@@ -323,18 +324,23 @@ extern object *GetDoorObject(index_t roomnum);
 //	return true;
 //}
 
-index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, int end_room,
-                                                     optref<vector3> end_pos, bool f_for_sound,
-                                                     bool f_making_robot_path_invalid_list, optref<int> blocked_portal) {
+index_t BOA_DetermineStartRoomPortal(index_t start_roomnum, optref<vector3> start_pos, index_t end_roomnum,
+                                     optref<vector3> end_pos, bool f_for_sound,
+                                     bool f_making_robot_path_invalid_list, optref<index_t> blocked_portal) {
   int i;
 
-  if (start_room == -1 || end_room == -1)
-    return std::nullopt;
-  if (start_room >= Rooms.size() && end_room >= Rooms.size())
+  if (!start_roomnum || !end_roomnum)
     return std::nullopt;
 
-  start_room = BOA_INDEX(start_room);
-  end_room = BOA_INDEX(end_room);
+  const int start_room_index = BOA_INDEX(start_roomnum);
+  const int end_room_index = BOA_INDEX(end_roomnum);
+  if (start_room_index == -1 || end_room_index == -1)
+    return std::nullopt;
+  if (start_room_index >= Rooms.size() && end_room_index >= Rooms.size())
+    return std::nullopt;
+
+  int start_room = start_room_index;
+  int end_room = end_room_index;
 
   if (start_room < Rooms.size()) {
     for (i = 0; i < Rooms[start_room].portals.size(); i++) {
@@ -384,11 +390,18 @@ index_t BOA_DetermineStartRoomPortal(int start_room, optref<vector3> start_pos, 
   return static_cast<uint32_t>(i);
 }
 
-bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, float &dist, optref<int> num_blockages) {
+bool BOA_ComputeMinDist(index_t start_roomnum, index_t end_roomnum, float max_check_dist, float &dist,
+                        optref<int> num_blockages) {
   dist = 0.0f;
 
-  start_room = BOA_INDEX(start_room);
-  end_room = BOA_INDEX(end_room);
+  if (!start_roomnum || !end_roomnum)
+    return false;
+
+  int start_room = BOA_INDEX(start_roomnum);
+  int end_room = BOA_INDEX(end_roomnum);
+
+  if (start_room == -1 || end_room == -1)
+    return false;
 
   if (start_room == end_room) {
     return true;
@@ -469,70 +482,47 @@ bool BOA_ComputeMinDist(int start_room, int end_room, float max_check_dist, floa
   return true;
 }
 
-bool BOA_IsSoundAudible(int start_room, int end_room) {
-  int s_index = start_room;
-  int e_index = end_room;
+static bool BOA_ValidateRoomIndices(index_t start_room, index_t end_room, int &s_index, int &e_index) {
+  s_index = BOA_INDEX(start_room);
+  e_index = BOA_INDEX(end_room);
 
-  if (start_room == -1 || end_room == -1) {
+  if (s_index < 0 || e_index < 0)
     return false;
-  }
 
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index < Rooms.size()) {
-    if (!Rooms[s_index].used) {
-      return false;
-    }
-  } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(s_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
+  if (s_index < Rooms.size() && !Rooms[s_index].used)
+    return false;
 
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index < Rooms.size()) {
-    if (!Rooms[e_index].used) {
-      return false;
-    }
-  } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(e_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
+  if (e_index < Rooms.size() && !Rooms[e_index].used)
+    return false;
+
+  Q_ASSERT(s_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
+  Q_ASSERT(e_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
+  return true;
+}
+
+bool BOA_IsSoundAudible(index_t start_room, index_t end_room) {
+  int s_index;
+  int e_index;
+
+  if (!BOA_ValidateRoomIndices(start_room, end_room, s_index, e_index))
+    return false;
 
   return BOA_Array[s_index][e_index].sound_prop;
 }
 
-bool BOA_HasPossibleBlockage(int start_room, int end_room) {
-  int s_index = start_room;
-  int e_index = end_room;
+bool BOA_HasPossibleBlockage(index_t start_room, index_t end_room) {
+  int s_index;
+  int e_index;
 
-  if (start_room == -1 || end_room == -1) {
+  if (!BOA_ValidateRoomIndices(start_room, end_room, s_index, e_index))
     return false;
-  }
-
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index < Rooms.size()) {
-    if (!Rooms[s_index].used) {
-      return false;
-    }
-  } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(s_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
-
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index < Rooms.size()) {
-    if (!Rooms[e_index].used) {
-      return false;
-    }
-  } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(e_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
 
   return BOA_Array[s_index][e_index].blockage;
 }
-bool BOA_IsVisible(int start_room, int end_room) {
-  int s_index = start_room;
-  int e_index = end_room;
+
+bool BOA_IsVisible(index_t start_room, index_t end_room) {
+  int s_index;
+  int e_index;
 
   if (!BOA_vis_valid)
     return true;
@@ -540,60 +530,18 @@ bool BOA_IsVisible(int start_room, int end_room) {
   if (start_room == end_room)
     return true;
 
-  if (start_room == -1 || end_room == -1) {
+  if (!BOA_ValidateRoomIndices(start_room, end_room, s_index, e_index))
     return false;
-  }
-
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index < Rooms.size()) {
-    if (!Rooms[s_index].used) {
-      return false;
-    }
-  } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(s_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
-
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index < Rooms.size()) {
-    if (!Rooms[e_index].used) {
-      return false;
-    }
-  } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(e_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
 
   return BOA_Array[s_index][e_index].vis;
 }
 
-index_t BOA_GetNextRoom(int start_room, int end_room) {
-  int s_index = start_room;
-  int e_index = end_room;
+index_t BOA_GetNextRoom(index_t start_room, index_t end_room) {
+  int s_index;
+  int e_index;
 
-  if (start_room == -1 || end_room == -1) {
+  if (!BOA_ValidateRoomIndices(start_room, end_room, s_index, e_index))
     return std::nullopt;
-  }
-
-  if ((!ROOMNUM_OUTSIDE(s_index)) && s_index < Rooms.size()) {
-    if (!Rooms[s_index].used) {
-      return std::nullopt;
-    }
-  } else if (ROOMNUM_OUTSIDE(s_index)) {
-    s_index = Terrain_seg[start_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(s_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
-
-  if ((!ROOMNUM_OUTSIDE(e_index)) && e_index < Rooms.size()) {
-    if (!Rooms[e_index].used) {
-      return std::nullopt;
-    }
-  } else if (ROOMNUM_OUTSIDE(e_index)) {
-    e_index = Terrain_seg[end_room].flags.region + Rooms.size();
-  } else {
-    Q_ASSERT(e_index < Rooms.size() + MAX_BOA_TERRAIN_REGIONS);
-  }
 
   return static_cast<uint16_t>(BOA_Array[s_index][e_index].next_room);
 }
@@ -926,10 +874,17 @@ void update_path_info(const std::vector<q_item *> &node_list, int start, int end
   }
 }
 
-void BOA_FindPath(int start_room, int end_room) {
+void BOA_FindPath(index_t start_roomnum, index_t end_roomnum) {
   pq PQPath;
   int counter;
   q_item *cur_node;
+
+  if (!start_roomnum || !end_roomnum) {
+    return;
+  }
+
+  int start_room = BOA_INDEX(start_roomnum);
+  int end_room = BOA_INDEX(end_roomnum);
 
   if (start_room == -1 || end_room == -1) {
     return;
