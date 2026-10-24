@@ -558,7 +558,7 @@ void InitRoomFace(face_t &fp, int nverts) {
   ned_MarkTextureInUse(0, true);
 #endif
 
-  fp.lmi_handle = BAD_LMI_INDEX;
+  fp.lmi_handle = std::nullopt;
   fp.special_handle = std::nullopt;
   fp.light_multiple = 4;
 
@@ -651,8 +651,8 @@ void FreeAllRooms() {
 // Free the memory used by a room face structure
 void FreeRoomFace(face_t &fp) {
   if (fp.lmi_handle != BAD_LMI_INDEX) {
-    FreeLightmapInfo(fp.lmi_handle);
-    fp.lmi_handle = BAD_LMI_INDEX;
+    FreeLightmapInfo(*fp.lmi_handle);
+    fp.lmi_handle = std::nullopt;
     fp.flags.lightmap = false;
   }
 
@@ -795,9 +795,9 @@ void ClearRoomLightmaps(index_t roomnum) {
   Q_ASSERT(Rooms[*roomnum].used);
 
   for (t = 0; t < Rooms[*roomnum].faces.size(); t++) {
-    if (Rooms[*roomnum].faces[t].lmi_handle != BAD_LMI_INDEX) {
-      FreeLightmapInfo(Rooms[*roomnum].faces[t].lmi_handle);
-      Rooms[*roomnum].faces[t].lmi_handle = BAD_LMI_INDEX;
+    if (Rooms[*roomnum].faces[t].lmi_handle) {
+      FreeLightmapInfo(*Rooms[*roomnum].faces[t].lmi_handle);
+      Rooms[*roomnum].faces[t].lmi_handle = std::nullopt;
       Rooms[*roomnum].faces[t].flags.lightmap = false;
     }
   }
@@ -1394,7 +1394,9 @@ byte_istream& operator>>(byte_istream& input, face_t& data) {
   input >> data.tmap;
 
   if (data.flags.lightmap) {
-    input >> data.lmi_handle;
+    uint16_t lmi_handle = 0;
+    input >> lmi_handle;
+    data.lmi_handle = u16_to_index(lmi_handle);
     for (int i = 0; i < data.num_verts; i++)
       input >> data.face_uvls[i].u2 >> data.face_uvls[i].v2;
   }
@@ -1415,7 +1417,7 @@ byte_ostream& operator<<(byte_ostream& output, const face_t& data) {
   }
   output << reinterpret_cast<const uint16_t&>(data.flags) << data.portal_num << data.tmap;
   if (data.flags.lightmap) {
-    output << data.lmi_handle;
+    output << index_to_u16(data.lmi_handle);
     for (int i = 0; i < data.num_verts; i++)
       output << data.face_uvls[i].u2 << data.face_uvls[i].v2;
   }

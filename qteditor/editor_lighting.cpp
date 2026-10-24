@@ -181,7 +181,7 @@ void CopySqueezeBodyAndEdges(std::vector<std::vector<uint16_t>> &dest_data, cons
 void CopySqueezeDataForRooms(index_t roomnum, int facenum, std::vector<std::vector<uint16_t>> &dest_data, int dest_x,
                              int dest_y) {
   const room_t &rp = Rooms[*roomnum];
-  lightmap_info &lmi_ptr = LightmapInfo[rp.faces[facenum].lmi_handle];
+  lightmap_info &lmi_ptr = LightmapInfo[*rp.faces[facenum].lmi_handle];
   const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi_ptr.lm_handle);
 
   int w = lmi_ptr.width;
@@ -207,10 +207,10 @@ void CopySqueezeDataForRooms(index_t roomnum, int facenum, std::vector<std::vect
       if (!this_rp.faces[j].flags.lightmap)
         continue;
 
-      if (this_rp.faces[j].lmi_handle == BAD_LMI_INDEX)
+      if (!this_rp.faces[j].lmi_handle)
         continue;
 
-      if (Lmi_spoken_for[this_rp.faces[j].lmi_handle])
+      if (Lmi_spoken_for[*this_rp.faces[j].lmi_handle])
         continue;
       if (this_rp.faces[j].lmi_handle == rp.faces[facenum].lmi_handle) {
         lmi_ptr.x1 = dest_x + 1;
@@ -229,9 +229,9 @@ void CopySqueezeDataForRooms(index_t roomnum, int facenum, std::vector<std::vect
     }
   }
 
-  Q_ASSERT(rp.faces[facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(rp.faces[facenum].lmi_handle);
 
-  Lmi_spoken_for[rp.faces[facenum].lmi_handle] = 1;
+  if (rp.faces[facenum].lmi_handle) Lmi_spoken_for[*rp.faces[facenum].lmi_handle] = 1;
 
   // Free our old lightmap (the original overwrote the refcount with 1 and
   // freed; dropping extra references first reproduces that forced release).
@@ -466,17 +466,15 @@ void SqueezeLightmaps(int external, int target_roomnum) {
     // Go through each face
     for (t = 0; t < rp.faces.size(); t++) {
       const face_t &fp = rp.faces[t];
-      int lmi_handle = fp.lmi_handle;
-
       if (!fp.flags.lightmap)
         continue;
 
-      if (lmi_handle == BAD_LMI_INDEX)
+      if (!fp.lmi_handle)
         continue;
-      if (Lmi_spoken_for[lmi_handle])
+      if (Lmi_spoken_for[*fp.lmi_handle])
         continue;
 
-      const lightmap_info &lmi = LightmapInfo[lmi_handle];
+      const lightmap_info &lmi = LightmapInfo[*fp.lmi_handle];
 
       int dest_x, dest_y;
       int src_w = lmi.width;
@@ -495,16 +493,14 @@ void SqueezeLightmaps(int external, int target_roomnum) {
         // Can't find an empty slot, so search through all the other remaining faces
         for (k = t; k < rp.faces.size(); k++) {
           const face_t &fp = rp.faces[k];
-          int lmi_handle = fp.lmi_handle;
-
           if (!fp.flags.lightmap)
             continue;
-          if (lmi_handle == BAD_LMI_INDEX)
+          if (!fp.lmi_handle)
             continue;
-          if (Lmi_spoken_for[lmi_handle])
+          if (Lmi_spoken_for[*fp.lmi_handle])
             continue;
 
-          const lightmap_info &lmi = LightmapInfo[lmi_handle];
+          const lightmap_info &lmi = LightmapInfo[*fp.lmi_handle];
 
           int src_w = lmi.width;
           int src_h = lmi.height;
@@ -521,15 +517,7 @@ void SqueezeLightmaps(int external, int target_roomnum) {
 
         std::fill(Lightmap_mask.begin(), Lightmap_mask.end(), 0);
         Squeeze_lightmap_handle = AllocSqueezeLightmap();
-        
-
-        Q_ASSERT(Lmi_spoken_for[lmi_handle] == 0);
-
-        if (FindEmptyMaskSpot(src_w + 2, src_h + 2, &dest_x, &dest_y)) {
-          CopySqueezeDataForRooms(i, t, lm_data(Squeeze_lightmap_handle), dest_x, dest_y);
-        } else {
-          Q_ASSERT(false); // Get Jason, how did this happen????
-        }
+        break;
       }
     }
 
@@ -738,8 +726,9 @@ void ComputeSurfaceRes(rad_surface *surf, index_t roomnum, int facenum) {
   int i;
   float left = 1.1f, right = -1, top = 1.1f, bottom = -1;
   const face_t &fp = rp.faces[facenum];
-  int lw = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
-  int lh = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
+  const int lmi_handle = index_to_int(fp.lmi_handle);
+  int lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+  int lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
   for (i = 0; i < fp.num_verts; i++) {
     if (fp.face_uvls[i].u2 < left)
@@ -1011,7 +1000,7 @@ void DoRadiosityForRooms() {
             Light_surfaces[surface_index].flags.lightsource = 1;
         }
 
-        Light_surfaces[surface_index].normal = LightmapInfo[Rooms[i].faces[t].lmi_handle].normal;
+        Light_surfaces[surface_index].normal = LightmapInfo[*Rooms[i].faces[t].lmi_handle].normal;
         Light_surfaces[surface_index].roomnum = to_roomnum(i);
         Light_surfaces[surface_index].facenum = t;
 
@@ -1288,8 +1277,8 @@ void AssignRoomSurfaceToLightmap(index_t roomnum, int facenum, rad_surface *sp) 
   xres = sp->xresolution;
   yres = sp->yresolution;
 
-  Q_ASSERT(fp.lmi_handle != BAD_LMI_INDEX);
-  lmi_handle = fp.lmi_handle;
+  Q_ASSERT(fp.lmi_handle);
+  lmi_handle = index_to_int(fp.lmi_handle);
 
   lw = static_cast<int>(lmi_w(lmi_handle).value_or(0));
   lh = static_cast<int>(lmi_h(lmi_handle).value_or(0));
@@ -1376,9 +1365,9 @@ void BuildElementListForRoomFace(index_t roomnum, int facenum, rad_surface *surf
 
   Q_ASSERT(Rooms[*roomnum].used);
   Q_ASSERT(Rooms[*roomnum].faces[facenum].num_verts >= 3);
-  Q_ASSERT(Rooms[*roomnum].faces[facenum].lmi_handle != BAD_LMI_INDEX);
+  Q_ASSERT(Rooms[*roomnum].faces[facenum].lmi_handle);
 
-  lmi_handle = Rooms[*roomnum].faces[facenum].lmi_handle;
+  lmi_handle = index_to_int(Rooms[*roomnum].faces[facenum].lmi_handle);
   avg_vert = ScratchCenters[lmi_handle];
 
   // Make the orientation matrix
@@ -1989,7 +1978,7 @@ void DoRadiosityForTerrain() {
           //	Light_surfaces[surf_index].flags.lightsource = true;
         }
 
-        Light_surfaces[surf_index].normal = LightmapInfo[Rooms[i].faces[t].lmi_handle].normal;
+        Light_surfaces[surf_index].normal = LightmapInfo[*Rooms[i].faces[t].lmi_handle].normal;
         Light_surfaces[surf_index].roomnum = to_roomnum(i);
         Light_surfaces[surf_index].facenum = t;
 

@@ -134,7 +134,7 @@ void ClearObjectLightmaps(object *obj) {
       f.u2.clear();
       f.v2.clear();
       f.num_verts = 0;
-      f.lmi_handle = std::numeric_limits<uint16_t>::max();
+      f.lmi_handle = std::nullopt;
     }
   }
   obj->lm_object.num_models = 0;

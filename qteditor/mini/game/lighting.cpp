@@ -286,13 +286,15 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
     if (!fp.flags.lightmap)
       continue;
 
-    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
+    const int lmi_handle = index_to_int(fp.lmi_handle);
+
+    if (Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
-    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
     
 
     // Check for backfaces
@@ -371,7 +373,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
       if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
         GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -386,9 +388,9 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
       GameLightmaps[*lm_handle].flags.changed = true;
       GameLightmaps[*lm_handle].flags.limits = true;
 
-      if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
-        lmilist[num_spoken_for] = fp.lmi_handle;
-        Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+      if (!(Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))) {
+        lmilist[num_spoken_for] = lmi_handle;
+        Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
         num_spoken_for++;
       }
     } else // Start a new dynamic lightmap
@@ -402,7 +404,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -411,7 +413,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
         }
       }
 
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
@@ -436,14 +438,14 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
       GameLightmaps[*lm_handle].flags.changed = true;
       GameLightmaps[*lm_handle].flags.limits = true;
 
-      Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
+      Dynamic_face_list.push_back(dynamic_face{lmi_handle});
 
-      lmilist[num_spoken_for] = fp.lmi_handle;
-      Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+      lmilist[num_spoken_for] = lmi_handle;
+      Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend.push_back(fp.lmi_handle);
+      Edges_to_blend.push_back(lmi_handle);
     }
 
     vector3 element_vec;
@@ -457,7 +459,7 @@ void ApplyLightingToExternalRoom(const vector3 &pos, index_t roomnum, float ligh
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1054,13 +1056,15 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
     if (!fp.flags.lightmap)
       continue;
 
-    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
+    const int lmi_handle = index_to_int(fp.lmi_handle);
+
+    if (Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
-    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
     
 
     // Check for backfaces
@@ -1145,7 +1149,7 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
 
     if (lmi_ptr.dynamic != BAD_LM_INDEX) // already lit, so just adjust, not start over
     {
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
       if (start_x + lmi_ptr.x1 < GameLightmaps[*lm_handle].cx1)
         GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -1160,9 +1164,9 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
       GameLightmaps[*lm_handle].flags.changed = true;
       GameLightmaps[*lm_handle].flags.limits = true;
 
-      if (!(Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))) {
-        lmilist[num_spoken_for] = fp.lmi_handle;
-        Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+      if (!(Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))) {
+        lmilist[num_spoken_for] = lmi_handle;
+        Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
         num_spoken_for++;
       }
     } else // Start a new dynamic lightmap
@@ -1176,7 +1180,7 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
       }
 
       // Now copy our source data to our dest data so we have a base to work with
-      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+      const std::vector<std::vector<uint16_t>> &src_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
       uint16_t *dyn_data = Dynamic_lightmaps[*dynamic_handle].mem_ptr;
 
       for (int y = 0; y < yres; y++) {
@@ -1185,7 +1189,7 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
         }
       }
 
-      lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+      lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
       // Mark it as changed
       lmi_ptr.dynamic = static_cast<uint16_t>(*dynamic_handle);
@@ -1210,14 +1214,14 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
       GameLightmaps[*lm_handle].flags.changed = true;
       GameLightmaps[*lm_handle].flags.limits = true;
 
-      Dynamic_face_list.push_back(dynamic_face{fp.lmi_handle});
+      Dynamic_face_list.push_back(dynamic_face{lmi_handle});
 
-      lmilist[num_spoken_for] = fp.lmi_handle;
-      Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+      lmilist[num_spoken_for] = lmi_handle;
+      Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
       num_spoken_for++;
 
       // Setup edge blending
-      Edges_to_blend.push_back(fp.lmi_handle);
+      Edges_to_blend.push_back(lmi_handle);
     }
 
     vector3 element_vec;
@@ -1231,7 +1235,7 @@ void ApplyLightingToRooms(vector3 &pos, index_t roomnum, float light_dist, float
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -1988,16 +1992,18 @@ void DestroyLight(index_t roomnum, int facenum) {
     if (!fp.flags.lightmap)
       continue;
 
+    const int lmi_handle = index_to_int(fp.lmi_handle);
+
     if (GameTextures[fp.tmap].flags.light)
       continue;
 
-    if (Lmi_spoken_for[fp.lmi_handle / 8] & (1 << (fp.lmi_handle % 8)))
+    if (Lmi_spoken_for[lmi_handle / 8] & (1 << (lmi_handle % 8)))
       continue;
 
-    int xres = static_cast<int>(lmi_w(fp.lmi_handle).value_or(0));
-    int yres = static_cast<int>(lmi_h(fp.lmi_handle).value_or(0));
+    int xres = static_cast<int>(lmi_w(lmi_handle).value_or(0));
+    int yres = static_cast<int>(lmi_h(lmi_handle).value_or(0));
 
-    lightmap_info &lmi_ptr = LightmapInfo[fp.lmi_handle];
+    lightmap_info &lmi_ptr = LightmapInfo[lmi_handle];
 
     vector3 subvec = center - lmi_ptr.upper_left;
     float dist_from_plane = vm_DotProduct(subvec, lmi_ptr.normal);
@@ -2068,7 +2074,7 @@ void DestroyLight(index_t roomnum, int facenum) {
 
     // Now copy our source data to our dest data so we have a base to work with
 
-    index_t lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+    index_t lm_handle = LightmapInfo[lmi_handle].lm_handle;
 
     if (!GameLightmaps[*lm_handle].flags.limits) {
       GameLightmaps[*lm_handle].cx1 = start_x + lmi_ptr.x1;
@@ -2090,8 +2096,8 @@ void DestroyLight(index_t roomnum, int facenum) {
     GameLightmaps[*lm_handle].flags.changed = true;
     GameLightmaps[*lm_handle].flags.limits = true;
 
-    lmilist[num_spoken_for] = fp.lmi_handle;
-    Lmi_spoken_for[fp.lmi_handle / 8] |= (1 << (fp.lmi_handle % 8));
+    lmilist[num_spoken_for] = lmi_handle;
+    Lmi_spoken_for[lmi_handle / 8] |= (1 << (lmi_handle % 8));
     num_spoken_for++;
 
     vector3 element_vec;
@@ -2105,7 +2111,7 @@ void DestroyLight(index_t roomnum, int facenum) {
     // Go through and change each element of this lightmap
     // SLOW!
 
-    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[fp.lmi_handle].lm_handle);
+    std::vector<std::vector<uint16_t>> &dest_data = lm_data(LightmapInfo[lmi_handle].lm_handle);
     for (int y = 0; y < height; y++, base_vector -= (facematrix.uvec * lmi_ptr.yspacing)) {
       element_vec = base_vector;
 
@@ -2138,7 +2144,7 @@ void DestroyLight(index_t roomnum, int facenum) {
       }
     }
 
-    BlendLightingEdges(fp.lmi_handle);
+    BlendLightingEdges(lmi_handle);
   }
 
   for (i = 0; i < num_spoken_for; i++) {

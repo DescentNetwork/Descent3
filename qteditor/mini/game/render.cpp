@@ -321,10 +321,10 @@ void OutlineCurrentFace(index_t roomnum, int facenum, int edgenum, int vertnum, 
   }
   // Draw upper left cross
   if (Outline_lightmaps && (rp.faces[facenum].flags.lightmap)) {
-    Q_ASSERT(rp.faces[facenum].lmi_handle != BAD_LMI_INDEX);
+    Q_ASSERT(rp.faces[facenum].lmi_handle);
 
     p0.p3_flags = g3point_flags_t{};
-    c0 = g3_RotatePoint(p0, LightmapInfo[rp.faces[facenum].lmi_handle].upper_left);
+    c0 = g3_RotatePoint(p0, LightmapInfo[*rp.faces[facenum].lmi_handle].upper_left);
     if (!c0) {
       // Draw a little cross at the current vert
       g3_ProjectPoint(p0); // make sure projected
@@ -1257,7 +1257,7 @@ void RenderSpecularFaces(index_t roomnum) {
 
   for (i = 0; i < Num_specular_faces_to_render; i++) {
     face_t &fp = rp.faces[Specular_faces[i]];
-    int lm_handle = LightmapInfo[fp.lmi_handle].spec_map;
+    int lm_handle = LightmapInfo[*fp.lmi_handle].spec_map;
     Q_ASSERT(lm_handle != BAD_LM_INDEX);
     for (vn = 0; vn < fp.num_verts; vn++) {
       pointbuffer[vn] = World_point_buffer[rp.wpb_index + fp.face_verts[vn]];
@@ -1271,8 +1271,8 @@ void RenderSpecularFaces(index_t roomnum) {
 
     int save_w = static_cast<int>(lm_w(lm_handle).value_or(255));
     int save_h = static_cast<int>(lm_h(lm_handle).value_or(255));
-    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(LightmapInfo[fp.lmi_handle].lm_handle).value_or(0));
-    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(LightmapInfo[fp.lmi_handle].lm_handle).value_or(0));
+    GameLightmaps[lm_handle].width = static_cast<uint8_t>(lm_w(LightmapInfo[*fp.lmi_handle].lm_handle).value_or(0));
+    GameLightmaps[lm_handle].height = static_cast<uint8_t>(lm_h(LightmapInfo[*fp.lmi_handle].lm_handle).value_or(0));
     g3_DrawPoly(fp.num_verts, pointlist, lm_handle, map_type::lightmap);
     GameLightmaps[lm_handle].width = save_w;
     GameLightmaps[lm_handle].height = save_h;
@@ -1343,12 +1343,12 @@ void RenderSpecularFacesFlat(index_t roomnum) {
     index_t lm_handle;
     int w, h;
 
-    if (fp->lmi_handle == 65535) {
+    if (!fp->lmi_handle) {
       // this face shouldn't be rendered during the specular pass...skip it
       continue;
     }
 
-    lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+    lm_handle = LightmapInfo[*fp->lmi_handle].lm_handle;
     const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
     w = static_cast<int>(lm_w(lm_handle).value_or(255));
     h = static_cast<int>(lm_h(lm_handle).value_or(255));
@@ -1666,7 +1666,7 @@ void RenderLightmapFace(index_t roomnum, int facenum) {
   uint8_t face_code = 255;
   if (NoLightmaps)
     return;
-  if (fp.lmi_handle == BAD_LMI_INDEX)
+  if (!fp.lmi_handle)
     return;
   if (!(fp.flags.lightmap))
     return;
@@ -1681,7 +1681,7 @@ void RenderLightmapFace(index_t roomnum, int facenum) {
   if (In_editor_mode && !Lighting_on)
     return;
 #endif
-  index_t lm_handle = LightmapInfo[fp.lmi_handle].lm_handle;
+  index_t lm_handle = LightmapInfo[*fp.lmi_handle].lm_handle;
   // Setup saturation if needed
   if (GameTextures[fp.tmap].flags.saturate_lightmap)
     rend_SetAlphaType(alpha_blend_type::lightmap_blend_saturate);
@@ -1864,7 +1864,7 @@ void RenderFace(index_t roomnum, int facenum) {
     }
 
     if (fp->flags.lightmap) {
-      index_t lm_handle = LightmapInfo[fp->lmi_handle].lm_handle;
+      index_t lm_handle = LightmapInfo[*fp->lmi_handle].lm_handle;
       const std::vector<std::vector<uint16_t>> &data = lm_data(lm_handle);
       int w = static_cast<int>(lm_w(lm_handle).value_or(255));
       int h = static_cast<int>(lm_h(lm_handle).value_or(255));
@@ -1933,7 +1933,7 @@ void RenderFace(index_t roomnum, int facenum) {
       rend_SetOverlayType(overlay_type::none);
     else
       rend_SetOverlayType(overlay_type::blend);
-    rend_SetOverlayMap(LightmapInfo[fp->lmi_handle].lm_handle);
+    rend_SetOverlayMap(LightmapInfo[*fp->lmi_handle].lm_handle);
   } else
     rend_SetOverlayType(overlay_type::none);
   // Select texture type
@@ -2071,9 +2071,9 @@ draw_fog:
     rend_SetTextureType(texture_type::flat);
     rend_SetAlphaType(alpha_blend_type::always);
     if (fp == &Rooms[*app.current.room].faces[*app.current.face] && (fp->flags.lightmap)) {
-      Q_ASSERT(fp->lmi_handle != BAD_LMI_INDEX);
+      Q_ASSERT(fp->lmi_handle);
 
-      const lightmap_info &lmi = LightmapInfo[fp->lmi_handle];
+      const lightmap_info &lmi = LightmapInfo[*fp->lmi_handle];
       const std::vector<std::vector<uint16_t>> &src_data = lm_data(lmi.lm_handle);
       matrix facematrix;
       vector3 fvec = -lmi.normal;
@@ -2360,7 +2360,7 @@ void RenderRoomUnsorted(index_t roomnum) {
         state_limited_element state_element;
         state_element.facenum = index_t{static_cast<uint32_t>(fn)};
         if (fp.flags.lightmap)
-          state_element.sort_key = (index_to_int(LightmapInfo[fp.lmi_handle].lm_handle) * MAX_TEXTURES) + fp.tmap;
+          state_element.sort_key = (index_to_int(LightmapInfo[*fp.lmi_handle].lm_handle) * MAX_TEXTURES) + fp.tmap;
         else
           state_element.sort_key = fp.tmap;
         state_elements.push_back(state_element);
