@@ -399,7 +399,7 @@ void WorldObjectsGenericDialog::updateDialog() {
         const polyface &fp = sm.faces[t];
         if (fp.texnum && !already_used[*fp.texnum]) {
           already_used[*fp.texnum] = 1;
-          const int texnum = pm.textures[*fp.texnum];
+          const int texnum = index_to_int(pm.textures[*fp.texnum]);
           const texture &texp = GameTextures[texnum];
           if (texnum == 0)
             continue;

@@ -165,8 +165,8 @@ static void CollideSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
         const polyface &fp = sm.faces[i];
 
         if (fp.texnum &&
-            !GameTextures[pm.textures[*fp.texnum]].flags.fly_thru &&
-            !GameTextures[pm.textures[*fp.texnum]].flags.pass_thru)
+            !GameTextures[*pm.textures[*fp.texnum]].flags.fly_thru &&
+            !GameTextures[*pm.textures[*fp.texnum]].flags.pass_thru)
         {
           Q_ASSERT(fp.nverts <= 32);
 

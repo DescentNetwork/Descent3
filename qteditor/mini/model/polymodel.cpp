@@ -861,7 +861,7 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
       int i, n;
 
       infile >> n;
-      if (n != pm.n_textures) {
+      if (n != static_cast<int>(pm.textures.size())) {
         Q_ASSERT(false); // Get Jason, new model doesn't match old model!!!
         return false;
       }
@@ -878,13 +878,13 @@ bool ReloadModelTextures(int modelnum, byte_istream &infile) {
           // See if it is already in memory
           ret = FindTextureName(name_buf);
           if (!ret) {
-            ret = 0;
+            ret = index_t{0};
             // mprintf(0,"Object texture %s is not in memory!\n",name_buf);
           }
         }
 
-        pm.textures[i] = *ret;
-        if (GameTextures[*ret].alpha < 0.99f)
+        pm.textures[i] = ret;
+        if (ret && GameTextures[*ret].alpha < 0.99f)
           pm.flags.alpha = true;
       }
 
@@ -1668,7 +1668,7 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
       // mprintf(0,"Got chunk TXTR, len=%d\n",len);
 
       infile >> n;
-      pm->n_textures = n;
+      pm->textures.assign(n, index_t{});
       Q_ASSERT(n < MAX_MODEL_TEXTURES);
 
       for (i = 0; i < n; i++) {
@@ -1683,13 +1683,13 @@ bool ReadNewModelFile(int polynum, byte_istream &infile) {
           // See if it is already in memory
           ret = FindTextureName(name_buf);
           if (!ret) {
-            ret = 0;
+            ret = index_t{0};
             // mprintf(0,"Object texture %s is not in memory!\n",name_buf);
           }
         }
 
-        pm->textures[i] = *ret;
-        if (GameTextures[*ret].alpha < 0.99f)
+        pm->textures[i] = ret;
+        if (ret && GameTextures[*ret].alpha < 0.99f)
           pm->flags.alpha = true;
       }
 
@@ -2101,8 +2101,8 @@ void PageInPolymodel(index_t polynum, std::optional<object_type_e> type, optref<
 
   // See if textures need to be remapped
   int remap = 0;
-  for (int t = 0; t < Poly_models[*polynum].n_textures; t++)
-    if (Poly_models[*polynum].textures[t] == 0) // is there a bad texture?
+  for (int t = 0; t < static_cast<int>(Poly_models[*polynum].textures.size()); t++)
+    if (!Poly_models[*polynum].textures[t] || *Poly_models[*polynum].textures[t] == 0) // is there a bad texture?
       remap = 1;
 
   if (remap == 1) {
@@ -2990,8 +2990,8 @@ void RemapPolyModels() {
     if (Poly_models[i].used == 0 || (Poly_models[i].flags.not_resident))
       continue;
 
-    for (int t = 0; t < Poly_models[i].n_textures; t++)
-      if (Poly_models[i].textures[t] == 0) // is there a bad texture?
+    for (int t = 0; t < static_cast<int>(Poly_models[i].textures.size()); t++)
+      if (!Poly_models[i].textures[t] || *Poly_models[i].textures[t] == 0) // is there a bad texture?
         remap = 1;
 
     if (remap == 1) {

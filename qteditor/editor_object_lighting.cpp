@@ -337,10 +337,10 @@ int ComputeSurfacesForObjects(int surface_index, int terrain) {
             Light_surfaces[surface_index].emittance.b = 0.0f;
             Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[*sm.faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[*sm.faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[*sm.faces[j].texnum]].b;
-            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[*sm.faces[j].texnum]].reflectivity;
+            Light_surfaces[surface_index].emittance.r = GameTextures[*po.textures[*sm.faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[*po.textures[*sm.faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[*po.textures[*sm.faces[j].texnum]].b;
+            Light_surfaces[surface_index].reflectivity = GameTextures[*po.textures[*sm.faces[j].texnum]].reflectivity;
             if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > 0.005f)
               Light_surfaces[surface_index].flags.lightsource = 1;
           }
@@ -419,10 +419,10 @@ int ComputeSurfacesForObjectsForSingleRoom(int surface_index, index_t roomnum) {
             Light_surfaces[surface_index].emittance.b = 0.0f;
             Light_surfaces[surface_index].reflectivity = 0.5f;
           } else {
-            Light_surfaces[surface_index].emittance.r = GameTextures[po.textures[*sm.faces[j].texnum]].r;
-            Light_surfaces[surface_index].emittance.g = GameTextures[po.textures[*sm.faces[j].texnum]].g;
-            Light_surfaces[surface_index].emittance.b = GameTextures[po.textures[*sm.faces[j].texnum]].b;
-            Light_surfaces[surface_index].reflectivity = GameTextures[po.textures[*sm.faces[j].texnum]].reflectivity;
+            Light_surfaces[surface_index].emittance.r = GameTextures[*po.textures[*sm.faces[j].texnum]].r;
+            Light_surfaces[surface_index].emittance.g = GameTextures[*po.textures[*sm.faces[j].texnum]].g;
+            Light_surfaces[surface_index].emittance.b = GameTextures[*po.textures[*sm.faces[j].texnum]].b;
+            Light_surfaces[surface_index].reflectivity = GameTextures[*po.textures[*sm.faces[j].texnum]].reflectivity;
           }
 
           Light_surfaces[surface_index].surface_type = rad_surface_type::room_object;
@@ -860,7 +860,7 @@ int TestObjectLightAdjacency(object& obj, int subnum, int facenum, lmi_type type
 
   if (!afp.texnum)
     return 0;
-  int tex = pm.textures[*afp.texnum];
+  int tex = index_to_int(pm.textures[*afp.texnum]);
 
   if (GameTextures[tex].r > 0 || GameTextures[tex].g > 0 || GameTextures[tex].b > 0)
     return 0;
@@ -905,7 +905,7 @@ StartOver:
 
       // Don't do combine light sources
 
-      tex = pm.textures[*bfp.texnum];
+      tex = index_to_int(pm.textures[*bfp.texnum]);
       if (GameTextures[tex].r > 0 || GameTextures[tex].g > 0 || GameTextures[tex].b > 0)
         continue;
 

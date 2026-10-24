@@ -83,14 +83,14 @@
 
 // gun bank
 struct weapon_bank {
-  int parent;
+  index_t parent;
   vector3 pnt;
   vector3 norm;
 };
 
 // attach bank
 struct attach_bank {
-  int parent;
+  index_t parent;
   vector3 pnt;
   vector3 norm;
   vector3 uvec;
@@ -309,8 +309,7 @@ struct poly_model {
   vector3 anim_size_offset;
 
   float radius;
-  int n_textures;
-  int16_t textures[MAX_MODEL_TEXTURES]; // a list of bitmap indices
+  std::vector<index_t> textures; // a list of bitmap indices
 
   std::vector<bsp_info> submodel; // an array of size n_models of submodel info.
   int num_key_angles;
@@ -320,11 +319,8 @@ struct poly_model {
   int frame_min, frame_max; // For TIMED polymodels, the min/max frames
 
   std::vector<weapon_bank> weapon_slots; // array of gun banks
-
   std::vector<weapon_bank> ground_slots; // array of ground planes
-
   std::vector<attach_bank> attach_slots;
-
   std::vector<poly_wb_info> poly_wb; // array of weapon batteries
 
   std::vector<int> render_order; // internal use

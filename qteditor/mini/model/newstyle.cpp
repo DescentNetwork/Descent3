@@ -195,7 +195,7 @@ inline void RenderSubmodelFace(poly_model &pm, bsp_info &sm, int facenum) {
 
   // Setup texturing
   if (fp.texnum)
-    texp = &GameTextures[pm.textures[*fp.texnum]];
+    texp = &GameTextures[*pm.textures[*fp.texnum]];
 
   if (texp && custom && Polymodel_use_effect && (Polymodel_effect.type.custom_texture))
     texp = &GameTextures[Polymodel_effect.custom_texture];
@@ -720,7 +720,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
       continue;
 
     if (fp.texnum) {
-      texp = &GameTextures[pm.textures[*fp.texnum]];
+      texp = &GameTextures[*pm.textures[*fp.texnum]];
 
       if (texp->flags.alpha || texp->flags.saturate) {
         alpha_faces[num_alpha_faces++] = i;
@@ -731,7 +731,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
     if (StateLimited) {
       state_limited_element state_element;
       state_element.facenum = index_t{static_cast<uint32_t>(i)};
-      state_element.sort_key = pm.textures[*fp.texnum];
+      state_element.sort_key = index_to_int(pm.textures[*fp.texnum]);
       state_elements.push_back(state_element);
     } else
       RenderSubmodelFace(pm, sm, i);
@@ -779,7 +779,7 @@ void RenderSubmodelFacesUnsorted(poly_model &pm, bsp_info &sm) {
                       continue;*/
 
       if ((Polymodel_effect.type.specular_model) ||
-          (fp.texnum && GameTextures[pm.textures[*fp.texnum]].flags.smooth_specular))
+          (fp.texnum && GameTextures[*pm.textures[*fp.texnum]].flags.smooth_specular))
         RenderSubmodelFaceSpecular(pm, sm, i);
     }
 
@@ -1018,12 +1018,12 @@ void RenderSubmodel(poly_model &pm, bsp_info &sm, uint32_t f_render_sub) {
       rend_SetColorModel(color_model::mono);
       rend_SetOverlayType(overlay_type::none);
 
-      int bm_handle = GetTextureBitmap(pm.textures[*sm.faces[0].texnum], 0);
-      rend_SetAlphaValue(GameTextures[pm.textures[*sm.faces[0].texnum]].alpha * 255);
+      int bm_handle = GetTextureBitmap(index_to_int(pm.textures[*sm.faces[0].texnum]), 0);
+      rend_SetAlphaValue(GameTextures[*pm.textures[*sm.faces[0].texnum]].alpha * 255);
 
       vm_MakeZero(pos);
 
-      if (GameTextures[pm.textures[*sm.faces[0].texnum]].flags.saturate)
+      if (GameTextures[*pm.textures[*sm.faces[0].texnum]].flags.saturate)
         rend_SetAlphaType(alpha_blend_type::saturate_texture);
       else
         rend_SetAlphaType(alpha_blend_type::constant_texture);
