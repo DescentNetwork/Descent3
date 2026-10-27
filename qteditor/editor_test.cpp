@@ -1257,15 +1257,15 @@ private slots:
     root->type = bsp_node_type::node;
     root->plane = bspplane{1.0f, 0.0f, 0.0f, -100.0f, 0};
     root->node_roomnum = 3;
-    root->node_facenum = 4;
-    root->node_subnum = -2;
+    root->node_facenum = index_t{4};
+    root->node_subnum = std::nullopt;
 
     bspnode *front = new bspnode{};
     front->type = bsp_node_type::node;
     front->plane = bspplane{0.0f, 1.0f, 0.0f, -50.0f, 0};
-    front->node_roomnum = 5;
-    front->node_facenum = 6;
-    front->node_subnum = 1;
+    front->node_roomnum = index_t{5};
+    front->node_facenum = index_t{6};
+    front->node_subnum = index_t{1};
     front->front = new bspnode{};
     front->front->type = bsp_node_type::empty_leaf;
     front->back = new bspnode{};
@@ -1302,13 +1302,13 @@ private slots:
     QCOMPARE(MineBSP.root->plane.a, 1.0f);
     QCOMPARE(MineBSP.root->plane.d, -100.0f);
     QCOMPARE(MineBSP.root->node_roomnum, to_roomnum(3));
-    QCOMPARE(int(MineBSP.root->node_facenum), 4);
-    QCOMPARE(int(MineBSP.root->node_subnum), -2);
+    QCOMPARE(int(*MineBSP.root->node_facenum), 4);
+    QCOMPARE(bool(MineBSP.root->node_subnum.has_value()), false);
     QVERIFY(MineBSP.root->front != nullptr);
     QCOMPARE(int(MineBSP.root->front->type), int(bsp_node_type::node));
     QCOMPARE(MineBSP.root->front->plane.b, 1.0f);
     QCOMPARE(MineBSP.root->front->node_roomnum, to_roomnum(5));
-    QCOMPARE(int(MineBSP.root->front->node_subnum), 1);
+    QCOMPARE(int(*MineBSP.root->front->node_subnum), 1);
     QVERIFY(MineBSP.root->front->front != nullptr);
     QCOMPARE(int(MineBSP.root->front->front->type), int(bsp_node_type::empty_leaf));
     QVERIFY(MineBSP.root->front->back != nullptr);

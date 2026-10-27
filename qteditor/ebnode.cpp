@@ -54,25 +54,25 @@ bool EBNode_VerifyGraph() {
 
   MakeBOA();
 
-  for (size_t i = Rooms.size(); i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (int i = static_cast<int>(Rooms.size()); i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
     bn_list *nlist = BNode_GetBNListPtr(i);
-    size_t cur_region = i - Rooms.size() - 2;
+    int cur_region = i - static_cast<int>(Rooms.size()) - 2;
 
-    for (size_t j = nlist->nodes.size() - 1; j >= 0; j--) {
+    for (int j = static_cast<int>(nlist->nodes.size()) - 1; j >= 0; j--) {
       int cell = GetTerrainRoomFromPos(nlist->nodes[j].pos).value_or(-1);
       if (cur_region != Terrain_seg[cell].flags.region) {
-        for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
+        for (int k = 0; k < static_cast<int>(nlist->nodes[j].edges.size()); k++) {
           if (BOA_INDEX(nlist->nodes[j].edges[k].end_room) >= 0 &&
-              BOA_INDEX(nlist->nodes[j].edges[k].end_room) < Rooms.size()) {
+              BOA_INDEX(nlist->nodes[j].edges[k].end_room) < static_cast<int>(Rooms.size())) {
             int r = nlist->nodes[j].edges[k].end_room;
             int p = nlist->nodes[j].edges[k].end_index;
 
             for (int x = 0; x < Rooms[r].portals.size(); x++) {
-              if (Rooms[r].portals[x].bnode_index == p) {
+              if (Rooms[r].portals[x].bnode_index && *Rooms[r].portals[x].bnode_index == p) {
                 const index_t cr = Rooms[r].portals[x].connected_room;
                 const index_t cp = Rooms[r].portals[x].connected_portal;
                 if (cr && cp)
-                  Rooms[*cr].portals[*cp].bnode_index = -1;
+                  Rooms[*cr].portals[*cp].bnode_index = std::nullopt;
               }
             }
           }
@@ -82,18 +82,18 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
     bn_list *nlist;
 
-    if (i < Rooms.size() && !Rooms[i].used)
+    if (i < static_cast<int>(Rooms.size()) && !Rooms[i].used)
       continue;
-    if (i < Rooms.size() && Rooms[i].flags.external)
+    if (i < static_cast<int>(Rooms.size()) && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (size_t j = 0; j < nlist->nodes.size(); j++) {
-      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
+    for (int j = 0; j < static_cast<int>(nlist->nodes.size()); j++) {
+      for (int k = 0; k < static_cast<int>(nlist->nodes[j].edges.size()); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           LOG_INFO("EBNode Verify: Removed a skinny edge.\n");
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
@@ -103,17 +103,17 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (size_t i = 0; i < Rooms.size(); i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if (Rooms[i].used) {
       room_t &rp = Rooms[i];
       if (Rooms[i].flags.external)
         continue;
 
       for (int j = 0; j < Rooms[i].portals.size(); j++) {
-        if (Rooms[i].portals[j].bnode_index >= 0 && Rooms[i].portals[j].bnode_index >= Rooms[i].bn_info.nodes.size()) {
+        if (Rooms[i].portals[j].bnode_index && *Rooms[i].portals[j].bnode_index >= static_cast<int16_t>(Rooms[i].bn_info.nodes.size())) {
           LOG_INFO("EBNode: Bashed an invalid node\n");
-          Rooms[i].portals[j].bnode_index = -1;
-        } else if (Rooms[i].portals[j].bnode_index < 0) {
+          Rooms[i].portals[j].bnode_index = std::nullopt;
+        } else if (!Rooms[i].portals[j].bnode_index) {
           bool f_add = true;
 
           if (!((rp.portals[j].flags.block) && !(rp.portals[j].flags.block_removable))) {
@@ -121,8 +121,8 @@ bool EBNode_VerifyGraph() {
           }
 
           if ((rp.portals[j].flags.render_faces) && !(rp.portals[j].flags.rendered_flythrough)) {
-            if (!(GameTextures[rp.faces[rp.portals[j].portal_face].tmap].flags.breakable ||
-              GameTextures[rp.faces[rp.portals[j].portal_face].tmap].flags.forcefield)) {
+            if (!(GameTextures[rp.faces[*rp.portals[j].portal_face].tmap].flags.breakable ||
+              GameTextures[rp.faces[*rp.portals[j].portal_face].tmap].flags.forcefield)) {
               f_add = false;
             }
           }
@@ -133,8 +133,8 @@ bool EBNode_VerifyGraph() {
 
           if (f_add) {
             vector3 pos;
-            pos = rp.portals[j].path_pnt + rp.faces[rp.portals[j].portal_face].normal * 0.75f;
-            rp.portals[j].bnode_index = EBNode_AddNode(i, pos, false, false);
+            pos = rp.portals[j].path_pnt + rp.faces[*rp.portals[j].portal_face].normal * 0.75f;
+            rp.portals[j].bnode_index = index_t{static_cast<uint32_t>(EBNode_AddNode(i, pos, false, false))};
             LOG_INFO("EBNode Verify: Added a portal node\n");
           }
         }
@@ -142,7 +142,7 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (int region = 0; region < BOA_num_terrain_regions; region++) {
+  for (int region = 0; region < static_cast<int>(BOA_num_terrain_regions); region++) {
     for (int i = 0; i < BOA_num_connect[region]; i++) {
       const index_t end_room = BOA_connect[region][i].roomnum;
       const index_t p = BOA_connect[region][i].portal;
@@ -150,23 +150,22 @@ bool EBNode_VerifyGraph() {
       const room_t &rp = Rooms[*end_room];
 
       vector3 pos;
-      pos = rp.portals[*p].path_pnt - rp.faces[rp.portals[*p].portal_face].normal * 0.75f;
+      pos = rp.portals[*p].path_pnt - rp.faces[*rp.portals[*p].portal_face].normal * 0.75f;
 
       const index_t external_room = rp.portals[*p].connected_room;
       const index_t external_portal = rp.portals[*p].connected_portal;
       Q_ASSERT(external_room && external_portal && Rooms[*external_room].flags.external);
 
-      if (Rooms[*external_room].portals[*external_portal].bnode_index < 0) {
-        Rooms[*external_room].portals[*external_portal].bnode_index =
-            EBNode_AddNode(Rooms.size() + region, pos, false, false);
-        if (Rooms[*end_room].portals[*p].bnode_index >= 0)
-          EBNode_AddEdge(Rooms[*external_room].portals[*external_portal].bnode_index, Rooms.size() + region,
-                         Rooms[*end_room].portals[*p].bnode_index, *end_room);
+      if (!Rooms[*external_room].portals[*external_portal].bnode_index) {
+        Rooms[*external_room].portals[*external_portal].bnode_index = index_t{static_cast<uint32_t>(EBNode_AddNode(static_cast<int>(Rooms.size()) + region, pos, false, false))};
+        if (Rooms[*end_room].portals[*p].bnode_index.has_value())
+          EBNode_AddEdge(*Rooms[*external_room].portals[*external_portal].bnode_index, static_cast<int>(Rooms.size()) + region,
+                         *Rooms[*end_room].portals[*p].bnode_index, *end_room);
       }
     }
   }
 
-  for (size_t i = 0; i < Rooms.size(); i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if (Rooms[i].used) {
       room_t &rp = Rooms[i];
       if (Rooms[i].flags.external)
@@ -174,46 +173,46 @@ bool EBNode_VerifyGraph() {
 
       for (int j = 0; j < Rooms[i].portals.size(); j++) {
         if ((Rooms[i].portals[j].flags.block) && !(Rooms[i].portals[j].flags.block_removable)) {
-          if (Rooms[i].portals[j].bnode_index >= 0) {
+          if (Rooms[i].portals[j].bnode_index.has_value()) {
             LOG_INFO("EBNode Verify: Removed a node.\n");
-            EBNode_RemoveNode(i, Rooms[i].portals[j].bnode_index);
+            EBNode_RemoveNode(i, *Rooms[i].portals[j].bnode_index);
           }
           continue;
         }
 
         if ((Rooms[i].portals[j].flags.render_faces) && !(Rooms[i].portals[j].flags.rendered_flythrough)) {
-          if (!(GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags.breakable ||
-                GameTextures[Rooms[i].faces[Rooms[i].portals[j].portal_face].tmap].flags.forcefield)) {
-            if (Rooms[i].portals[j].bnode_index >= 0) {
+          if (!(GameTextures[Rooms[i].faces[*Rooms[i].portals[j].portal_face].tmap].flags.breakable ||
+                GameTextures[Rooms[i].faces[*Rooms[i].portals[j].portal_face].tmap].flags.forcefield)) {
+            if (Rooms[i].portals[j].bnode_index.has_value()) {
               LOG_INFO("EBNode Verify: Removed a node.\n");
-              EBNode_RemoveNode(i, Rooms[i].portals[j].bnode_index);
+              EBNode_RemoveNode(i, *Rooms[i].portals[j].bnode_index);
             }
             continue;
           }
         }
 
         if (Rooms[i].portals[j].flags.too_small_for_robot) {
-          if (Rooms[i].portals[j].bnode_index >= 0) {
+          if (Rooms[i].portals[j].bnode_index.has_value()) {
             LOG_INFO("EBNode Verify: Removed a node.\n");
-            EBNode_RemoveNode(i, Rooms[i].portals[j].bnode_index);
+            EBNode_RemoveNode(i, *Rooms[i].portals[j].bnode_index);
           }
           continue;
         }
 
-        if (Rooms[i].portals[j].bnode_index < 0) {
+        if (!Rooms[i].portals[j].bnode_index) {
           if (rp.flags.external) {
             const index_t cr = rp.portals[j].connected_room;
             const index_t cp = rp.portals[j].connected_portal;
             if (!cr || !cp)
               continue;
-            int ci = Rooms[*cr].portals[*cp].bnode_index;
+            int ci = Rooms[*cr].portals[*cp].bnode_index ? static_cast<int>(*Rooms[*cr].portals[*cp].bnode_index) : -1;
 
             if (Rooms[*cr].flags.external)
               continue;
 
             vector3 pos;
-            pos = rp.portals[j].path_pnt + rp.faces[rp.portals[j].portal_face].normal * 0.75f;
-            index_t roomnum = BOA_INDEX(GetTerrainRoomFromPos(pos).value_or(-1));
+            pos = rp.portals[j].path_pnt + rp.faces[*rp.portals[j].portal_face].normal * 0.75f;
+            index_t roomnum = BOA_INDEX(GetTerrainRoomFromPos(pos).has_value()? GetTerrainRoomFromPos(pos).value() : -1);
 
             int xxx;
             uint8_t region = Terrain_seg[*roomnum].flags.region;
@@ -230,39 +229,39 @@ bool EBNode_VerifyGraph() {
               continue;
             }
 
-            rp.portals[j].bnode_index = EBNode_AddNode(*roomnum, pos, false, false);
-            Q_ASSERT(rp.portals[j].bnode_index >= 0);
-            EBNode_AutoEdgeNode(rp.portals[j].bnode_index, *roomnum);
+            rp.portals[j].bnode_index = index_t{static_cast<uint32_t>(EBNode_AddNode(*roomnum, pos, false, false))};
+            Q_ASSERT(rp.portals[j].bnode_index.has_value());
+            EBNode_AutoEdgeNode(*rp.portals[j].bnode_index, *roomnum);
             LOG_INFO("EBNode Verify: Added a node and autoedged it.\n");
 
             if (ci >= 0) {
-              EBNode_AddEdge(rp.portals[j].bnode_index, *roomnum, ci, *cr);
+              EBNode_AddEdge(*rp.portals[j].bnode_index, *roomnum, ci, *cr);
             }
           } else {
             vector3 pos;
-            pos = rp.portals[j].path_pnt + rp.faces[rp.portals[j].portal_face].normal * 0.75f;
-            rp.portals[j].bnode_index = EBNode_AddNode(i, pos, false, false);
-            Q_ASSERT(rp.portals[j].bnode_index >= 0);
-            EBNode_AutoEdgeNode(rp.portals[j].bnode_index, i);
+            pos = rp.portals[j].path_pnt + rp.faces[*rp.portals[j].portal_face].normal * 0.75f;
+            rp.portals[j].bnode_index = index_t{static_cast<uint32_t>(EBNode_AddNode(i, pos, false, false))};
+            Q_ASSERT(rp.portals[j].bnode_index.has_value());
+            EBNode_AutoEdgeNode(*rp.portals[j].bnode_index, i);
             LOG_INFO("EBNode Verify: Added a node and autoedged it.\n");
 
             const index_t cr = rp.portals[j].connected_room;
             const index_t cp = rp.portals[j].connected_portal;
             if (!cr || !cp)
               continue;
-            int ci = Rooms[*cr].portals[*cp].bnode_index;
+            int ci = Rooms[*cr].portals[*cp].bnode_index ? static_cast<int>(*Rooms[*cr].portals[*cp].bnode_index) : -1;
 
             if (ci < 0)
               continue;
 
             if (Rooms[*cr].flags.external) {
               vector3 pos;
-              pos = rp.portals[j].path_pnt - rp.faces[rp.portals[j].portal_face].normal * 0.75f;
-              index_t roomnum = BOA_INDEX(GetTerrainRoomFromPos(pos).value_or(-1));
-              EBNode_AddEdge(rp.portals[j].bnode_index, i, ci, *roomnum);
+              pos = rp.portals[j].path_pnt - rp.faces[*rp.portals[j].portal_face].normal * 0.75f;
+              index_t roomnum = BOA_INDEX(GetTerrainRoomFromPos(pos).has_value()? GetTerrainRoomFromPos(pos).value() : -1);
+              EBNode_AddEdge(*rp.portals[j].bnode_index, i, ci, *roomnum);
             } else {
               if (ci >= 0)
-                EBNode_AddEdge(rp.portals[j].bnode_index, i, ci, *cr);
+                EBNode_AddEdge(*rp.portals[j].bnode_index, i, ci, *cr);
             }
           }
         }
@@ -270,18 +269,18 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
     bn_list *nlist;
 
-    if (i < Rooms.size() && !Rooms[i].used)
+    if (i < static_cast<int>(Rooms.size()) && !Rooms[i].used)
       continue;
-    if (i < Rooms.size() && Rooms[i].flags.external)
+    if (i < static_cast<int>(Rooms.size()) && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (size_t j = 0; j < nlist->nodes.size(); j++) {
-      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
+    for (int j = 0; j < static_cast<int>(nlist->nodes.size()); j++) {
+      for (int k = 0; k < static_cast<int>(nlist->nodes[j].edges.size()); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           LOG_INFO("EBNode Verify: Removed a skinny edge.\n");
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
@@ -289,8 +288,8 @@ bool EBNode_VerifyGraph() {
         }
       }
 
-      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
-        if (nlist->nodes[j].edges[k].end_room < Rooms.size() &&
+      for (int k = 0; k < static_cast<int>(nlist->nodes[j].edges.size()); k++) {
+        if (nlist->nodes[j].edges[k].end_room < static_cast<int>(Rooms.size()) &&
             !Rooms[nlist->nodes[j].edges[k].end_room].used) {
           LOG_INFO("EBNode Verify: Removed a edge to a non-existant room. Room %d, node %d, edge %d\n", i, j, k);
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
@@ -300,18 +299,18 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
     bn_list *nlist;
 
-    if (i < Rooms.size() && !Rooms[i].used)
+    if (i < static_cast<int>(Rooms.size()) && !Rooms[i].used)
       continue;
-    if (i < Rooms.size() && Rooms[i].flags.external)
+    if (i < static_cast<int>(Rooms.size()) && Rooms[i].flags.external)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (size_t j = 0; j < nlist->nodes.size(); j++) {
-      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
+    for (int j = 0; j < static_cast<int>(nlist->nodes.size()); j++) {
+      for (int k = 0; k < static_cast<int>(nlist->nodes[j].edges.size()); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           LOG_INFO("Skinny Edge - from r%d n%d to r%d n%d\n", i, j, nlist->nodes[j].edges[k].end_room,
                   nlist->nodes[j].edges[k].end_index);
@@ -321,17 +320,17 @@ bool EBNode_VerifyGraph() {
     }
   }
 
-  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
-    if (i < Rooms.size() && !Rooms[i].used)
+  for (int i = 0; i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
+    if (i < static_cast<int>(Rooms.size()) && !Rooms[i].used)
       continue;
-    if (i < Rooms.size() && Rooms[i].flags.external)
+    if (i < static_cast<int>(Rooms.size()) && Rooms[i].flags.external)
       continue;
 
     bn_list *nlist = BNode_GetBNListPtr(i);
     Q_ASSERT(nlist);
 
-    for (size_t j = 0; j < nlist->nodes.size(); j++) {
-      for (size_t k = j + 1; k < nlist->nodes.size(); k++) {
+    for (int j = 0; j < static_cast<int>(nlist->nodes.size()); j++) {
+      for (int k = j + 1; k < static_cast<int>(nlist->nodes.size()); k++) {
         if (!BNode_FindPath(i, j, k, 0.0f)) {
           LOG_INFO("BNODE ERROR: No path from %d to %d in room %d\n", j + 1, k + 1, i);
           f_verified = false;
@@ -351,13 +350,13 @@ bool EBNode_VerifyGraph() {
 }
 
 void EBNode_ClearLevel() {
-  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
-    if (i < Rooms.size()) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
+    if (i < static_cast<int>(Rooms.size())) {
       if (!Rooms[i].used) {
         continue;
       } else {
         for (int j = 0; j < Rooms[i].portals.size(); j++)
-          Rooms[i].portals[j].bnode_index = -1;
+          Rooms[i].portals[j].bnode_index = std::nullopt;
       }
     }
 
@@ -376,8 +375,8 @@ static void RemapEdgeNodesEqualAndAbove(int croom, int sroom, int spnt) {
   if (!cnlist)
     return;
 
-  for (size_t i = 0; i < cnlist->nodes.size(); i++) {
-    for (size_t j = 0; j < cnlist->nodes[i].edges.size(); j++) {
+  for (int i = 0; i < static_cast<int>(cnlist->nodes.size()); i++) {
+    for (int j = 0; j < static_cast<int>(cnlist->nodes[i].edges.size()); j++) {
       if (cnlist->nodes[i].edges[j].end_room == sroom && cnlist->nodes[i].edges[j].end_index >= spnt) {
         Q_ASSERT(cnlist->nodes[i].edges[j].end_index != spnt);
         cnlist->nodes[i].edges[j].end_index--;
@@ -387,18 +386,18 @@ static void RemapEdgeNodesEqualAndAbove(int croom, int sroom, int spnt) {
 }
 
 static void RemapPortalNodeIndices(index_t roomnum, int pnt) {
-  if (roomnum.has_value() && *roomnum < Rooms.size()) {
+  if (roomnum.has_value() && *roomnum < static_cast<int>(Rooms.size())) {
     Q_ASSERT(Rooms[*roomnum].used);
 
     for (int i = 0; i < Rooms[*roomnum].portals.size(); i++) {
-      if (Rooms[*roomnum].portals[i].bnode_index == pnt) {
-        Rooms[*roomnum].portals[i].bnode_index = -1;
-      } else if (Rooms[*roomnum].portals[i].bnode_index > pnt) {
-        Rooms[*roomnum].portals[i].bnode_index--;
+      if (Rooms[*roomnum].portals[i].bnode_index && *Rooms[*roomnum].portals[i].bnode_index == pnt) {
+        Rooms[*roomnum].portals[i].bnode_index = std::nullopt;
+      } else if (Rooms[*roomnum].portals[i].bnode_index && *Rooms[*roomnum].portals[i].bnode_index > pnt) {
+        Rooms[*roomnum].portals[i].bnode_index = index_t{static_cast<uint32_t>(*Rooms[*roomnum].portals[i].bnode_index - 1)};
       }
     }
   } else {
-    size_t region = BOA_INDEX(*roomnum) - Rooms.size() - 2;
+    int region = BOA_INDEX(*roomnum) - static_cast<int>(Rooms.size()) - 2;
 
     for (int i = 0; i < BOA_num_connect[region]; i++) {
       const index_t r = BOA_connect[region][i].roomnum;
@@ -412,11 +411,11 @@ static void RemapPortalNodeIndices(index_t roomnum, int pnt) {
         continue;
 
       vector3 pos =
-          Rooms[*cr].portals[*cp].path_pnt + Rooms[*cr].faces[Rooms[*cr].portals[*cp].portal_face].normal * 0.75f;
+          Rooms[*cr].portals[*cp].path_pnt + Rooms[*cr].faces[*Rooms[*cr].portals[*cp].portal_face].normal * 0.75f;
       int cell = GetTerrainRoomFromPos(pos).value_or(-1);
 
       if (region == Terrain_seg[cell].flags.region && Rooms[*cr].portals[*cp].bnode_index == pnt) {
-        Rooms[*cr].portals[*cp].bnode_index = -1;
+        Rooms[*cr].portals[*cp].bnode_index = std::nullopt;
       }
     }
   }
@@ -429,9 +428,9 @@ void EBNode_RemoveNode(index_t roomnum, int pnt) {
   if (!nlist)
     return;
 
-  Q_ASSERT(pnt >= 0 && pnt < nlist->nodes.size());
+  Q_ASSERT(pnt >= 0 && pnt < static_cast<int>(nlist->nodes.size()));
 
-  for (size_t i = nlist->nodes[pnt].edges.size() - 1; i >= 0; i--)
+  for (int i = static_cast<int>(nlist->nodes[pnt].edges.size()) - 1; i >= 0; i--)
     EBNode_RemoveEdge(pnt, *roomnum, nlist->nodes[pnt].edges[i].end_index, nlist->nodes[pnt].edges[i].end_room);
 
   nlist->nodes.erase(nlist->nodes.begin() + pnt);
@@ -460,7 +459,7 @@ void EBNode_RemoveEdge(int spnt, int sroom, int epnt, int eroom, bool f_remove_r
   bool f_exists = false;
   int e_index = 0;
 
-  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
+  for (int i = 0; i < static_cast<int>(snlist->nodes[spnt].edges.size()); i++) {
     if (snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) {
       e_index = i;
       f_exists = true;
@@ -491,7 +490,7 @@ int EBNode_AddNode(index_t roomnum, const vector3 &pnt, bool f_from_editor, bool
   bool f_really_close_neighbor = false;
 
   if (f_check_for_close_nodes) {
-    for (size_t i = 0; i < nlist->nodes.size(); i++) {
+    for (int i = 0; i < static_cast<int>(nlist->nodes.size()); i++) {
       if (vm_VectorDistance(nlist->nodes[i].pos, pnt) <= BNODE_VERY_CLOSE_DIST) {
         f_really_close_neighbor = true;
         break;
@@ -505,7 +504,7 @@ int EBNode_AddNode(index_t roomnum, const vector3 &pnt, bool f_from_editor, bool
     }
   }
 
-  size_t new_node = nlist->nodes.size();
+  int new_node = static_cast<int>(nlist->nodes.size());
   nlist->nodes.push_back(bn_node{});
   nlist->nodes[new_node].pos = pnt;
 
@@ -529,7 +528,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
   do {
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
-    fq.startroom = (sroom > (Rooms.size() - 1) && sroom < Rooms.size() + 8)
+    fq.startroom = (sroom > (static_cast<int>(Rooms.size()) - 1) && sroom < static_cast<int>(Rooms.size()) + 8)
                        ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos).value_or(-1)
                        : sroom;
     fq.rad = size;
@@ -539,7 +538,7 @@ static float EBNode_DetermineMaxSizeForEdge(int spnt, int sroom, int epnt, int e
     if (fate == fvi_hit_type::none) {
       fq.p0 = &enlist->nodes[epnt].pos;
       fq.p1 = &snlist->nodes[spnt].pos;
-      fq.startroom = (eroom > (Rooms.size() - 1) && eroom < Rooms.size() + 8)
+      fq.startroom = (eroom > (static_cast<int>(Rooms.size()) - 1) && eroom < static_cast<int>(Rooms.size()) + 8)
                          ? GetTerrainRoomFromPos(enlist->nodes[epnt].pos).value_or(-1)
                          : eroom;
       fq.rad = size;
@@ -560,14 +559,14 @@ void EBNode_AutoEdgeNode(int spnt, int sroom) {
 
   bn_list *snlist = BNode_GetBNListPtr(sroom);
 
-  for (size_t i = 0; i < snlist->nodes.size(); i++) {
+  for (int i = 0; i < static_cast<int>(snlist->nodes.size()); i++) {
     if (i != spnt) {
       fvi_info hit_info;
       fvi_query fq;
 
       fq.p0 = &snlist->nodes[spnt].pos;
       fq.p1 = &snlist->nodes[i].pos;
-      fq.startroom = (sroom > (Rooms.size() - 1) && sroom < Rooms.size() + 8)
+      fq.startroom = (sroom > (static_cast<int>(Rooms.size()) - 1) && sroom < static_cast<int>(Rooms.size()) + 8)
                          ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos).value_or(-1)
                          : sroom;
 
@@ -596,7 +595,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
 
   bool f_exists = false;
 
-  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
+  for (int i = 0; i < static_cast<int>(snlist->nodes[spnt].edges.size()); i++) {
     if (snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) {
       f_exists = true;
       break;
@@ -604,7 +603,7 @@ void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_add_reverse
   }
 
   if (!f_exists) {
-    size_t new_edge = snlist->nodes[spnt].edges.size();
+    int new_edge = static_cast<int>(snlist->nodes[spnt].edges.size());
     snlist->nodes[spnt].edges.push_back(bn_edge{});
 
     float cost = vm_VectorDistance(snlist->nodes[spnt].pos, enlist->nodes[epnt].pos);
@@ -630,16 +629,16 @@ void EBNode_MakeDefaultIntraRoomNodes(index_t roomnum) {
 
   for (int i = 0; i < rp.portals.size(); i++) {
     vector3 pos;
-    pos = rp.portals[i].path_pnt + rp.faces[rp.portals[i].portal_face].normal * 0.75f;
-    rp.portals[i].bnode_index = i;
+    pos = rp.portals[i].path_pnt + rp.faces[*rp.portals[i].portal_face].normal * 0.75f;
+    rp.portals[i].bnode_index = index_t{static_cast<uint32_t>(i)};
     EBNode_AddNode(*roomnum, pos, false, false);
   }
 
   EBNode_AddNode(*roomnum, rp.path_pnt, false, false);
 
-  for (size_t i = 0; i < rp.bn_info.nodes.size(); i++) {
-    for (size_t j = i + 1; j < rp.bn_info.nodes.size(); j++) {
-      if (i < rp.bn_info.nodes.size() - 1 && j < rp.bn_info.nodes.size() - 1) {
+  for (int i = 0; i < static_cast<int>(rp.bn_info.nodes.size()); i++) {
+    for (int j = i + 1; j < static_cast<int>(rp.bn_info.nodes.size()); j++) {
+      if (i < static_cast<int>(rp.bn_info.nodes.size()) - 1 && j < static_cast<int>(rp.bn_info.nodes.size()) - 1) {
         vector3 vec = rp.portals[j].path_pnt - rp.portals[i].path_pnt;
         vector3 cvec = rp.path_pnt - rp.portals[i].path_pnt;
 
@@ -660,7 +659,7 @@ void EBNode_MakeDefaultIntraRoomNodes(index_t roomnum) {
 
       fq.p0 = &Rooms[*roomnum].bn_info.nodes[i].pos;
       fq.p1 = &Rooms[*roomnum].bn_info.nodes[j].pos;
-      fq.startroom = (*roomnum > (Rooms.size() - 1) && *roomnum < Rooms.size() + 8)
+      fq.startroom = (*roomnum > (static_cast<int>(Rooms.size()) - 1) && *roomnum < static_cast<int>(Rooms.size()) + 8)
                          ? GetTerrainRoomFromPos(Rooms[*roomnum].bn_info.nodes[i].pos).value_or(-1)
                          : *roomnum;
 
@@ -686,8 +685,8 @@ void EBNode_MakeDefaultInterRoomEdges(index_t roomnum) {
     if (cportal && croom && *croom > static_cast<uint32_t>(*roomnum) && !(Rooms[*croom].flags.external)) {
       if ((Rooms[*roomnum].portals[i].flags.render_faces) &&
           !(Rooms[*roomnum].portals[i].flags.rendered_flythrough)) {
-        if (!(GameTextures[Rooms[*roomnum].faces[Rooms[*roomnum].portals[i].portal_face].tmap].flags.breakable ||
-              GameTextures[Rooms[*roomnum].faces[Rooms[*roomnum].portals[i].portal_face].tmap].flags.forcefield))
+        if (!(GameTextures[Rooms[*roomnum].faces[*Rooms[*roomnum].portals[i].portal_face].tmap].flags.breakable ||
+              GameTextures[Rooms[*roomnum].faces[*Rooms[*roomnum].portals[i].portal_face].tmap].flags.forcefield))
           continue;
       }
 
@@ -699,7 +698,7 @@ void EBNode_MakeDefaultInterRoomEdges(index_t roomnum) {
 static void EBNode_RemoveNodesAtUnopenablePortals(index_t roomnum) {
   Q_ASSERT(Rooms[*roomnum].portals.size() + 1 == Rooms[*roomnum].bn_info.nodes.size());
 
-  for (int i = Rooms[*roomnum].portals.size() - 1; i >= 0; i--) {
+  for (int i = static_cast<int>(Rooms[*roomnum].portals.size()) - 1; i >= 0; i--) {
     if ((Rooms[*roomnum].portals[i].flags.block) && !(Rooms[*roomnum].portals[i].flags.block_removable)) {
       EBNode_RemoveNode(*roomnum, i);
       continue;
@@ -707,8 +706,8 @@ static void EBNode_RemoveNodesAtUnopenablePortals(index_t roomnum) {
 
     if ((Rooms[*roomnum].portals[i].flags.render_faces) &&
         !(Rooms[*roomnum].portals[i].flags.rendered_flythrough)) {
-      if (!(GameTextures[Rooms[*roomnum].faces[Rooms[*roomnum].portals[i].portal_face].tmap].flags.breakable ||
-            GameTextures[Rooms[*roomnum].faces[Rooms[*roomnum].portals[i].portal_face].tmap].flags.forcefield)) {
+      if (!(GameTextures[Rooms[*roomnum].faces[*Rooms[*roomnum].portals[i].portal_face].tmap].flags.breakable ||
+            GameTextures[Rooms[*roomnum].faces[*Rooms[*roomnum].portals[i].portal_face].tmap].flags.forcefield)) {
         EBNode_RemoveNode(*roomnum, i);
         continue;
       }
@@ -722,7 +721,7 @@ static void EBNode_RemoveNodesAtUnopenablePortals(index_t roomnum) {
 }
 
 static void EBNode_MakeDefaultTerrainNodes(int region) {
-  Q_ASSERT(region >= 0 || region < BOA_num_terrain_regions);
+  Q_ASSERT(region >= 0 || region < static_cast<int>(BOA_num_terrain_regions));
 
   LOG_INFO("TR %d has %d nodes\n", region, BOA_num_connect[region]);
 
@@ -733,20 +732,20 @@ static void EBNode_MakeDefaultTerrainNodes(int region) {
     const room_t &rp = Rooms[*end_room];
 
     vector3 pos;
-    pos = rp.portals[*p].path_pnt - rp.faces[rp.portals[*p].portal_face].normal * 0.75f;
+    pos = rp.portals[*p].path_pnt - rp.faces[*rp.portals[*p].portal_face].normal * 0.75f;
 
     const index_t external_room = rp.portals[*p].connected_room;
     const index_t external_portal = rp.portals[*p].connected_portal;
     Q_ASSERT(external_room && external_portal && Rooms[*external_room].flags.external);
-    Rooms[*external_room].portals[*external_portal].bnode_index = i;
+    Rooms[*external_room].portals[*external_portal].bnode_index = index_t{static_cast<uint32_t>(i)};
 
-    EBNode_AddNode(Rooms.size() + region, pos, false, false);
-    EBNode_AddEdge(i, Rooms.size() + region, *p, *end_room);
+    EBNode_AddNode(static_cast<int>(Rooms.size()) + region, pos, false, false);
+    EBNode_AddEdge(i, static_cast<int>(Rooms.size()) + region, *p, *end_room);
   }
 
   for (int i = 0; i < BOA_num_connect[region]; i++) {
     for (int j = i + 1; j < BOA_num_connect[region]; j++)
-      EBNode_AddEdge(i, Rooms.size() + region, j, Rooms.size() + region);
+      EBNode_AddEdge(i, static_cast<int>(Rooms.size()) + region, j, static_cast<int>(Rooms.size()) + region);
   }
 }
 
@@ -756,37 +755,37 @@ void EBNode_MakeFirstPass() {
     return;
   }
 
-  for (size_t i = 0; i < Rooms.size(); i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()); i++) {
     Q_ASSERT(Rooms[i].bn_info.nodes.empty());
     if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_MakeDefaultIntraRoomNodes(i);
   }
 
-  for (int i = 0; i < BOA_num_terrain_regions; i++) {
+  for (int i = 0; i < static_cast<int>(BOA_num_terrain_regions); i++) {
     Q_ASSERT(BNode_terrain_list[i].nodes.empty());
     EBNode_MakeDefaultTerrainNodes(i);
   }
 
-  for (size_t i = 0; i < Rooms.size(); i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_MakeDefaultInterRoomEdges(i);
   }
 
-  for (size_t i = 0; i < Rooms.size(); i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()); i++) {
     if (Rooms[i].used && !Rooms[i].flags.external)
       EBNode_RemoveNodesAtUnopenablePortals(i);
   }
 
-  for (size_t i = 0; i < Rooms.size() + BOA_num_terrain_regions; i++) {
+  for (int i = 0; i < static_cast<int>(Rooms.size()) + static_cast<int>(BOA_num_terrain_regions); i++) {
     bn_list *nlist;
 
-    if (i < Rooms.size() && !Rooms[i].used)
+    if (i < static_cast<int>(Rooms.size()) && !Rooms[i].used)
       continue;
 
     nlist = BNode_GetBNListPtr(i);
 
-    for (size_t j = 0; j < nlist->nodes.size(); j++) {
-      for (size_t k = 0; k < nlist->nodes[j].edges.size(); k++) {
+    for (int j = 0; j < static_cast<int>(nlist->nodes.size()); j++) {
+      for (int k = 0; k < static_cast<int>(nlist->nodes[j].edges.size()); k++) {
         if (nlist->nodes[j].edges[k].max_rad < 5.0f) {
           EBNode_RemoveEdge(j, i, nlist->nodes[j].edges[k].end_index, nlist->nodes[j].edges[k].end_room);
           k--;
@@ -807,7 +806,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
 
   bool f_exists = false;
 
-  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
+  for (int i = 0; i < static_cast<int>(snlist->nodes[spnt].edges.size()); i++) {
     if (snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) {
       f_exists = true;
       break;
@@ -826,7 +825,7 @@ int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom) {
 
     fq.p0 = &snlist->nodes[spnt].pos;
     fq.p1 = &enlist->nodes[epnt].pos;
-    fq.startroom = (sroom >= Rooms.size() && sroom < Rooms.size() + 8)
+    fq.startroom = (sroom >= static_cast<int>(Rooms.size()) && sroom < static_cast<int>(Rooms.size()) + 8)
                        ? GetTerrainRoomFromPos(snlist->nodes[spnt].pos).value_or(-1)
                        : sroom;
 
@@ -858,8 +857,8 @@ static void EBNode_ComputeEdgeCosts(int sroom, int spnt, int eroom, int epnt) {
   bn_list *snlist = BNode_GetBNListPtr(sroom);
   bn_list *enlist = BNode_GetBNListPtr(eroom);
 
-  for (size_t i = 0; i < snlist->nodes[spnt].edges.size(); i++) {
-    for (size_t j = 0; j < enlist->nodes[epnt].edges.size(); j++) {
+  for (int i = 0; i < static_cast<int>(snlist->nodes[spnt].edges.size()); i++) {
+    for (int j = 0; j < static_cast<int>(enlist->nodes[epnt].edges.size()); j++) {
       if ((snlist->nodes[spnt].edges[i].end_index == epnt && snlist->nodes[spnt].edges[i].end_room == eroom) &&
           (enlist->nodes[epnt].edges[j].end_index == spnt && enlist->nodes[epnt].edges[j].end_room == sroom)) {
         f_found = true;
@@ -895,7 +894,7 @@ void EBNode_Move(bool f_offset, index_t roomnum, int pnt, vector3 *pos) {
 
     fq.p0 = &nlist->nodes[pnt].pos;
     fq.p1 = &npos;
-    fq.startroom = (*roomnum >= Rooms.size() && *roomnum < Rooms.size() + 8)
+    fq.startroom = (*roomnum >= static_cast<int>(Rooms.size()) && *roomnum < static_cast<int>(Rooms.size()) + 8)
                        ? GetTerrainRoomFromPos(nlist->nodes[pnt].pos).value_or(-1)
                        : *roomnum;
 
@@ -913,7 +912,7 @@ void EBNode_Move(bool f_offset, index_t roomnum, int pnt, vector3 *pos) {
 
   nlist->nodes[pnt].pos = npos;
 
-  for (size_t i = 0; i < nlist->nodes[pnt].edges.size(); i++) {
+  for (int i = 0; i < static_cast<int>(nlist->nodes[pnt].edges.size()); i++) {
     EBNode_ComputeEdgeCosts(*roomnum, pnt, nlist->nodes[pnt].edges[i].end_room, nlist->nodes[pnt].edges[i].end_index);
     EBNode_ComputeEdgeCosts(nlist->nodes[pnt].edges[i].end_room, nlist->nodes[pnt].edges[i].end_index, *roomnum, pnt);
   }

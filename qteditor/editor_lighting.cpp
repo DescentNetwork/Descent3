@@ -357,7 +357,7 @@ void CheckCombinePortals(int terrain) {
 
     for (int t = 0; t < rp.portals.size(); t++) {
       portal &portal_a = rp.portals[t];
-      const face_t &face_a = rp.faces[portal_a.portal_face];
+      const face_t &face_a = rp.faces[*portal_a.portal_face];
 
       if (portal_a.flags.combined)
         continue;
@@ -370,7 +370,7 @@ void CheckCombinePortals(int terrain) {
 
       for (int k = 0; k < rp.portals.size(); k++) {
         portal &portal_b = rp.portals[k];
-        const face_t &face_b = rp.faces[portal_b.portal_face];
+        const face_t &face_b = rp.faces[*portal_b.portal_face];
 
         if (portal_b.flags.combined)
           continue;

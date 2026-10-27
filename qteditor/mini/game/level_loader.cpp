@@ -450,8 +450,12 @@ static void LL_ReadBSPNode(byte_istream &ifile, bspnode *&node_out) {
   uint16_t node_roomnum = 0;
   ifile >> node_roomnum;
   node->node_roomnum = u16_to_index(node_roomnum);
-  ifile >> node->node_facenum;
-  ifile >> node->node_subnum;
+  uint16_t node_facenum = 0;
+  int8_t node_subnum = 0;
+  ifile >> node_facenum;
+  ifile >> node_subnum;
+  node->node_facenum = u16_to_index(node_facenum);
+  node->node_subnum = (node_subnum == -1) ? index_t{} : index_t{static_cast<uint32_t>(static_cast<uint8_t>(node_subnum))};
 
   LL_ReadBSPNode(ifile, node->front);
   LL_ReadBSPNode(ifile, node->back);
@@ -468,8 +472,8 @@ static void LL_WriteBSPNode(byte_ostream &ofile, const bspnode *node) {
   ofile << node->plane.c;
   ofile << node->plane.d;
   ofile << index_to_u16(node->node_roomnum);
-  ofile << node->node_facenum;
-  ofile << node->node_subnum;
+  ofile << index_to_u16(node->node_facenum);
+  ofile << static_cast<int8_t>(node->node_subnum ? *node->node_subnum : 255);
 
   LL_WriteBSPNode(ofile, node->front);
   LL_WriteBSPNode(ofile, node->back);

@@ -867,7 +867,7 @@ void DrawRoomVisPnts(const object &obj) {
     int t;
     int j;
     for (t = 0; t < rp.num_portals; t++) {
-      const face_t &src_fp = rp.faces[rp.portals[t].portal_face];
+      const face_t &src_fp = rp.faces[*rp.portals[t].portal_face];
       float src_width, src_height;
       vector3 src_upper_left, src_center;
       matrix src_matrix;
@@ -907,7 +907,7 @@ void DrawRoomVisPnts(const object &obj) {
             continue;
           }
 
-          src2 += 0.1f * rp.faces[rp.portals[t].portal_face].normal;
+          src2 += 0.1f * rp.faces[*rp.portals[t].portal_face].normal;
           if (!fvi_QuickRoomCheck(src2, *roomnum, false) && !fvi_QuickRoomCheck(src2, *roomnum, true)) {
             DrawColoredDisk(&src2, 0.0f, 1.0f, 0.0f, 0.1f, 0.7f, 0.25f, 1);
             continue;

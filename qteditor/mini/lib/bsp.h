@@ -74,8 +74,8 @@ struct bsppolygon {
   bspplane plane;
 
   index_t roomnum;
-  int16_t facenum;
-  int8_t subnum;
+  index_t facenum;
+  index_t subnum;
 
   int color;
 
@@ -84,9 +84,9 @@ struct bsppolygon {
 struct bspnode {
   bsp_node_type type;
   bspplane plane;
-  uint16_t node_facenum;
+  index_t node_facenum;
   index_t node_roomnum;
-  int8_t node_subnum;
+  index_t node_subnum;
 
   bspnode *front;
   bspnode *back;

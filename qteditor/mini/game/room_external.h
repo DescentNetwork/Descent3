@@ -212,10 +212,10 @@ static_assert(sizeof(portal_flags_t) == sizeof(uint32_t));
 // a connection between two rooms
 struct portal {
   portal_flags_t flags;      // flags for this portal
-  int16_t portal_face; // the face for this portal
+  index_t portal_face; // the face for this portal
   index_t connected_room;       // the room this portal connects to
   index_t connected_portal;     // the portal in croom this portal connects to
-  int16_t bnode_index;
+  index_t bnode_index;
   int combine_master; // For rendering combined portals
   vector3 path_pnt;    // Point used by the path system
 };
@@ -315,14 +315,14 @@ struct room_t {
 
   bn_list bn_info;
 
-  int16_t wpb_index;           // world point buffer index - where this room starts
+  index_t wpb_index;           // world point buffer index - where this room starts
   uint8_t pulse_time;          // each room can has a pulse time
   uint8_t pulse_offset;        // each room has a timer offset for which it pulses
   vector3 wind;               // Wind vector for the room
-  int32_t ambient_sound;         // Index of ambient sound pattern for this room, or -1 if none
+  index_t ambient_sound;       // Index of ambient sound pattern for this room, or -1 if none
   index_t vis_effects;         // index of first visual effect in this room
-  int16_t mirror_face;         // Index of face that this room is to be mirrored by
-  std::vector<uint16_t> mirror_faces_list; // the list of faces in this room that have the same texture as the mirror
+  index_t mirror_face;         // Index of face that this room is to be mirrored by
+  std::vector<index_t> mirror_faces_list; // the list of faces in this room that have the same texture as the mirror
   float damage;              // The damage per second applied to players (& maybe others) in room
 
   vector3 path_pnt;      // Point used by the path system

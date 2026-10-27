@@ -192,7 +192,7 @@ void drawFilledCircle(float cx, float cy, float radius, const float *color) {
   constexpr int kSegments = 32;
   for (int i = 0; i <= kSegments; i++) {
     const float a = 2.0f * std::numbers::pi_v<float> * static_cast<float>(i) / kSegments;
-    glVertex2f(cx + radius * std::cos(a), cy + radius * std::sin(a));
+    glVertex2f(cx + radius * std::cos(a), cy + radius * std::sin(a))};
   }
   glEnd();
 }
@@ -279,7 +279,7 @@ EditorView::~EditorView() {
   if (context() != nullptr) {
     makeCurrent();
     for (auto it = m_textures.begin(); it != m_textures.end(); ++it)
-      QOpenGLFunctions(context()).glDeleteTextures(1, &it.value());
+      QOpenGLFunctions(context()).glDeleteTextures(1, &it.value())};
     m_textures.clear();
   }
 }
@@ -447,7 +447,7 @@ void EditorView::ensureTexture(int bmHandle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data())};
   m_textures.insert(bmHandle, tex);
 }
 
@@ -650,7 +650,7 @@ void EditorView::renderRooms() {
         const portal &pp = rp.portals[p];
         if (pp.connected_room != -1)
           continue;
-        const face_t &fp = rp.faces[pp.portal_face];
+        const face_t &fp = rp.faces[*pp.portal_face];
         int pnv = fp.num_verts;
         if (pnv > 16)
           pnv = 16;
@@ -719,7 +719,7 @@ void EditorView::renderRooms() {
         float len = vm_NormalizeVector(ld);
         if (len < 0.001f)
           ld = vector3{0, 1, 0};
-        float diff = (fp.normal.x() * ld.x() + fp.normal.y() * ld.y() + fp.normal.z() * ld.z());
+        float diff = (fp.normal.x() * ld.x() + fp.normal.y() * ld.y() + fp.normal.z() * ld.z())};
         float shade = 0.35f + 0.65f * (diff < 0 ? -diff : diff);
         if (shade > 1.0f)
           shade = 1.0f;
@@ -744,7 +744,7 @@ void EditorView::renderRooms() {
             const int tw = bm_w(bm, 0);
             const int th = bm_h(bm, 0);
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, it.value());
+            glBindTexture(GL_TEXTURE_2D, it.value())};
             glColor3f(shade, shade, shade);
             glBegin(GL_TRIANGLE_FAN);
             for (int v = 0; v < nv; v++) {
@@ -896,7 +896,7 @@ void EditorView::renderOverlays() {
 
     // Current portal face in purple (DrawRoomFace, CURPORTAL_COLOR).
     if (app.current.portal && *app.current.portal < Rooms[*app.current.room].portals.size()) {
-      int faceIdx = Rooms[*app.current.room].portals[*app.current.portal].portal_face;
+      int faceIdx = *Rooms[*app.current.room].portals[*app.current.portal].portal_face;
       if (faceIdx >= 0 && faceIdx < Rooms[*app.current.room].faces.size()) {
         const face_t &fp = Rooms[*app.current.room].faces[faceIdx];
         float sx[16], sy[16];
@@ -996,8 +996,8 @@ void EditorView::renderTerrain() {
     return;
 
   // Compute visible cell range based on camera position.
-  const int camCellX = static_cast<int>(std::round(m_eye.x() / TERRAIN_SIZE));
-  const int camCellZ = static_cast<int>(std::round(m_eye.z() / TERRAIN_SIZE));
+  const int camCellX = static_cast<int>(std::round(m_eye.x() / TERRAIN_SIZE))};
+  const int camCellZ = static_cast<int>(std::round(m_eye.z() / TERRAIN_SIZE))};
 
   constexpr int kViewRadius = 48;
   const int startX = std::max(0, camCellX - kViewRadius);
@@ -1077,7 +1077,7 @@ void EditorView::renderTerrain() {
         auto it = m_textures.constFind(bm);
         if (it != m_textures.constEnd()) {
           glEnable(GL_TEXTURE_2D);
-          glBindTexture(GL_TEXTURE_2D, it.value());
+          glBindTexture(GL_TEXTURE_2D, it.value())};
           glColor3f(shade, shade, shade);
 
           // Triangle 1: top-left, top-right, bottom-left.
@@ -1146,7 +1146,7 @@ void EditorView::renderObjects() {
   const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
   const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
   const float halfFovY = kFovY * 0.5f;
-  const float halfFovX = std::atan(std::tan(halfFovY) * (w / h));
+  const float halfFovX = std::atan(std::tan(halfFovY) * (w / h))};
   const float focalX = (w * 0.5f) / std::tan(halfFovX);
 
   LOG_DEBUG("Rendering %i objects", Highest_object_index);
@@ -1216,7 +1216,7 @@ void EditorView::renderObjects() {
 // slots; renderPaths drives it from a for-statement increment, so the "no more
 // paths" case is carried as -1 and breaks the loop on the next turn.
 static int NextPathIndex(int cur) {
-  const index_t next = GetNextPath(static_cast<uint32_t>(cur));
+  const index_t next = GetNextPath(static_cast<uint32_t>(cur))};
   return next ? static_cast<int>(*next) : -1;
 }
 
@@ -1551,12 +1551,12 @@ void EditorView::fitToMine() {
       continue;
     for (int v = 0; v < rp.verts.size(); v++) {
       const vector3 &p = rp.verts[v];
-      mn.x() = std::min(mn.x(), p.x());
-      mn.y() = std::min(mn.y(), p.y());
-      mn.z() = std::min(mn.z(), p.z());
-      mx.x() = std::max(mx.x(), p.x());
-      mx.y() = std::max(mx.y(), p.y());
-      mx.z() = std::max(mx.z(), p.z());
+      mn.x() = std::min(mn.x(), p.x())};
+      mn.y() = std::min(mn.y(), p.y())};
+      mn.z() = std::min(mn.z(), p.z())};
+      mx.x() = std::max(mx.x(), p.x())};
+      mx.y() = std::max(mx.y(), p.y())};
+      mx.z() = std::max(mx.z(), p.z())};
       any = true;
     }
   }
@@ -1570,7 +1570,7 @@ void EditorView::fitToMine() {
   const float h = height() > 0 ? static_cast<float>(height()) : 480.0f;
   const float w = width() > 0 ? static_cast<float>(width()) : 640.0f;
   const float halfFovY = kFovY * 0.5f;
-  const float halfFovX = std::atan(std::tan(halfFovY) * (w / h));
+  const float halfFovX = std::atan(std::tan(halfFovY) * (w / h))};
   const float fitY = radius / std::sin(halfFovY);
   const float fitX = radius / std::sin(halfFovX);
 
@@ -1596,7 +1596,7 @@ void EditorView::paintGL() {
   else
     glClearColor(0.10f, 0.12f, 0.18f, 1.0f); // default mine
 
-  glViewport(0, 0, width(), height());
+  glViewport(0, 0, width(), height())};
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glMatrixMode(GL_PROJECTION);
@@ -1649,15 +1649,15 @@ void EditorView::mousePressEvent(QMouseEvent *event) {
       return;
 
     updateCamera();
-    PickResult pick = pickAt(event->pos().x(), event->pos().y());
+    PickResult pick = pickAt(event->pos().x(), event->pos().y())};
     if (pick.objectIndex) {
       app.Cur_object_index = pick.objectIndex;
       emit objectSelected(pick.objectIndex);
-      ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y());
+      ObjMoveManager.Start(width(), height(), &m_eye, &m_orient, event->pos().x(), event->pos().y())};
     }
   } else if (event->button() == Qt::RightButton) {
     updateCamera();
-    PickResult pick = pickAt(event->pos().x(), event->pos().y());
+    PickResult pick = pickAt(event->pos().x(), event->pos().y())};
     if (pick.objectIndex) {
       emit objectContextMenuRequested(event->globalPos(), pick.objectIndex);
     }
@@ -1702,13 +1702,13 @@ void EditorView::mouseReleaseEvent(QMouseEvent *event) {
       if (shift) {
         // Shift+click toggles the current room selection (Win32
         // ToggleRoomSelectedState).
-        PickResult pick = pickAt(event->pos().x(), event->pos().y());
+        PickResult pick = pickAt(event->pos().x(), event->pos().y())};
         if (pick.roomIndex)
           emit roomToggleRequested(pick.roomIndex);
         else
           emit selectionCleared();
       } else {
-        PickResult pick = pickAtCycle(event->pos().x(), event->pos().y());
+        PickResult pick = pickAtCycle(event->pos().x(), event->pos().y())};
         if (pick.objectIndex) {
           emit objectSelected(pick.objectIndex);
         } else if (pick.roomIndex && pick.faceIndex) {
@@ -1794,7 +1794,7 @@ EditorView::PickResult EditorView::pickAt(int screenX, int screenY) const {
 }
 
 EditorView::PickResult EditorView::pickAtCycle(int screenX, int screenY) {
-  const bool sameSpot = (m_pickScreen == QPoint(screenX, screenY));
+  const bool sameSpot = (m_pickScreen == QPoint(screenX, screenY))};
   // FM_NEXT: only faces farther (by eye->face-center distance) than the
   // previously picked face are considered, so seed with that center distance.
   // A brand-new click position uses 0 (no gate: pick the closest front face).

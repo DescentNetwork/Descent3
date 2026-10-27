@@ -551,7 +551,7 @@ void InitRoom(room_t &rp, int nverts, int nfaces, int nportals) {
 void InitRoomFace(face_t &fp, int nverts) {
   fp.flags = {};
   fp.num_verts = nverts;
-  fp.portal_num = -1;
+  fp.portal_num = static_cast<int8_t>(-1);
   fp.tmap = 0;
 
 #ifdef NEWEDITOR
@@ -777,7 +777,7 @@ bool ComputeNormal(vector3& normal, int num_verts, const std::vector<int16_t>& v
 void ComputePortalCenter(vector3 &vp, index_t roomnum, int portal_index) {
   room_t &rp = Rooms[*roomnum];
   const portal &pp = rp.portals[portal_index];
-  const face_t &fp = rp.faces[pp.portal_face];
+  const face_t &fp = rp.faces[*pp.portal_face];
   int i;
 
   vm_MakeZero(vp);
@@ -881,7 +881,7 @@ float GetAreaForFace(index_t roomnum, int facenum) {
   room_t &rp = Rooms[*roomnum];
 
   Q_ASSERT(rp.used > 0);
-  Q_ASSERT(facenum >= 0 && facenum < rp.faces.size());
+  Q_ASSERT(facenum >= 0 && facenum < static_cast<int>(rp.faces.size()));
 
   const face_t &fp = rp.faces[facenum];
   int i;
@@ -952,15 +952,14 @@ void GetIJ(const vector3& normal, int& ii, int& jj) {
 //					roomnum - the Rooms slot that pnt is in
 //					fp - pointer to the face that pnt is on
 void FindPointUV(float &u, float &v, const vector3 &pnt, index_t roomnum, const face_t &fp) {
+  Q_ASSERT(roomnum.has_value());
+  Q_ASSERT(*roomnum < static_cast<int>(Rooms.size()));
   const room_t &rp = Rooms[*roomnum];
   int ii, jj;
   vector3 vec0, vec1;
   float *p1, *checkp, *v0, *v1;
   float k0, k1;
   int t;
-
-  // Make sure we have a valid room
-  Q_ASSERT((roomnum.has_value()) && (*roomnum < static_cast<int>(Rooms.size())));
 
   // Find what plane to project this wall onto to make it a 2d case
   GetIJ(fp.normal, ii, jj);
@@ -1135,7 +1134,7 @@ void CreateRoomObjects() {
       Q_ASSERT(roomnum.has_value());
 
       objnum = ObjCreate(object_type_e::room, r, roomnum, pos, std::nullopt);
-      Q_ASSERT(objnum.has_value()); // DAJ -1FIX moved up
+      Q_ASSERT(objnum.has_value());
       Objects[*objnum].size = rad;
       Objects[*objnum].wall_sphere_offset = vector3{};
       Objects[*objnum].anim_sphere_offset = vector3{};
@@ -1432,18 +1431,18 @@ byte_ostream& operator<<(byte_ostream& output, const face_t& data) {
 
 byte_istream& operator>>(byte_istream& input, portal& data) {
   input >> reinterpret_cast<uint32_t &>(data.flags);
-  input >> data.portal_face;
+  { int16_t pf=-1; input >> pf; data.portal_face = (pf == -1) ? index_t{} : index_t{static_cast<uint32_t>(pf)}; }
   input >> data.connected_room;
   input >> data.connected_portal;
-  input >> data.bnode_index;
+  { int16_t b=-1; input >> b; data.bnode_index = (b == -1) ? index_t{} : index_t{static_cast<uint32_t>(b)}; }
   input >> data.path_pnt;
   return input >> data.combine_master;
 }
 
 byte_ostream& operator<<(byte_ostream& output, const portal& data) {
-  output << reinterpret_cast<const uint32_t &>(data.flags) << data.portal_face;
+  output << reinterpret_cast<const uint32_t &>(data.flags) << static_cast<int16_t>(data.portal_face.has_value()? *data.portal_face : -1);
   output << data.connected_room << data.connected_portal;
-  output << data.bnode_index << data.path_pnt;
+  output << static_cast<int16_t>(data.bnode_index.has_value()? *data.bnode_index : -1) << data.path_pnt;
   return output << data.combine_master;
 }
 
@@ -1506,7 +1505,8 @@ byte_istream& operator>>(byte_istream& input, room_t& data) {
     input >> data.portals[i];
 
   input >> reinterpret_cast<uint32_t&>(data.flags);
-  input >> data.pulse_time >> data.pulse_offset >> data.mirror_face;
+  input >> data.pulse_time >> data.pulse_offset;
+  { int16_t mf=-1; input >> mf; data.mirror_face = (mf == -1) ? index_t{} : index_t{static_cast<uint32_t>(mf)}; }
 
   if (data.flags.door) {
     // The mini does not model 3d doors; consume the door record (byte flags,
@@ -1560,7 +1560,7 @@ byte_ostream& operator<<(byte_ostream& output, const room_t& data) {
     output << data.portals[i];
 
   output << reinterpret_cast<const uint32_t&>(data.flags);
-  output << data.pulse_time << data.pulse_offset << data.mirror_face;
+  output << data.pulse_time << data.pulse_offset << static_cast<int16_t>(data.mirror_face.has_value()? *data.mirror_face : -1);
 
   if (data.flags.door) {
     // No doorway data in the mini; write neutral values the reader consumes.
@@ -1606,7 +1606,7 @@ face_physics_flags_t GetFacePhysicsFlags(index_t roomnum, const face_t &fp) {
     return ret;
   }
 
-  if (fp.portal_num != -1) {
+  if (fp.portal_num >= 0) {
     const portal &pp = Rooms[*roomnum].portals[fp.portal_num];
     ret.portal = 1;
     if (!(pp.flags.render_faces) || (pp.flags.rendered_flythrough)) {
