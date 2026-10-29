@@ -232,9 +232,7 @@ int LoadTextureImage(const std::filesystem::path &filename, optref<int> type, te
 byte_istream& operator>>(byte_istream& input, texture& data)
 {
   return input
-          >> data.r
-          >> data.g
-          >> data.b
+          >> data.color
           >> data.alpha
           >> data.speed
           >> data.slide_u
@@ -248,9 +246,7 @@ byte_istream& operator>>(byte_istream& input, texture& data)
 byte_ostream& operator<<(byte_ostream& output, const texture& data)
 {
   return output
-          << data.r
-          << data.g
-          << data.b
+          << data.color
           << data.alpha
           << data.speed
           << data.slide_u

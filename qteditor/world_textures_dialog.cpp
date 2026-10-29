@@ -97,13 +97,13 @@ void WorldTexturesDialog::bindEdits() {
     if (auto t = data()) t->reflectivity = ui->IDC_REFLECT->text().toFloat();
   });
   connect(ui->IDC_RED_LIGHTING, &QLineEdit::editingFinished, [this]() {
-    if (auto t = data()) t->r = ui->IDC_RED_LIGHTING->text().toFloat();
+    if (auto t = data()) t->color.r = ui->IDC_RED_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_GREEN_LIGHTING, &QLineEdit::editingFinished, [this]() {
-    if (auto t = data()) t->g = ui->IDC_GREEN_LIGHTING->text().toFloat();
+    if (auto t = data()) t->color.g = ui->IDC_GREEN_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_BLUE_LIGHTING, &QLineEdit::editingFinished, [this]() {
-    if (auto t = data()) t->b = ui->IDC_BLUE_LIGHTING->text().toFloat();
+    if (auto t = data()) t->color.b = ui->IDC_BLUE_LIGHTING->text().toFloat();
   });
   connect(ui->IDC_SLIDEU, &QLineEdit::editingFinished, [this]() {
     if (auto t = data()) t->slide_u = ui->IDC_SLIDEU->text().toFloat();
@@ -182,9 +182,9 @@ void WorldTexturesDialog::updateDialog() {
     if (app.texdlg_texture) ui->IDC_TEX_NUM->setText(QString::number(*app.texdlg_texture));
 
     ui->IDC_REFLECT->setText(QString::number(t->reflectivity));
-    ui->IDC_RED_LIGHTING->setText(QString::number(t->r));
-    ui->IDC_GREEN_LIGHTING->setText(QString::number(t->g));
-    ui->IDC_BLUE_LIGHTING->setText(QString::number(t->b));
+    ui->IDC_RED_LIGHTING->setText(QString::number(t->color.r));
+    ui->IDC_GREEN_LIGHTING->setText(QString::number(t->color.g));
+    ui->IDC_BLUE_LIGHTING->setText(QString::number(t->color.b));
     ui->IDC_SLIDEU->setText(QString::number(t->slide_u));
     ui->IDC_SLIDEV->setText(QString::number(t->slide_v));
     ui->IDC_ALPHA_EDIT->setText(QString::number(t->alpha));
@@ -231,7 +231,7 @@ void WorldTexturesDialog::updateDialog() {
       QComboBox *combo = ui->IDC_TEX_LIST;
       QSignalBlocker blocker(combo);
       combo->clear();
-      for (int i = 0; i < static_cast<int>(GameTextures.size()); i++)
+      for (size_t i = 0; i < (GameTextures).size(); i++)
         if (GameTextures.is_used(i))
           combo->addItem(QString::fromStdString(GameTextures[i].name));
       combo->setCurrentText(QString::fromStdString(t->name));

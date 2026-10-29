@@ -1945,9 +1945,9 @@ void DestroyLight(index_t roomnum, int facenum) {
 
   float mul = (static_cast<float>(destroy_fp.light_multiple)) / 4.0f;
 
-  r = GameTextures[destroy_fp.tmap].r * mul;
-  g = GameTextures[destroy_fp.tmap].g * mul;
-  b = GameTextures[destroy_fp.tmap].b * mul;
+  r = GameTextures[destroy_fp.tmap].color.r * mul;
+  g = GameTextures[destroy_fp.tmap].color.g * mul;
+  b = GameTextures[destroy_fp.tmap].color.b * mul;
 
   // Get highest component
   float rmax = std::max({r, g, b});

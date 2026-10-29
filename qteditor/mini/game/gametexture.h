@@ -195,6 +195,7 @@
 #include <posix_stream.h>
 #include "slotvec.h"
 #include "utils.h"
+#include "color.h"
 
 #ifdef NEWEDITOR /* only include tablefile header (manage stuff for NEWEDITOR) */
 #include "..\neweditor\ned_TableFile.h"
@@ -340,10 +341,8 @@ struct texture
   index_t damage;
   float reflectivity = 0.6f;
 
-   // colored lighting	 (0 to 100%)
-  float r = 0.0f;
-  float g = 0.0f;
-  float b = 0.0f;
+  // colored lighting (0 to 100%)
+  color3f color;
 
   float slide_u = 0.0f;
   float slide_v = 0.0f; // How many times this texture slides during a second

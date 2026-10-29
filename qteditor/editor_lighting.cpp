@@ -991,9 +991,9 @@ void DoRadiosityForRooms() {
           float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0f;
           mul *= global_light.multiplier * room_light[i].multiplier;
 
-          Light_surfaces[surface_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
-          Light_surfaces[surface_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].g * mul;
-          Light_surfaces[surface_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].b * mul;
+          Light_surfaces[surface_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].color.r * mul;
+          Light_surfaces[surface_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].color.g * mul;
+          Light_surfaces[surface_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].color.b * mul;
           Light_surfaces[surface_index].surface_type = rad_surface_type::room;
 
           if ((GetMaxColor(&Light_surfaces[surface_index].emittance)) > 0.005f)
@@ -1208,9 +1208,9 @@ void DoRadiosityForCurrentRoom(index_t roomnum) {
     } else {
       float mul = ((float)rp.faces[t].light_multiple) / 4.0f;
       mul *= global_light.multiplier * room_light[*roomnum].multiplier;
-      Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp.faces[t].tmap].r * mul;
-      Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp.faces[t].tmap].g * mul;
-      Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp.faces[t].tmap].b * mul;
+      Light_surfaces[surface_index].emittance.r = (float)GameTextures[rp.faces[t].tmap].color.r * mul;
+      Light_surfaces[surface_index].emittance.g = (float)GameTextures[rp.faces[t].tmap].color.g * mul;
+      Light_surfaces[surface_index].emittance.b = (float)GameTextures[rp.faces[t].tmap].color.b * mul;
       Light_surfaces[surface_index].surface_type = rad_surface_type::room;
     }
 
@@ -1823,11 +1823,11 @@ void DoRadiosityForTerrain() {
       for (x = 0; x < 2; x++) {
         Light_surfaces[i * 2 + x].surface_type = rad_surface_type::terrain;
         Light_surfaces[i * 2 + x].emittance.r =
-            (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].r;
+            (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].color.r;
         Light_surfaces[i * 2 + x].emittance.g =
-            (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].g;
+            (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].color.g;
         Light_surfaces[i * 2 + x].emittance.b =
-            (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].b;
+            (float)GameTextures[Terrain_tex_seg[Terrain_seg[seg].texseg_index].tex_index].color.b;
 
         Light_surfaces[i * 2 + x].roomnum = to_roomnum(MAKE_ROOMNUM(seg));
         Light_surfaces[i * 2 + x].facenum = x;
@@ -1969,9 +1969,9 @@ void DoRadiosityForTerrain() {
           float mul = ((float)Rooms[i].faces[t].light_multiple) / 4.0f;
           mul *= global_light.multiplier * room_light[i].multiplier;
 
-          Light_surfaces[surf_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].r * mul;
-          Light_surfaces[surf_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].g * mul;
-          Light_surfaces[surf_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].b * mul;
+          Light_surfaces[surf_index].emittance.r = (float)GameTextures[Rooms[i].faces[t].tmap].color.r * mul;
+          Light_surfaces[surf_index].emittance.g = (float)GameTextures[Rooms[i].faces[t].tmap].color.g * mul;
+          Light_surfaces[surf_index].emittance.b = (float)GameTextures[Rooms[i].faces[t].tmap].color.b * mul;
           Light_surfaces[surf_index].surface_type = rad_surface_type::external_room;
 
           // if ((GetMaxColor (&Light_surfaces[surf_index].emittance)) > 0.005f)
@@ -2123,7 +2123,7 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
         for (i=0;i<static_cast<int>(Terrain_sky.satellites.size());i++)
         {
                 int tmap=Terrain_sky.satellites[i].texture;
-                if (GameTextures[tmap].r>0 || GameTextures[tmap].g || GameTextures[tmap].b)
+                if (GameTextures[tmap].color.r>0 || GameTextures[tmap].color.g || GameTextures[tmap].color.b)
                         lit=1;
         }
 
@@ -2201,9 +2201,9 @@ Dynamic lighting takes a long time)","Question",MB_YESNO))==IDYES) do_dynamic=1;
 
                                 light_avg=(light1+light2)/2;
 
-                                r+=(light_avg*GameTextures[tmap].r);
-                                g+=(light_avg*GameTextures[tmap].g);
-                                b+=(light_avg*GameTextures[tmap].b);
+                                r+=(light_avg*GameTextures[tmap].color.r);
+                                g+=(light_avg*GameTextures[tmap].color.g);
+                                b+=(light_avg*GameTextures[tmap].color.b);
 
                                 exitance[tseg].r=r;
                                 exitance[tseg].g=g;
@@ -2703,7 +2703,7 @@ int TestLightAdjacency(index_t roomnum, int facenum, int external) {
   if (!AllowCombining)
     return 0;
 
-  // if (GameTextures[afp->tmap].r>0 || GameTextures[afp->tmap].g>0 || GameTextures[afp->tmap].b>0)
+  // if (GameTextures[afp->tmap].color.r>0 || GameTextures[afp->tmap].color.g>0 || GameTextures[afp->tmap].color.b>0)
   //	return 0;
 
   // Don't combine portals!
@@ -2755,7 +2755,7 @@ StartOver:
       face_t &bfp = brp.faces[t];
 
       // Don't do combine light sources
-      // if (GameTextures[bfp->tmap].r>0 || GameTextures[bfp->tmap].g>0 || GameTextures[bfp->tmap].b>0)
+      // if (GameTextures[bfp->tmap].color.r>0 || GameTextures[bfp->tmap].color.g>0 || GameTextures[bfp->tmap].color.b>0)
       //	continue;
       // Don't combine portals!
       if (bfp.portal_num != -1)
