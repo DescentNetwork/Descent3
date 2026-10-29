@@ -329,7 +329,7 @@ void WorldWeaponsDialog::updateDialog()
       QComboBox *combo = ui->IDC_WEAPON_PULLDOWN;
       QSignalBlocker blocker(combo);
       combo->clear();
-      for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+      for (size_t i = 0; i < (Weapons).size(); i++)
         if (Weapons.is_used(i))
           combo->addItem(QString::fromStdString(Weapons[i].name));
       combo->setCurrentText(QString::fromStdString(weapon->name));

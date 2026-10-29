@@ -187,7 +187,7 @@ void WorldObjectsPlayerDialog::updateDialog() {
       QComboBox *combo = ui->IDC_PSHIP_PULLDOWN;
       QSignalBlocker blocker(combo);
       combo->clear();
-      for (int i = 0; i < static_cast<int>(Ships.size()); i++)
+      for (size_t i = 0; i < (Ships).size(); i++)
         if (Ships.is_used(i))
           combo->addItem(QString::fromStdString(Ships[i].name));
       combo->setCurrentText(QString::fromStdString(s->name));

@@ -2101,7 +2101,7 @@ void PageInPolymodel(index_t polynum, std::optional<object_type_e> type, optref<
 
   // See if textures need to be remapped
   int remap = 0;
-  for (int t = 0; t < static_cast<int>(Poly_models[*polynum].textures.size()); t++)
+  for (size_t t = 0; t < (Poly_models[*polynum].textures).size(); t++)
     if (!Poly_models[*polynum].textures[t] || *Poly_models[*polynum].textures[t] == 0) // is there a bad texture?
       remap = 1;
 
@@ -2990,7 +2990,7 @@ void RemapPolyModels() {
     if (Poly_models[i].used == 0 || (Poly_models[i].flags.not_resident))
       continue;
 
-    for (int t = 0; t < static_cast<int>(Poly_models[i].textures.size()); t++)
+    for (size_t t = 0; t < (Poly_models[i].textures).size(); t++)
       if (!Poly_models[i].textures[t] || *Poly_models[i].textures[t] == 0) // is there a bad texture?
         remap = 1;
 

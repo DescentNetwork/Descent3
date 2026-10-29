@@ -192,7 +192,7 @@ void WorldSoundsDialog::updateDialog()
 
   if (auto s = data()) {
     int total_memory = 0;
-    for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
+    for (size_t i = 0; i < (Sounds).size(); i++)
       if (Sounds.is_used(i))
         total_memory += SoundFiles[Sounds[i].sample_index].sample_length * 2;
 
@@ -270,7 +270,7 @@ void WorldSoundsDialog::updateDialog()
     {
       QSignalBlocker blocker(ui->IDC_SOUND_PULLDOWN);
       ui->IDC_SOUND_PULLDOWN->clear();
-      for (int i = 0; i < static_cast<int>(Sounds.size()); i++)
+      for (size_t i = 0; i < (Sounds).size(); i++)
         if (Sounds.is_used(i))
           ui->IDC_SOUND_PULLDOWN->addItem(QString::fromStdString(Sounds[i].name));
       ui->IDC_SOUND_PULLDOWN->setCurrentText(QString::fromStdString(s->name));

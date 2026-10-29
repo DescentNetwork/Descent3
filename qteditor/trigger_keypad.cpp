@@ -151,7 +151,7 @@ void TriggerKeypad::onNextInRoom() {
                                   ? app.current.room
                                   : (app.Current_trigger ? Triggers[*app.Current_trigger].roomnum : index_t{});
   int n = app.Current_trigger ? static_cast<int32_t>(*app.Current_trigger) : -1;
-  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
+  for (size_t i = 0; i < (Triggers).size(); i++) {
     n = (n + 1) % static_cast<int>(Triggers.size());
     if (Triggers[n].roomnum == room_target) {
       app.Current_trigger = n;

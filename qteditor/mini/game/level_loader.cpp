@@ -2050,7 +2050,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_GENERIC_NAMES);
       int highest = -1;
-      for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
+      for (size_t i = 0; i < (Object_info).size(); i++)
         if (Object_info[i].type != object_type_e::none)
           highest = i;
       out << (int32_t)(highest + 1);
@@ -2063,7 +2063,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_DOOR_NAMES);
       int highest = -1;
-      for (int i = 0; i < static_cast<int>(Doors.size()); i++)
+      for (size_t i = 0; i < (Doors).size(); i++)
         if (Doors.is_used(i))
           highest = i;
       out << (int32_t)(highest + 1);
@@ -2168,7 +2168,7 @@ bool SaveLevel(const std::filesystem::path& filename, bool f_save_room_AABB) {
     {
       int start = LL_StartChunk(out, CHUNK_TRIGGERS);
       out << static_cast<int>(Triggers.size());
-      for (int i = 0; i < static_cast<int>(Triggers.size()); i++)
+      for (size_t i = 0; i < (Triggers).size(); i++)
         out << Triggers[i];
       LL_EndChunk(out, start);
     }

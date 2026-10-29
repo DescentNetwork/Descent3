@@ -35,7 +35,7 @@ index_t CreateNewRoom(int nverts, int nfaces, bool palette_room) {
 // Current_faces touch-up are editor UI side-effects and are skipped.  Returns
 // the slot index or -1 when the room capacity limit is reached.
 int FindFreeRoomSlot() {
-  for (int roomnum = 0; roomnum < static_cast<int>(Rooms.size()); ++roomnum)
+  for (size_t roomnum = 0; roomnum < (Rooms).size(); ++roomnum)
     if (!Rooms[roomnum].used)
       return roomnum;
 

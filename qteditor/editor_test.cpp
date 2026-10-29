@@ -3913,7 +3913,7 @@ private slots:
     // table; the reload-sensitive counters must reflect the parsed chunk.
     QVERIFY2(Num_lightmap_infos_read > 0, "level1.d3l should carry a lightmap table");
     int usedInfos = 0;
-    for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++)
+    for (size_t i = 0; i < (LightmapInfo).size(); i++)
       if (LightmapInfo.is_used(i))
         usedInfos++;
     QCOMPARE(Num_lightmap_infos_read, usedInfos);
@@ -3923,7 +3923,7 @@ private slots:
     // non-degenerate (catches a reader/writer that truncates the RLE stream to
     // the wrong value count).
     int nonTrivial = 0;
-    for (int i = 0; i < static_cast<int>(LightmapInfo.size()); i++) {
+    for (size_t i = 0; i < (LightmapInfo).size(); i++) {
       if (LightmapInfo.is_unused(i))
         continue;
       const index_t lm_handle = LightmapInfo[i].lm_handle;
@@ -4164,7 +4164,7 @@ private slots:
     // editor-critical array was populated with more than a trivially empty set.
     QVERIFY(static_cast<int>(GameTextures.size()) > 100);
     int loaded_objects = 0;
-    for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
+    for (size_t i = 0; i < (Object_info).size(); i++)
       if (Object_info[i].type != object_type_e::none)
         loaded_objects++;
     QVERIFY(loaded_objects > 50);
@@ -4198,7 +4198,7 @@ private slots:
     QVERIFY(loadGameDataTable(hog));
 
     int withAnim = 0, withWb = 0, withAi = 0;
-    for (int i = 0; i < static_cast<int>(Object_info.size()); i++) {
+    for (size_t i = 0; i < (Object_info).size(); i++) {
       const object_info &oi = Object_info[i];
       if (oi.type == object_type_e::none)
         continue;
@@ -6062,7 +6062,7 @@ private slots:
     app.placed.room = to_roomnum(0);
     app.placed.base.room.reset();
     app.placed.base.face.reset();
-    app.placed.room_face = index_t{static_cast<uint32_t>(0)};
+    app.placed.room_face = 0;
     app.placed.origin = vector3{(float)150, (float)150, (float)0};
     app.placed.attachpoint = vector3{(float)0, (float)0, (float)0};
     vm_MakeIdentity(app.placed.rotmat);
@@ -6128,7 +6128,7 @@ private slots:
     app.placed.room = to_roomnum(1);
     app.placed.base.room = 0;
     app.placed.base.face = 0;
-    app.placed.room_face = index_t{static_cast<uint32_t>(0)};
+    app.placed.room_face = 0;
     app.placed.origin = vector3{(float)5, (float)0, (float)-5};
     app.placed.attachpoint = vector3{(float)5, (float)0, (float)-5};
     vm_MakeIdentity(app.placed.rotmat);
@@ -7430,7 +7430,7 @@ private slots:
     PlaceRoom(0, 0, 1, 0, std::nullopt);
 
     QCOMPARE(app.placed.room, to_roomnum(1));
-    QCOMPARE(app.placed.room_face, index_t{static_cast<uint32_t>(0)});
+    QCOMPARE(app.placed.room_face, index_t{0});
     QCOMPARE(app.placed.base.room, std::optional<int>(0));
     QCOMPARE(app.placed.base.face, std::optional<int>(0));
     QVERIFY(!app.placed.door);
@@ -7552,7 +7552,7 @@ private slots:
     rp.used = true;
 
     app.placed.room = to_roomnum(0);
-    app.placed.room_face = index_t{static_cast<uint32_t>(0)};
+    app.placed.room_face = 0;
     app.placed.angle = 0;
     vm_MakeIdentity(app.placed.orient);
 
@@ -8247,7 +8247,7 @@ private slots:
       rp.faces[portalFace].portal_num = 0;
       rp.portals[0].flags = {};
       rp.portals[0].connected_room = index_t{static_cast<uint32_t>(otherIdx)};
-      rp.portals[0].connected_portal = index_t{static_cast<uint32_t>(0)};
+      rp.portals[0].connected_portal = 0;
       rp.portals[0].portal_face = (int16_t)portalFace;
     }
     return portalFace >= 0 ? portalFace : -1;

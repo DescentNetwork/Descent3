@@ -180,7 +180,7 @@ index_t GetPrevDoor(uint32_t n) {
 index_t FindDoorName(const std::string &name)
 {
   if(!name.empty())
-    for (int i = 0; i < static_cast<int>(Doors.size()); i++)
+    for (size_t i = 0; i < (Doors).size(); i++)
       if (Doors.is_used(i) && match(name, Doors[i].name))
         return i;
   return std::nullopt;

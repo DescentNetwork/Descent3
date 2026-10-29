@@ -1832,7 +1832,7 @@ void MainWindow::onRoomDeleteFace() {
   }
   DeleteRoomFace(app.current.room, app.current.face);
   if (static_cast<int32_t>(*app.current.face) >= Rooms[*app.current.room].faces.size())
-    app.current.face = index_t{static_cast<uint32_t>(Rooms[*app.current.room].faces.size() - 1)};
+    app.current.face = Rooms[*app.current.room].faces.size() - 1;
   app.Mine_changed = true;
 }
 
@@ -1844,7 +1844,7 @@ void MainWindow::onRoomDeletePortal() {
     EditorStatus("Current face is not a portal.");
     return;
   }
-  DeletePortalPair(app.current.room, index_t{static_cast<uint32_t>(pn)});
+  DeletePortalPair(app.current.room, pn);
   app.Mine_changed = true;
 }
 

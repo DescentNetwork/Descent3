@@ -224,7 +224,7 @@ void WorldObjectsDoorDialog::updateDialog() {
     QComboBox *combo = ui->IDC_DOOR_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    for (int i = 0; i < static_cast<int>(Doors.size()); i++)
+    for (size_t i = 0; i < (Doors).size(); i++)
       if (Doors.is_used(i))
         combo->addItem(QString::fromStdString(Doors[i].name));
     combo->setCurrentText(QString::fromStdString(Doors[n].name));

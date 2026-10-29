@@ -180,7 +180,7 @@ void CountElements() {
   size_t num_elements = 0;
   rad_surface *surf;
 
-  for (int i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
+  for (size_t i = 0; i < (rad_Surfaces).size(); i++) {
     surf = &rad_Surfaces[i];
 
     num_elements += (surf->xresolution * surf->yresolution);
