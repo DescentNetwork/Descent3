@@ -503,7 +503,7 @@ std::string RenderLevelStats() {
       if (fp.special_handle.has_value() &&
           (GameTextures[fp.tmap].flags.metal || GameTextures[fp.tmap].flags.marble ||
            GameTextures[fp.tmap].flags.plastic) &&
-          fp.lmi_handle != BAD_LMI_INDEX)
+          fp.lmi_handle.has_value())
         spec_faces++;
     }
     if (rp.flags.door)
@@ -554,14 +554,25 @@ std::string RenderLevelStats() {
     if (LightmapInfo[i].type == lmi_type::dynamic ||
         LightmapInfo[i].type == lmi_type::terrain)
       continue;
-    lightmaps_used[*LightmapInfo[i].lm_handle] = 1;
+    const index_t lmh = LightmapInfo[i].lm_handle;
+    if (!lmh.has_value())
+      continue;
+    if (*lmh >= MAX_LIGHTMAPS)
+      continue;
+    if (*lmh >= GameLightmaps.size())
+      continue;
+    if (GameLightmaps.is_unused(*lmh))
+      continue;
+    lightmaps_used[*lmh] = 1;
   }
   for (i = 0; i < static_cast<int>(GameLightmaps.size()); i++) {
     if (!lightmaps_used[i])
       continue;
-    const std::vector<std::vector<uint16_t>> &data = lm_data(i);
-    const int w = static_cast<int>(lm_w(i).value_or(255));
-    const int h = static_cast<int>(lm_h(i).value_or(255));
+    if (GameLightmaps.is_unused(i))
+      continue;
+    const std::vector<std::vector<uint16_t>> &data = lm_data(static_cast<uint32_t>(i));
+    const int w = static_cast<int>(lm_w(static_cast<uint32_t>(i)).value_or(255));
+    const int h = static_cast<int>(lm_h(static_cast<uint32_t>(i)).value_or(255));
     if (w <= 0 || h <= 0)
       continue;
     for (int y = 0; y < h; y++) {

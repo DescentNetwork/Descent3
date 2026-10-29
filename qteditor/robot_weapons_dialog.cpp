@@ -43,51 +43,51 @@ RobotEditWeaponsDialog::RobotEditWeaponsDialog(otype_wb_info *static_wb, poly_mo
   // Barrel weapon combos: list used weapons.
   {
     QComboBox *combo = ui->IDC_BARREL_0_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_1_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_2_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_3_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_4_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_5_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_6_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
   {
     QComboBox *combo = ui->IDC_BARREL_7_COMBO;
-    for (int i = 0; i < static_cast<int>(Weapons.size()); i++)
+    for (size_t i = 0; i < (Weapons).size(); i++)
       if (Weapons.is_used(i))
-        combo->addItem(QString::fromStdString(Weapons[i].name), i);
+        combo->addItem(QString::fromStdString(Weapons[i].name), static_cast<int>(i));
   }
 
   // Fire sound combos.

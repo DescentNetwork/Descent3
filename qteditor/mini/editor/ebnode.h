@@ -14,70 +14,31 @@
 *
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
---- HISTORICAL COMMENTS FOLLOW ---
-
-* $Logfile: /DescentIII/Main/editor/ebnode.h $
-* $Revision: 1.1.1.1 $
-* $Date: 2003-08-26 03:57:37 $
-* $Author: kevinb $
-*
-* BOA Helper Node functions
-*
-* $Log: not supported by cvs2svn $
- *
- * 7     4/27/99 11:37p Chris
- * Improving the BNode system
- *
- * 6     4/26/99 10:31p Chris
- * Improving the BNode system
- *
- * 5     4/25/99 9:02p Chris
- * Improving the Bnode system
- *
- * 4     4/18/99 5:39a Chris
- * Vastly improved the path node system
- *
- * 3     4/15/99 5:49p Chris
- * Fixed a bug with rendering the BOAPath nodes
- *
- * 2     4/14/99 3:13p Chris
- * Beginning to add BoaNode stuff
-*
-* $NoKeywords: $
 */
 
-#ifndef EBNODE_H_
-#define EBNODE_H_
+#ifndef EBNODE_H
+#define EBNODE_H
 
+#include "pstypes.h"
 #include "bnode.h"
-#include "room.h"
-#include "mem/mem.h"
-#include "vecmat.h"
-#include "3d.h"
-#include "gr.h"
-
-#define EBDRAW_NONE 0
-#define EBDRAW_ROOM 1
-#define EBDRAW_ROOM_AND_NEXT_ROOMS 2
-#define EBDRAW_LEVEL 3
+#include "d3edit.h"
 
 extern char EBN_draw_type;
 
-extern void EBNode_MakeDefaultIntraRoomNodes(int roomnum);
-extern void EBNode_MakeDefaultInterRoomEdges(int roomnum);
-extern void EBNode_MakeFirstPass(void);
-extern void EBNode_Draw(char draw_type, grViewport *vp, vector3 *viewer_eye, matrix *viewer_orient, float zoom);
-extern void EBNode_Move(bool f_offset, int roomnum, int pnt, vector3 *pos);
-extern int EBNode_AddNode(int roomnum, vector3 *pnt, bool f_from_editor, bool f_check_for_close_nodes);
+void EBNode_MakeDefaultIntraRoomNodes(index_t roomnum);
+void EBNode_MakeDefaultInterRoomEdges(index_t roomnum);
+void EBNode_MakeFirstPass(void);
+void EBNode_Draw(char draw_type, grViewport *vp, vector3 *viewer_eye, matrix *viewer_orient, float zoom);
+void EBNode_Move(bool f_offset, index_t roomnum, index_t pnt, const vector3 &pos);
+index_t EBNode_AddNode(index_t roomnum, const vector3 &pnt, bool f_from_editor, bool f_check_for_close_nodes);
 // Note the 2 last parameters are for internal use ONLY never set them
-extern void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_make_reverse = true,
-                           float computed_max_rad = -1.0f);
-extern void EBNode_RemoveEdge(int spnt, int sroom, int epnt, int eroom, bool f_remove_reverse = true);
-int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom);
-void EBNode_RemoveNode(int roomnum, int pnt);
+void EBNode_AddEdge(index_t spnt, index_t sroom, index_t epnt, index_t eroom, bool f_make_reverse = true,
+                    float computed_max_rad = -1.0f);
+void EBNode_RemoveEdge(index_t spnt, index_t sroom, index_t epnt, index_t eroom, bool f_remove_reverse = true);
+index_t EBNode_InsertNodeOnEdge(index_t spnt, index_t sroom, index_t epnt, index_t eroom);
+void EBNode_RemoveNode(index_t roomnum, index_t pnt);
 void EBNode_ClearLevel();
 bool EBNode_VerifyGraph();
-void EBNode_AutoEdgeNode(int spnt, int sroom);
+void EBNode_AutoEdgeNode(index_t spnt, index_t sroom);
 
 #endif

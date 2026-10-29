@@ -60,7 +60,7 @@
 static void EditorDeleteTrigger(int trig_num) {
   trigger &tp = Triggers[trig_num];
   if (tp.roomnum && *tp.roomnum < Rooms.size() && tp.facenum &&
-      *tp.facenum < Rooms[*tp.roomnum].faces.size()) {
+      *tp.facenum < static_cast<size_t>(Rooms[*tp.roomnum].faces.size())) {
     Rooms[*tp.roomnum].faces[*tp.facenum].flags.has_trigger = false;
   }
   Triggers.erase(Triggers.begin() + trig_num);
@@ -69,7 +69,7 @@ static void EditorDeleteTrigger(int trig_num) {
 static void EditorDeleteTriggerByRoomFace(index_t roomnum, index_t facenum) {
   if (!roomnum || !facenum)
     return;
-  for (int i = 0; i < static_cast<int>(Triggers.size()); i++) {
+  for (size_t i = 0; i < (Triggers).size(); i++) {
     if (Triggers[i].roomnum == *roomnum && Triggers[i].facenum == *facenum) {
       EditorDeleteTrigger(i);
       return;
@@ -115,7 +115,7 @@ int RoomAddVertices(index_t roomnum, int num_new_verts) {
     return 0;
 
   room_t &rp = Rooms[*roomnum];
-  const int old_num_verts = static_cast<int>(rp.verts.size())};
+  const int old_num_verts = static_cast<int>(rp.verts.size());
   rp.verts.resize(old_num_verts + num_new_verts);
 
   return old_num_verts;
@@ -130,7 +130,7 @@ int RoomAddFaces(index_t roomnum, int num_new_faces) {
     return 0;
 
   room_t &rp = Rooms[*roomnum];
-  const int old_num_faces = static_cast<int>(rp.faces.size())};
+  const int old_num_faces = static_cast<int>(rp.faces.size());
   rp.faces.resize(old_num_faces + num_new_faces);
 
   if (rp.num_bbf_regions) {
@@ -152,7 +152,7 @@ bool ResetRoomFaceNormals(index_t roomnum) {
   int bad_normals = 0;
 
   room_t &rp = Rooms[*roomnum];
-  for (int i = 0; i < rp.faces.size(); i++)
+  for (size_t i = 0; i < (rp).faces.size(); i++)
     if (!ComputeFaceNormal(*roomnum, i))
       bad_normals++;
 
@@ -205,10 +205,10 @@ void CopyRoom(int destroom, int srcroom) {
 
   InitRoom(destp, srcp.verts.size(), srcp.faces.size(), 0);
 
-  for (int i = 0; i < destp.faces.size(); i++)
+  for (size_t i = 0; i < (destp).faces.size(); i++)
     CopyFace(&destp.faces[i], &srcp.faces[i]);
 
-  for (int i = 0; i < destp.verts.size(); i++)
+  for (size_t i = 0; i < destp.verts.size(); i++)
     destp.verts[i] = srcp.verts[i];
 
   if (srcp.doorway_data) {
@@ -313,7 +313,7 @@ void DeleteRoomFace(index_t roomnum, index_t facenum) {
   if (rp.faces[*facenum].flags.has_trigger)
     EditorDeleteTriggerByRoomFace(roomnum, facenum);
 
-  for (int p = 0; p < rp.portals.size(); p++) {
+  for (size_t p = 0; p < rp.portals.size(); p++) {
     portal &pp = rp.portals[p];
     Q_ASSERT(pp.portal_face != *facenum);
     if (pp.portal_face > *facenum)
@@ -333,7 +333,7 @@ void DeleteRoomFace(index_t roomnum, index_t facenum) {
   rp.faces.erase(rp.faces.begin() + *facenum);
 
   if (roomnum == app.current.room) {
-    const uint32_t num_faces = static_cast<uint32_t>(rp.faces.size())};
+    const uint32_t num_faces = static_cast<uint32_t>(rp.faces.size());
     if (app.current.face == num_faces)
       app.current.face = index_t{num_faces - 1};
     if (app.marked.face == num_faces)
@@ -361,10 +361,10 @@ void DeleteRoomPortal(index_t roomnum, index_t portalnum) {
   const portal &pp = rp.portals[*portalnum];
   face_t &fp = rp.faces[*pp.portal_face];
 
-  Q_ASSERT(fp.portal_num == static_cast<int32_t>(*portalnum))};
+  Q_ASSERT(fp.portal_num == static_cast<int32_t>(*portalnum));
   fp.portal_num = -1;
 
-  for (int p = static_cast<int32_t>(*portalnum) + 1; p < static_cast<int32_t>(rp.portals.size())}; p++) {
+  for (size_t p = static_cast<size_t>(*portalnum) + 1; p < rp.portals.size(); p++) {
     const portal &tp = rp.portals[p];
     Q_ASSERT(rp.faces[*tp.portal_face].portal_num == p);
     rp.faces[*tp.portal_face].portal_num--;
@@ -492,8 +492,8 @@ void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uv
   roomUVL ruvmag, fuvmag, uvlo, uvhi;
   float fmag, mag01;
 
-  Q_ASSERT((va < nv) && (vb < nv))};
-  Q_ASSERT((abs(va - vb) == 1) || (abs(va - vb) == nv - 1))};
+  Q_ASSERT((va < nv) && (vb < nv));
+  Q_ASSERT((abs(va - vb) == 1) || (abs(va - vb) == nv - 1));
 
   if (va == ((vb + 1) % nv)) {
     vlo = vb;
@@ -511,7 +511,7 @@ void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uv
   fp.face_uvls[vlo] = uvlo;
   fp.face_uvls[vhi] = uvhi;
 
-  fmag = sqrt((uvhi.v - uvlo.v) * (uvhi.v - uvlo.v) + (uvhi.u - uvlo.u) * (uvhi.u - uvlo.u))};
+  fmag = sqrt((uvhi.v - uvlo.v) * (uvhi.v - uvlo.v) + (uvhi.u - uvlo.u) * (uvhi.u - uvlo.u));
   if (fmag < 0.001f) {
     ruvmag.u = 256.0f;
     ruvmag.v = 256.0f;
@@ -531,7 +531,7 @@ void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uv
   mag01 = vm_NormalizeVector(fvec);
 
   if (mag01 < 0.001f) {
-    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(*roomnum).arg(*facenum))};
+    QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), QString("U, V bogosity in room #%1, probably on face #%2.").arg(*roomnum).arg(*facenum));
     return;
   }
 
@@ -561,7 +561,7 @@ void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uv
 // ============================================================================
 void AssignDefaultUVsToRoom(index_t roomnum) {
   room_t &rp = Rooms[*roomnum];
-  for (int i = 0; i < rp.faces.size(); i++)
+  for (size_t i = 0; i < (rp).faces.size(); i++)
     AssignDefaultUVsToRoomFace(*roomnum, i);
 }
 
@@ -586,7 +586,7 @@ void FixConcaveFaces(index_t roomnum, int *facelist, int facecount) {
       for (int t = 0; t < concave_count; t++)
         concave_verts[t] = rp.faces[facelist[i]].face_verts[t];
 
-      int old_num_faces = static_cast<int>(rp.faces.size())};
+      int old_num_faces = static_cast<int>(rp.faces.size());
       int nfaces = old_num_faces + num_new_faces;
 
       for (int t = 0; t < old_num_faces; t++) {
@@ -744,7 +744,7 @@ void RotateRooms(angle p, angle h, angle b) {
   room_t &markedroomp = Rooms[*app.marked.room];
   room_t &curroomp = Rooms[*app.current.room];
 
-  for (int i = 0; i < markedroomp.portals.size(); i++) {
+  for (size_t i = 0; i < markedroomp.portals.size(); i++) {
     if (markedroomp.portals[i].connected_room == app.current.room) {
       marked_portalnum = i;
       break;
@@ -756,7 +756,7 @@ void RotateRooms(angle p, angle h, angle b) {
     return;
   }
 
-  for (int i = 0; i < curroomp.portals.size(); i++) {
+  for (size_t i = 0; i < curroomp.portals.size(); i++) {
     if (curroomp.portals[i].connected_room == app.marked.room) {
       cur_portalnum = i;
       break;
@@ -771,7 +771,7 @@ void RotateRooms(angle p, angle h, angle b) {
   SaveRoomSelectedList();
 
   curroomp.portals[cur_portalnum].connected_room = index_t{};
-  SelectConnectedRooms(index_to_int(app.current.room))};
+  SelectConnectedRooms(index_to_int(app.current.room));
   curroomp.portals[cur_portalnum].connected_room = app.marked.room;
 
   if (IsRoomSelected(index_to_int(app.marked.room))) {
@@ -794,7 +794,7 @@ void RotateRooms(angle p, angle h, angle b) {
 
     if (Selected_rooms[i] == app.current.room) {
       const face_t &cfp = curroomp.faces[*curroomp.portals[cur_portalnum].portal_face];
-      for (int v = 0; v < rp.verts.size(); v++) {
+      for (size_t v = 0; v < rp.verts.size(); v++) {
         for (int t = 0; t < cfp.num_verts; t++)
           if (v == cfp.face_verts[t])
             goto skip_vert;
@@ -802,11 +802,11 @@ void RotateRooms(angle p, angle h, angle b) {
       skip_vert:;
       }
     } else {
-      for (int v = 0; v < rp.verts.size(); v++)
+      for (size_t v = 0; v < rp.verts.size(); v++)
         rp.verts[v] = ((rp.verts[v] - rotpoint) * rotmat) + rotpoint;
     }
 
-    for (int t = 0; t < rp.faces.size(); t++)
+    for (size_t t = 0; t < (rp).faces.size(); t++)
       rp.faces[t].normal = rp.faces[t].normal * rotmat;
   }
 
@@ -816,8 +816,8 @@ void RotateRooms(angle p, angle h, angle b) {
   for (int i = 0; i < fp->num_verts; i++) {
     int checkvert = fp->face_verts[i];
 
-    for (int t = 0; t < curroomp.faces.size(); t++) {
-      for (int l = 0; l < curroomp.portals.size(); l++)
+    for (size_t t = 0; t < (curroomp).faces.size(); t++) {
+      for (size_t l = 0; l < curroomp.portals.size(); l++)
         if (curroomp.portals[l].portal_face == t)
           goto skip_face;
 
@@ -847,7 +847,7 @@ void RotateRooms(angle p, angle h, angle b) {
 void ConnectPortal(index_t roomnum, int portal_num, int dest_room) {
   room_t &rp = Rooms[*roomnum];
 
-  if (portal_num < 0 || portal_num >= rp.portals.size()) {
+  if (portal_num < 0 || static_cast<size_t>(portal_num) >= rp.portals.size()) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
@@ -878,7 +878,7 @@ void ConnectPortal(index_t roomnum, int portal_num, int dest_room) {
 void DetachPortal(index_t roomnum, int portal_num) {
   room_t &rp = Rooms[*roomnum];
 
-  if (portal_num < 0 || portal_num >= rp.portals.size()) {
+  if (portal_num < 0 || static_cast<size_t>(portal_num) >= rp.portals.size()) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Invalid portal number.");
     return;
   }
@@ -940,7 +940,7 @@ static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_ve
   const float *vv3 = (const float *)v3;
 
   float k = ((vv2[jj] - vv0[jj]) * (vv3[ii] - vv2[ii]) - (vv2[ii] - vv0[ii]) * (vv3[jj] - vv2[jj])) /
-            ((vv1[jj] - vv0[jj]) * (vv3[ii] - vv2[ii]) - (vv1[ii] - vv0[ii]) * (vv3[jj] - vv2[jj]))};
+            ((vv1[jj] - vv0[jj]) * (vv3[ii] - vv2[ii]) - (vv1[ii] - vv0[ii]) * (vv3[jj] - vv2[jj]));
 
   if (k < 0.0f) {
     Q_ASSERT((vm_VectorDistance(v1->vec, v0->vec) * -k) < POINT_TO_EDGE_EPSILON);
@@ -950,7 +950,7 @@ static void ClipEdge(const vector3& normal, const clip_vertex *v0, const clip_ve
     Q_ASSERT((vm_VectorDistance(v1->vec, v0->vec) * (k - 1.0f)) < POINT_TO_EDGE_EPSILON);
     k = 1.0f;
   }
-  Q_ASSERT((k >= 0) && (k <= 1.0f))};
+  Q_ASSERT((k >= 0) && (k <= 1.0f));
 
   newv->vec = v0->vec + (v1->vec - v0->vec) * k;
   newv->uvl.u = v0->uvl.u + (v1->uvl.u - v0->uvl.u) * k;
@@ -1008,7 +1008,7 @@ static void AddVertToFace(index_t roomnum, int facenum, int new_v, int after_v) 
 // ============================================================================
 static void AddVertToAllEdges(index_t roomnum, int v0, int v1, int new_v) {
   room_t &rp = Rooms[*roomnum];
-  for (int f = 0; f < rp.faces.size(); f++) {
+  for (size_t f = 0; f < (rp).faces.size(); f++) {
     const face_t &fp = rp.faces[f];
     for (int v = 0; v < fp.num_verts; v++) {
       int cur = fp.face_verts[v];
@@ -1326,11 +1326,11 @@ void AttachRoom() {
   InitRoom(newroomp, attroom.verts.size(), attroom.faces.size(), 0);
 
   // Rotate verts, copying into new room
-  for (int i = 0; i < attroom.verts.size(); i++)
+  for (size_t i = 0; i < attroom.verts.size(); i++)
     newroomp.verts[i] = ((attroom.verts[i] - attcenter) * app.placed.rotmat) + basecenter;
 
   // Copy faces to new room
-  for (int i = 0; i < attroom.faces.size(); i++) {
+  for (size_t i = 0; i < (attroom).faces.size(); i++) {
     CopyFace(&newroomp.faces[i], &attroom.faces[i]);
   }
 
@@ -1363,7 +1363,7 @@ void AttachRoom() {
       vector3 doorcenter = {0, 0, 0};
       vector3 room_center = ((doorcenter - attcenter) * app.placed.rotmat) + basecenter;
 
-      FreeRoom(index_to_int(app.placed.room))};
+      FreeRoom(index_to_int(app.placed.room));
 
       ObjCreate(object_type_e::door, *app.placed.door, slot, room_center, orient);
 
@@ -1410,7 +1410,7 @@ void GetUVLForRoomPoint(index_t roomnum, index_t facenum, int vertnum, roomUVL *
 
   angvec avec;
   vm_ExtractAnglesFromMatrix(avec, face_matrix);
-  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b())};
+  vm_AnglesToMatrix(trans_matrix, avec.p(), avec.h(), avec.b());
 
   // Rotate all the points
   for (i = 0; i < nv; i++) {
@@ -1597,12 +1597,12 @@ void HTextureRoomStretch(index_t roomnum, index_t facenum, index_t edge, int dir
 
 // HTextureStretchMore — editor/HTexture.cpp:400
 void HTextureStretchMore(index_t roomnum, index_t facenum, index_t edge, float texscale) {
-  HTextureRoomStretch(roomnum, facenum, edge, (int)(1 * texscale))};
+  HTextureRoomStretch(roomnum, facenum, edge, (int)(1 * texscale));
 }
 
 // HTextureStretchLess — editor/HTexture.cpp:408
 void HTextureStretchLess(index_t roomnum, index_t facenum, index_t edge, float texscale) {
-  HTextureRoomStretch(roomnum, facenum, edge, int(-1 * texscale))};
+  HTextureRoomStretch(roomnum, facenum, edge, int(-1 * texscale));
 }
 
 // HTextureSetDefault — editor/HTexture.cpp:416
@@ -1729,7 +1729,7 @@ void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face
 // Creates a room from a door polymodel (shell + front face submodels) and
 // places it for interactive positioning.
 void PlaceDoor(int baseroom, int baseface, index_t placed_door) {
-  poly_model *po = GetPolymodelPointer(GetDoorImage(*placed_door))};
+  poly_model *po = GetPolymodelPointer(GetDoorImage(*placed_door));
   if (po == nullptr)
     return;
 
@@ -1762,7 +1762,7 @@ void PlaceDoor(int baseroom, int baseface, index_t placed_door) {
   int total_faces = num_faces;
 
   index_t rp = CreateNewRoom(total_verts, total_faces);
-  Q_ASSERT(rp.has_value())};
+  Q_ASSERT(rp.has_value());
   room_t &newroom = Rooms[*rp];
 
   int index = 0;
@@ -1780,7 +1780,7 @@ void PlaceDoor(int baseroom, int baseface, index_t placed_door) {
   index = 0;
   for (int i = 0; i < shell_sm->num_faces; i++, index++) {
     InitRoomFace(newroom.faces[index], shell_sm->faces[i].nverts);
-    newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu))};
+    newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu));
     for (int t = 0; t < newroom.faces[index].num_verts; t++)
       newroom.faces[index].face_verts[t] = shell_sm->faces[i].vertnums[t];
   }
@@ -1789,7 +1789,7 @@ void PlaceDoor(int baseroom, int baseface, index_t placed_door) {
   int front_face_index = index;
   Q_ASSERT(front_sm->num_faces == 1);
   InitRoomFace(newroom.faces[index], front_sm->faces[0].nverts);
-  newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu))};
+  newroom.faces[index].tmap = static_cast<int16_t>(app.texdlg_texture.value_or(0xFFFFu));
 
   // Remap front face vertices to match the shell
   int front_remap[30];

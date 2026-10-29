@@ -26,6 +26,7 @@
 #include "soundload.h"
 #include "ssl_lib.h"
 #include "object_lighting.h"
+#include "lightmap_info.h"
 #include "string_helpers.h"
 
 #include <cstring>
@@ -131,6 +132,8 @@ void ClearObjectLightmaps(object *obj) {
 
   for (auto &faces : obj->lm_object.lightmap_faces) {
     for (auto &f : faces) {
+      if (f.lmi_handle)
+        FreeLightmapInfo(static_cast<int>(*f.lmi_handle));
       f.u2.clear();
       f.v2.clear();
       f.num_verts = 0;

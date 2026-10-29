@@ -57,6 +57,12 @@ inline int index_to_int(const index_t& data)
   return data ? static_cast<int>(*data) : -1;
 }
 
+// Convert a legacy integer index (-1 meaning "unset") to index_t.
+inline index_t to_index(int index)
+{
+  return index == -1 ? index_t{} : index_t{static_cast<uint32_t>(index)};
+}
+
 template <typename T>
 class optref {
 private:

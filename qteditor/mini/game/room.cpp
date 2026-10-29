@@ -650,8 +650,8 @@ void FreeAllRooms() {
 
 // Free the memory used by a room face structure
 void FreeRoomFace(face_t &fp) {
-  if (fp.lmi_handle != BAD_LMI_INDEX) {
-    FreeLightmapInfo(*fp.lmi_handle);
+  if (fp.lmi_handle.has_value()) {
+    FreeLightmapInfo(static_cast<int>(*fp.lmi_handle));
     fp.lmi_handle = std::nullopt;
     fp.flags.lightmap = false;
   }
@@ -796,7 +796,7 @@ void ClearRoomLightmaps(index_t roomnum) {
 
   for (t = 0; t < Rooms[*roomnum].faces.size(); t++) {
     if (Rooms[*roomnum].faces[t].lmi_handle) {
-      FreeLightmapInfo(*Rooms[*roomnum].faces[t].lmi_handle);
+      FreeLightmapInfo(static_cast<int>(*Rooms[*roomnum].faces[t].lmi_handle));
       Rooms[*roomnum].faces[t].lmi_handle = std::nullopt;
       Rooms[*roomnum].faces[t].flags.lightmap = false;
     }

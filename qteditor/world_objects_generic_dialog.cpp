@@ -454,9 +454,9 @@ void WorldObjectsGenericDialog::updateDialog() {
     QSignalBlocker blocker(combo);
     combo->clear();
     combo->addItem("<none>", -1);
-    for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
+    for (size_t i = 0; i < (Object_info).size(); i++)
       if (Object_info[i].type != object_type_e::none)
-        combo->addItem(QString::fromStdString(Object_info[i].name), i);
+        combo->addItem(QString::fromStdString(Object_info[i].name), static_cast<int>(i));
     const int sp1 = oi->dspew[0];
     combo->setCurrentIndex(combo->findData(sp1 >= 0 && sp1 < static_cast<int>(Object_info.size()) ? sp1 : -1));
   }
@@ -465,9 +465,9 @@ void WorldObjectsGenericDialog::updateDialog() {
     QSignalBlocker blocker(combo);
     combo->clear();
     combo->addItem("<none>", -1);
-    for (int i = 0; i < static_cast<int>(Object_info.size()); i++)
+    for (size_t i = 0; i < (Object_info).size(); i++)
       if (Object_info[i].type != object_type_e::none)
-        combo->addItem(QString::fromStdString(Object_info[i].name), i);
+        combo->addItem(QString::fromStdString(Object_info[i].name), static_cast<int>(i));
     const int sp2 = oi->dspew[1];
     combo->setCurrentIndex(combo->findData(sp2 >= 0 && sp2 < static_cast<int>(Object_info.size()) ? sp2 : -1));
   }
