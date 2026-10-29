@@ -31,15 +31,15 @@
 
 #include "d3edit.h"
 #include "gamepath.h"
+#include "object_external_struct.h"
 #include "vecmat.h"
 
 // Editor-side path helpers provided in d3_editor_state.cpp.
-int AllocGamePath();
-void FreeGamePath(int n);
-int InsertNodeIntoPath(int pathnum, int nodenum, int flags, int roomnum, vector pos, matrix orient);
+index_t AllocGamePath();
+void FreeGamePath(uint32_t n);
 void DeleteNodeFromPath(int pathnum, int nodenum);
-int GetNextPath(int n);
-int GetPrevPath(int n);
+index_t GetNextPath(uint32_t n);
+index_t GetPrevPath(uint32_t n);
 int GetFirstPath();
 
 
@@ -47,61 +47,46 @@ PathKeypad::PathKeypad(QWidget *parent)
     : QDialog(parent), ui(new Ui::PathKeypad)
 {
   ui->setupUi(this);
-  if (QPushButton *b = ui->IDC_PATHPAD_ADD_PATH)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onAddPath);
-  if (QPushButton *b = ui->IDC_DELETE_PATH)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onDeletePath);
-  if (QPushButton *b = ui->IDC_PATHPAD_NEXT_NODE)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onNextNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_PREV_NODE)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onPrevNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_INSERT_NODE)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onInsertNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_DELETE_NODE)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onDeleteNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_MOVE_FORWARD)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_MOVE_BACKWARD)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_MOVE_LEFT)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_MOVE_RIGHT)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_MOVE_UP)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
-  if (QPushButton *b = ui->IDC_PATHPAD_MOVE_DOWN)
-    connect(b, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_ADD_PATH, &QPushButton::clicked, this, &PathKeypad::onAddPath);
+  connect(ui->IDC_DELETE_PATH, &QPushButton::clicked, this, &PathKeypad::onDeletePath);
+  connect(ui->IDC_PATHPAD_NEXT_NODE, &QPushButton::clicked, this, &PathKeypad::onNextNode);
+  connect(ui->IDC_PATHPAD_PREV_NODE, &QPushButton::clicked, this, &PathKeypad::onPrevNode);
+  connect(ui->IDC_PATHPAD_INSERT_NODE, &QPushButton::clicked, this, &PathKeypad::onInsertNode);
+  connect(ui->IDC_PATHPAD_DELETE_NODE, &QPushButton::clicked, this, &PathKeypad::onDeleteNode);
+  connect(ui->IDC_PATHPAD_MOVE_FORWARD, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_BACKWARD, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_LEFT, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_RIGHT, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_UP, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
+  connect(ui->IDC_PATHPAD_MOVE_DOWN, &QPushButton::clicked, this, &PathKeypad::onMoveNode);
 
-  if (QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN)
-    connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PathKeypad::onPathPulldownChanged);
-  if (QLineEdit *edit = ui->IDC_CURRENT_NODE_EDIT)
-    connect(edit, &QLineEdit::editingFinished, this, &PathKeypad::onCurrentNodeEdited);
-  if (QLineEdit *edit = ui->IDC_PATH_INC_TEXT)
-    connect(edit, &QLineEdit::editingFinished, this, &PathKeypad::onIncEdited);
-  if (QCheckBox *cb = ui->IDC_SHOW_NODES_CHECK)
-    connect(cb, &QCheckBox::toggled, this, &PathKeypad::onShowNodesToggled);
+  connect(ui->IDC_PATHPAD_PULLDOWN, qOverload<int>(&QComboBox::currentIndexChanged), this, &PathKeypad::onPathPulldownChanged);
+  connect(ui->IDC_CURRENT_NODE_EDIT, &QLineEdit::editingFinished, this, &PathKeypad::onCurrentNodeEdited);
+  connect(ui->IDC_PATH_INC_TEXT, &QLineEdit::editingFinished, this, &PathKeypad::onIncEdited);
+  connect(ui->IDC_SHOW_NODES_CHECK, &QCheckBox::toggled, this, &PathKeypad::onShowNodesToggled);
 
   updateDialog();
 }
 
 PathKeypad::~PathKeypad() { delete ui; }
 
-int PathKeypad::currentPath() { return D3EditState.current_path; }
+int PathKeypad::currentPath() { return app.current_path ? static_cast<int>(*app.current_path) : -1; }
 
 int PathKeypad::currentNode() {
   const int p = currentPath();
-  if (p < 0 || p >= MAX_GAME_PATHS || !GamePaths[p].used)
+  if (p < 0 || p >= (int)GamePaths.size() || GamePaths.is_unused(p))
     return -1;
-  if (D3EditState.current_node >= GamePaths[p].num_nodes)
-    D3EditState.current_node = GamePaths[p].num_nodes - 1;
-  return D3EditState.current_node;
+  if (GamePaths[p].pathnodes.empty())
+    return -1;
+  if (app.current_node && *app.current_node >= GamePaths[p].pathnodes.size())
+    app.current_node = static_cast<uint16_t>(GamePaths[p].pathnodes.size() - 1);
+  return app.current_node ? static_cast<int>(*app.current_node) : -1;
 }
 
 void PathKeypad::updateDialog() {
   // Win32 disables path editing when there is no current path (requires a
   // loaded level with paths).
-  const bool active = (D3EditState.current_path >= 0 && D3EditState.current_path < MAX_GAME_PATHS &&
-                       GamePaths[D3EditState.current_path].used);
+  const bool active = (app.current_path && *app.current_path < GamePaths.size() && GamePaths.is_used(*app.current_path));
   const QList<QWidget *> all = this->findChildren<QWidget *>();
   for (QWidget *w : all) {
     if (w->objectName().startsWith("IDC_PATHPAD") || w->objectName().startsWith("IDC_DELETE_PATH") ||
@@ -111,28 +96,25 @@ void PathKeypad::updateDialog() {
   if (!active)
     return;
   const int p = currentPath();
-  if (p < 0 || p >= MAX_GAME_PATHS || !GamePaths[p].used)
+  if (p < 0 || p >= (int)GamePaths.size() || GamePaths.is_unused(p))
     return;
 
-  if (QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN) {
+  {
+    QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN;
     QSignalBlocker blocker(combo);
     combo->clear();
-    for (int i = 0; i < MAX_GAME_PATHS; i++)
-      if (GamePaths[i].used)
-        combo->addItem(GamePaths[i].name);
-    combo->setCurrentText(GamePaths[p].name);
+    for (size_t i = 0; i < GamePaths.size(); i++)
+      if (GamePaths.is_used(i))
+        combo->addItem(QString::fromStdString(GamePaths[i].name));
+    combo->setCurrentText(QString::fromStdString(GamePaths[p].name));
   }
 
-  if (QLabel *label = ui->IDC_PATHPAD_NUM_NODES)
-    label->setText(QString::number(GamePaths[p].num_nodes));
+  ui->IDC_PATHPAD_NUM_NODES->setText(QString::number(GamePaths[p].pathnodes.size()));
 
   const int n = currentNode();
-  if (QLineEdit *edit = ui->IDC_CURRENT_NODE_EDIT)
-    edit->setText(QString::number(n));
-  if (QLabel *label = ui->IDC_PATHPAD_CUR_NODE_ROOM) {
-    if (n >= 0 && n < GamePaths[p].num_nodes)
-      label->setText(QString::number(GamePaths[p].pathnodes[n].roomnum));
-  }
+  ui->IDC_CURRENT_NODE_EDIT->setText(QString::number(n));
+  if (n >= 0 && n < static_cast<int>(GamePaths[p].pathnodes.size()))
+      ui->IDC_PATHPAD_CUR_NODE_ROOM->setText(QString::number(from_roomnum(GamePaths[p].pathnodes[n].roomnum)));
 }
 
 void PathKeypad::onAddPath() {
@@ -141,13 +123,12 @@ void PathKeypad::onAddPath() {
                                              &ok);
   if (!ok || name.isEmpty())
     return;
-  int pathnum = AllocGamePath();
-  if (pathnum == -1)
+  const index_t pathnum = AllocGamePath();
+  if (!pathnum)
     return;
-  snprintf(GamePaths[pathnum].name, sizeof(GamePaths[pathnum].name), "%s",
-           name.toLocal8Bit().constData());
-  D3EditState.current_path = pathnum;
-  D3EditState.current_node = 0;
+  GamePaths[*pathnum].name = name.toStdString();
+  app.current_path = *pathnum;
+  app.current_node = 0u;
   updateDialog();
 }
 
@@ -155,29 +136,31 @@ void PathKeypad::onDeletePath() {
   const int p = currentPath();
   if (p < 0)
     return;
-  FreeGamePath(p);
-  D3EditState.current_path = GetNextPath(p);
-  D3EditState.current_node = 0;
+  FreeGamePath(static_cast<uint32_t>(p));
+  if (const index_t next = GetNextPath(static_cast<uint32_t>(p)))
+    app.current_path = *next;
+  app.current_node = 0u;
   updateDialog();
 }
 
-void PathKeypad::onPathPulldownChanged() {
-  QComboBox *combo = ui->IDC_PATHPAD_PULLDOWN;
-  const int i = FindGamePathName(combo->currentText().toLocal8Bit().constData());
-  if (i == -1)
-    return;
-  D3EditState.current_path = i;
-  D3EditState.current_node = 0;
-  updateDialog();
+void PathKeypad::onPathPulldownChanged()
+{
+  if (const index_t idx = FindGamePathName(ui->IDC_PATHPAD_PULLDOWN->currentText().toStdString()); idx)
+  {
+    app.current_path = idx;
+    app.current_node = 0u;
+    updateDialog();
+  }
 }
 
 void PathKeypad::onNextNode() {
   const int p = currentPath();
   if (p < 0)
     return;
-  if (GamePaths[p].num_nodes == 0)
+  if (GamePaths[p].pathnodes.empty())
     return;
-  D3EditState.current_node = (D3EditState.current_node + 1) % GamePaths[p].num_nodes;
+  if (!app.current_node) app.current_node = 0u;
+  app.current_node = static_cast<uint16_t>((*app.current_node + 1) % GamePaths[p].pathnodes.size());
   updateDialog();
 }
 
@@ -185,10 +168,11 @@ void PathKeypad::onPrevNode() {
   const int p = currentPath();
   if (p < 0)
     return;
-  if (GamePaths[p].num_nodes == 0)
+  if (GamePaths[p].pathnodes.empty())
     return;
-  D3EditState.current_node =
-      (D3EditState.current_node <= 0) ? (GamePaths[p].num_nodes - 1) : (D3EditState.current_node - 1);
+  if (!app.current_node || *app.current_node == 0)
+    app.current_node = static_cast<uint16_t>(GamePaths[p].pathnodes.size() - 1);
+  else app.current_node = static_cast<uint16_t>(*app.current_node - 1);
   updateDialog();
 }
 
@@ -196,12 +180,14 @@ void PathKeypad::onCurrentNodeEdited() {
   const int p = currentPath();
   if (p < 0)
     return;
+  if (GamePaths[p].pathnodes.empty())
+    return;
   int n = ui->IDC_CURRENT_NODE_EDIT->text().toInt();
   if (n < 0)
     n = 0;
-  if (n >= GamePaths[p].num_nodes)
-    n = GamePaths[p].num_nodes - 1;
-  D3EditState.current_node = n;
+  if (n >= static_cast<int>(GamePaths[p].pathnodes.size()))
+    n = static_cast<int>(GamePaths[p].pathnodes.size()) - 1;
+  app.current_node = static_cast<uint16_t>(n);
   updateDialog();
 }
 
@@ -211,12 +197,12 @@ void PathKeypad::onInsertNode() {
   if (p < 0 || n < 0)
     return;
   matrix orient;
-  vm_MakeIdentity(&orient);
-  vector zero_pos;
-  vm_MakeZero(&zero_pos);
-  const int newnode = InsertNodeIntoPath(p, n, 0, 0, zero_pos, orient);
+  vm_MakeIdentity(orient);
+  vector3 zero_pos;
+  vm_MakeZero(zero_pos);
+  const int newnode = InsertNodeIntoPath(p, n, 0, index_t{0}, zero_pos, orient);
   if (newnode != -1)
-    D3EditState.current_node = newnode;
+    app.current_node = newnode;
   updateDialog();
 }
 
@@ -225,13 +211,13 @@ void PathKeypad::onDeleteNode() {
   const int n = currentNode();
   if (p < 0 || n < 0)
     return;
-  if (GamePaths[p].num_nodes == 1) {
+  if (GamePaths[p].pathnodes.size() <= 1) {
     QMessageBox::critical(nullptr, QString("%1 failure").arg(__func__), "Cannot delete the only node in a path.");
     return;
   }
   DeleteNodeFromPath(p, n);
-  if (D3EditState.current_node >= GamePaths[p].num_nodes)
-    D3EditState.current_node = GamePaths[p].num_nodes - 1;
+  if (app.current_node >= GamePaths[p].pathnodes.size())
+    app.current_node = static_cast<uint16_t>(GamePaths[p].pathnodes.size() - 1);
   updateDialog();
 }
 
@@ -240,23 +226,23 @@ void PathKeypad::onMoveNode() {
   const int n = currentNode();
   if (p < 0 || n < 0)
     return;
-  node *nd = &GamePaths[p].pathnodes[n];
+  node &nd = GamePaths[p].pathnodes[n];
   QPushButton *btn = qobject_cast<QPushButton *>(sender());
   if (btn == nullptr)
     return;
   const QString name = btn->objectName();
   if (name == "IDC_PATHPAD_MOVE_FORWARD")
-    nd->pos += nd->fvec * m_inc;
+    nd.pos += nd.fvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_BACKWARD")
-    nd->pos -= nd->fvec * m_inc;
+    nd.pos -= nd.fvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_LEFT")
-    nd->pos -= nd->uvec * m_inc;
+    nd.pos -= nd.uvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_RIGHT")
-    nd->pos += nd->uvec * m_inc;
+    nd.pos += nd.uvec * m_inc;
   else if (name == "IDC_PATHPAD_MOVE_UP")
-    nd->pos.y() += m_inc;
+    nd.pos.y() += m_inc;
   else if (name == "IDC_PATHPAD_MOVE_DOWN")
-    nd->pos.y() -= m_inc;
+    nd.pos.y() -= m_inc;
 }
 
 void PathKeypad::onShowNodesToggled(bool) {

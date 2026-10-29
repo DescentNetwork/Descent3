@@ -18,25 +18,30 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "bnode.h"
+#include "utils.h"
 
-#define EBDRAW_NONE 0
-#define EBDRAW_ROOM 1
-#define EBDRAW_ROOM_AND_NEXT_ROOMS 2
-#define EBDRAW_LEVEL 3
+enum ebdraw : uint8_t {
+  none = 0,
+  room = 1,
+  room_and_next_rooms = 2,
+  level = 3,
+};
 
-extern char EBN_draw_type;
+extern ebdraw EBN_draw_type;
 
 bool EBNode_VerifyGraph();
 void EBNode_ClearLevel();
-void EBNode_MakeDefaultIntraRoomNodes(int roomnum);
-void EBNode_MakeDefaultInterRoomEdges(int roomnum);
+void EBNode_MakeDefaultIntraRoomNodes(index_t roomnum);
+void EBNode_MakeDefaultInterRoomEdges(index_t roomnum);
 void EBNode_MakeFirstPass();
-void EBNode_Move(bool f_offset, int roomnum, int pnt, vector *pos);
-int EBNode_AddNode(int roomnum, vector *pnt, bool f_from_editor, bool f_check_for_close_nodes);
-void EBNode_AddEdge(int spnt, int sroom, int epnt, int eroom, bool f_make_reverse = true,
+void EBNode_Move(bool f_offset, index_t roomnum, index_t pnt, const vector3& pos);
+index_t EBNode_AddNode(index_t roomnum, const vector3 &pnt, bool f_from_editor, bool f_check_for_close_nodes);
+void EBNode_AddEdge(index_t spnt, index_t sroom, index_t epnt, index_t eroom, bool f_make_reverse = true,
                     float computed_max_rad = -1.0f);
-void EBNode_RemoveEdge(int spnt, int sroom, int epnt, int eroom, bool f_remove_reverse = true);
-int EBNode_InsertNodeOnEdge(int spnt, int sroom, int epnt, int eroom);
-void EBNode_RemoveNode(int roomnum, int pnt);
-void EBNode_AutoEdgeNode(int spnt, int sroom);
+void EBNode_RemoveEdge(index_t spnt, index_t sroom, index_t epnt, index_t eroom, bool f_remove_reverse = true);
+index_t EBNode_InsertNodeOnEdge(index_t spnt, index_t sroom, index_t epnt, index_t eroom);
+void EBNode_RemoveNode(index_t roomnum, index_t pnt);
+void EBNode_AutoEdgeNode(index_t spnt, index_t sroom);

@@ -26,6 +26,8 @@ QT_END_NAMESPACE
 
 class QLabel;
 
+struct satellite_t;
+
 class TerrainKeypad : public QDialog {
   Q_OBJECT
 public:
@@ -102,6 +104,7 @@ private:
   void changeSelectedHeights(int delta, bool toAbsolute = false, int absoluteValue = 0);
   void moveSat(int pitch, int heading);
   int currentSat() const;
+  satellite_t *currentSatellite() const;
 
   template <typename T>
   T *findChild_(const QString &name) const { return findChild<T *>(name); }

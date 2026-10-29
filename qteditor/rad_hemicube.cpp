@@ -24,10 +24,12 @@
 #include "radiosity.h"
 #include "hemicube.h"
 #include "d3edit.h"
-#include "mem.h"
+#include "mem/mem.h"
+#include "rand.h"
 
-#include <cstdlib>
 #include <algorithm>
+#include <numbers>
+#include <vector>
 
 #define TOP_FACE 0
 #define LEFT_FACE 1
@@ -35,9 +37,9 @@
 #define FRONT_FACE 3
 #define BACK_FACE 4
 
-float Hemicube_view_zoom = 1.0;
+float Hemicube_view_zoom = 1.0f;
 
-int rad_Drawing = 0;
+bool rad_Drawing = false;
 
 g3Point Element_points[100];
 rad_element *rad_MaxElement;
@@ -50,8 +52,6 @@ int Cracks_this_frame, Cracks_this_side;
 
 float Highest_top_delta, Highest_side_delta;
 
-#define PI 3.141592654
-
 // Calculates delta form factors
 void CalculateDeltaFormFactors() {
   int i, j;         // Loop indices
@@ -63,16 +63,16 @@ void CalculateDeltaFormFactors() {
   // Initialize cell dimensions and area
   Highest_top_delta = -1.0f;
   Highest_side_delta = -1.0f;
-  dx = dy = dz = 2.0 / (float)rad_Hemicube.ff_res;
-  da = 4.0 / ((float)rad_Hemicube.ff_res * (float)rad_Hemicube.ff_res);
+  dx = dy = dz = 2.0f / rad_Hemicube.ff_res;
+  da = 4.0f / (float(rad_Hemicube.ff_res) * float(rad_Hemicube.ff_res));
 
   // Calculate top face delta form factors
-  x = dx / 2.0;
+  x = dx / 2.0f;
   for (i = 0; i < rad_Hemicube.grid_dim; i++) {
-    y = dy / 2.0;
+    y = dy / 2.0f;
     for (j = 0; j < rad_Hemicube.grid_dim; j++) {
-      r = x * x + y * y + 1.0;
-      val = (float)(da / (PI * r * r));
+      r = x * x + y * y + 1.0f;
+      val = (float)(da / (std::numbers::pi_v<float> * r * r));
       rad_Hemicube.top_array[j * rad_Hemicube.grid_dim + i] = val;
 
       if (val > Highest_top_delta)
@@ -84,12 +84,12 @@ void CalculateDeltaFormFactors() {
   }
 
   // Calculate side face delta form factors
-  x = dx / 2.0;
+  x = dx / 2.0f;
   for (i = 0; i < rad_Hemicube.grid_dim; i++) {
-    z = dz / 2.0;
+    z = dz / 2.0f;
     for (j = 0; j < rad_Hemicube.grid_dim; j++) {
-      r = x * x + z * z + 1.0;
-      val = (float)(z * da / (PI * r * r));
+      r = x * x + z * z + 1.0f;
+      val = (float)(z * da / (std::numbers::pi_v<float> * r * r));
       rad_Hemicube.side_array[j * rad_Hemicube.grid_dim + i] = val;
 
       if (val > Highest_side_delta)
@@ -103,13 +103,13 @@ void CalculateDeltaFormFactors() {
 
 // Calculates the form factors for a hemicube
 void CalculateFormFactorsHemiCube() {
-  g3Point *pointlist[100];
+  std::vector<g3Point *> pointlist(100);
   int i, t, k, j, en_limit, en;
   int ff_index = 0;
   int self;
   rad_element *dest_element;
 
-  for (i = 0; i < rad_NumElements; i++)
+  for (i = 0; i < static_cast<int>(rad_FormFactors.size()); i++)
     rad_FormFactors[i] = 0.0f;
 
   // Shoot from patch (faster) or element?
@@ -122,7 +122,7 @@ void CalculateFormFactorsHemiCube() {
       SetSurfaceView(rad_MaxSurface);
     } else {
       rad_MaxElement = &rad_MaxSurface->elements[en];
-      if (rad_MaxElement->flags & EF_IGNORE)
+      if (rad_MaxElement->flags.ignore)
         continue;
 
       SetElementView(rad_MaxElement);
@@ -137,37 +137,37 @@ void CalculateFormFactorsHemiCube() {
 
       ff_index = 0;
 
-      for (t = 0; t < rad_NumSurfaces; t++) {
+      for (t = 0; t < static_cast<int>(rad_Surfaces.size()); t++) {
         int ignore = 0;
         rad_surface *surf = &rad_Surfaces[t];
 
         if (surf == rad_MaxSurface)
           ignore = 1;
-        if (surf->surface_type == ST_PORTAL)
+        if (surf->surface_type == rad_surface_type::portal)
           ignore = 1;
 
         for (j = 0; j < surf->xresolution * surf->yresolution; j++, ff_index++) {
           if (ignore)
             continue;
 
-          rad_element *ep = &surf->elements[j];
+          const rad_element &ep = surf->elements[j];
 
-          if (ep->flags & EF_IGNORE)
+          if (ep.flags.ignore)
             continue;
 
-          for (k = 0; k < ep->num_verts; k++) {
-            vector vec = ep->verts[k];
-            g3_RotatePoint(&Element_points[k], &vec);
-            Element_points[k].p3_flags = 0;
+          for (k = 0; k < ep.num_verts; k++) {
+            vector3 vec = ep.verts[k];
+            g3_RotatePoint(Element_points[k], vec);
+            Element_points[k].p3_flags = g3point_flags_t{};
           }
 
-          if (g3_CheckNormalFacing(&ep->verts[0], &surf->normal)) {
-            for (k = 0; k < ep->num_verts; k++) {
-              g3Point *p = &Element_points[k];
-              pointlist[k] = p;
+          if (g3_CheckNormalFacing(ep.verts[0], surf->normal)) {
+            for (k = 0; k < ep.num_verts; k++) {
+              g3Point &p = Element_points[k];
+              pointlist[k] = &p;
             }
 
-            DrawRadiosityPoly(ep->num_verts, pointlist, ff_index);
+            DrawRadiosityPoly(ep.num_verts, pointlist, ff_index);
           }
         }
       }
@@ -178,7 +178,7 @@ void CalculateFormFactorsHemiCube() {
   }
 
   // Now extract the results
-  for (ff_index = 0, i = 0; i < rad_NumSurfaces; i++) {
+  for (ff_index = 0, i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
     rad_surface *surf = &rad_Surfaces[i];
 
     // Check for self surface
@@ -200,7 +200,7 @@ void CalculateFormFactorsHemiCube() {
         // Compute reciprocal form factor
         float rff;
 
-        if (rad_MaxSurface->surface_type == ST_SATELLITE)
+        if (rad_MaxSurface->surface_type == rad_surface_type::satellite)
           rff = std::min(rad_FormFactors[ff_index], 1.0f);
         else
           rff = (float)std::min(rad_FormFactors[ff_index] * rad_MaxSurface->area / dest_element->area, 1.0f);
@@ -232,20 +232,15 @@ void InitHemicube(int resolution) {
   // Make sure resolution is even
   Q_ASSERT(resolution % 2 == 0);
 
-  rad_Drawing = 1;
+  rad_Drawing = true;
 
   rad_Hemicube.ff_res = resolution;
   rad_Hemicube.grid_dim = resolution / 2;
 
-  rad_Hemicube.id_grid = (int *)mem_malloc(rad_Hemicube.ff_res * rad_Hemicube.ff_res * sizeof(int));
-  Q_ASSERT(rad_Hemicube.id_grid != NULL);
-  rad_Hemicube.depth_grid = (float *)mem_malloc(rad_Hemicube.ff_res * rad_Hemicube.ff_res * sizeof(float));
-  Q_ASSERT(rad_Hemicube.depth_grid != NULL);
-
-  rad_Hemicube.top_array = (float *)mem_malloc(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim * sizeof(float));
-  Q_ASSERT(rad_Hemicube.top_array != NULL);
-  rad_Hemicube.side_array = (float *)mem_malloc(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim * sizeof(float));
-  Q_ASSERT(rad_Hemicube.side_array != NULL);
+  rad_Hemicube.id_grid.resize(rad_Hemicube.ff_res * rad_Hemicube.ff_res);
+  rad_Hemicube.depth_grid.resize(rad_Hemicube.ff_res * rad_Hemicube.ff_res);
+  rad_Hemicube.top_array.resize(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim);
+  rad_Hemicube.side_array.resize(rad_Hemicube.grid_dim * rad_Hemicube.grid_dim);
 
   CalculateDeltaFormFactors();
 
@@ -257,13 +252,7 @@ void InitHemicube(int resolution) {
 void CloseHemicube() {
   delete rad_Hemicube.vport;
   rad_Hemicube.drawing_surface.free();
-
-  mem_free(rad_Hemicube.depth_grid);
-  mem_free(rad_Hemicube.id_grid);
-  mem_free(rad_Hemicube.side_array);
-  mem_free(rad_Hemicube.top_array);
-
-  rad_Drawing = 0;
+  rad_Drawing = false;
 }
 
 void ClearHemicubeGrid() {
@@ -278,75 +267,75 @@ void ClearHemicubeGrid() {
 }
 
 void SetElementView(rad_element *ep) {
-  vector rv; // Random vector
-  vector u, v, n;
+  vector3 rv; // Random vector
+  vector3 u, v, n;
 
   // Select random vector for hemicube orientation
-  rv.x() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.y() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.z() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
+  rv.x() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.z() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.y() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
 
   n = rad_MaxSurface->normal; // Get patch normal
 
   do // Get valid u-axis vector
   {
-    vm_CrossProduct(&u, &n, &rv);
-  } while (vm_GetMagnitude(&u) < .0001);
+    vm_CrossProduct(u, n, rv);
+  } while (vm_GetMagnitude(u) < 0.0001f);
 
-  vm_NormalizeVector(&u);
-  vm_CrossProduct(&v, &u, &n); // Determine v-axis
+  vm_NormalizeVector(u);
+  vm_CrossProduct(v, u, n); // Determine v-axis
 
   rad_Hemicube.head_matrix.rvec = u;
   rad_Hemicube.head_matrix.uvec = v;
   rad_Hemicube.head_matrix.fvec = n;
 
-  vm_VectorToMatrix(&rad_Hemicube.head_matrix, &n, NULL, NULL);
+  vm_VectorToMatrix(rad_Hemicube.head_matrix, n, std::nullopt, std::nullopt);
 
   rad_Hemicube.shooting_element = ep;
 }
 
 void SetSurfaceView(rad_surface *surf) {
-  vector rv; // Random vector
-  vector u, v, n;
+  vector3 rv; // Random vector
+  vector3 u, v, n;
 
   // Select random vector for hemicube orientation
-  rv.x() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.y() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
-  rv.z() = (((scalar)rand() / (scalar)RAND_MAX) * (scalar)2.0 - (scalar)1.0);
+  rv.x() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.y() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
+  rv.z() = ((scalar(d3::rand()) / d3::rand_max) * 2.0f - 1.0f);
 
   n = rad_MaxSurface->normal; // Get patch normal
 
   do // Get valid u-axis vector
   {
-    vm_CrossProduct(&u, &n, &rv);
-  } while (vm_GetMagnitude(&u) < (scalar).0001);
+    vm_CrossProduct(u, n, rv);
+  } while (vm_GetMagnitude(u) < 0.0001f);
 
-  vm_NormalizeVector(&u);
-  vm_CrossProduct(&v, &u, &n); // Determine v-axis
+  vm_NormalizeVector(u);
+  vm_CrossProduct(v, u, n); // Determine v-axis
 
   rad_Hemicube.head_matrix.rvec = u;
   rad_Hemicube.head_matrix.uvec = v;
   rad_Hemicube.head_matrix.fvec = n;
 
-  vm_VectorToMatrix(&rad_Hemicube.head_matrix, &n, NULL, NULL);
+  vm_VectorToMatrix(rad_Hemicube.head_matrix, n, std::nullopt, std::nullopt);
 
   rad_Hemicube.shooting_surface = surf;
 }
 
 // Build transformation matrix for our hemicube
-void BuildTransform(vector *nu, vector *nv, vector *nn) {
-  matrix *vm = &rad_Hemicube.view_matrix; // view matrix
+void BuildTransform(vector3 *nu, vector3 *nv, vector3 *nn) {
+  matrix &vm = rad_Hemicube.view_matrix; // view matrix
 
   if (Shoot_from_patch)
     GetCenterOfSurface(rad_Hemicube.shooting_surface, &rad_Hemicube.view_position);
   else
     GetCenterOfElement(rad_Hemicube.shooting_element, &rad_Hemicube.view_position);
 
-  rad_Hemicube.view_position += (rad_MaxSurface->normal / (scalar)16.0);
+  rad_Hemicube.view_position += rad_MaxSurface->normal / 16.0f;
 
-  vm->fvec = *nn;
-  vm->uvec = *nv;
-  vm->rvec = *nu;
+  vm.fvec = *nn;
+  vm.uvec = *nv;
+  vm.rvec = *nu;
 }
 
 void StartHemicubeDrawing() {
@@ -364,9 +353,9 @@ void EndHemicubeDrawing(int face) {
 
     if (first) {
       for (i = 0; i < 9000; i++) {
-        int r = (rand() % 127) + 128;
-        int g = (rand() % 127) + 128;
-        int b = (rand() % 127) + 128;
+        int r = (d3::rand() % 127) + 128;
+        int g = (d3::rand() % 127) + 128;
+        int b = (d3::rand() % 127) + 128;
 
         surface_colors[i] = GR_RGB(r, g, b);
       }
@@ -379,10 +368,10 @@ void EndHemicubeDrawing(int face) {
     uint16_t surfval[90000];
     int ff_index = 0;
 
-    for (i = 0; i < rad_NumSurfaces; i++) {
-      rad_surface *surf = &rad_Surfaces[i];
+    for (i = 0; i < static_cast<int>(rad_Surfaces.size()); i++) {
+      const rad_surface &surf = rad_Surfaces[i];
 
-      for (t = 0; t < surf->yresolution * surf->xresolution; t++, ff_index++) {
+      for (t = 0; t < surf.yresolution * surf.xresolution; t++, ff_index++) {
         surfval[ff_index] = i;
       }
     }
@@ -427,7 +416,7 @@ void EndHemicubeDrawing(int face) {
 
 // Update hemicube view transformation matrix
 void UpdateView(int face_id) {
-  vector nu, nv, nn; // View space co-ordinates
+  vector3 nu, nv, nn; // View space co-ordinates
 
   switch (face_id) // Exchange co-ordinates
   {
@@ -465,17 +454,18 @@ void UpdateView(int face_id) {
   BuildTransform(&nu, &nv, &nn);
 }
 
-void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
+void DrawRadiosityPoly(int nv, const std::vector<g3Point *> &pointlist, int id) {
   int i;
   g3Codes cc;
   bool was_clipped = 0;
   int triangulate = 1;
+  const std::vector<g3Point *> *pl = &pointlist;
 
-  Q_ASSERT(id >= 0 && id <= rad_NumElements);
+  Q_ASSERT(id >= 0 && id <= static_cast<int>(rad_FormFactors.size()));
 
   if (triangulate) {
     if (nv > 3) {
-      g3Point *tripoints[3];
+      std::vector<g3Point *> tripoints(3);
 
       tripoints[0] = pointlist[0];
       tripoints[2] = pointlist[1];
@@ -491,17 +481,13 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   }
 
   // Initialize
-  cc.cc_or = 0;
+  cc.cc_or = g3_clip_codes_t{};
   cc.cc_and = 0xff;
 
   // Get codes for this polygon, and copy uvls into points
   for (i = 0; i < nv; i++) {
-    uint8_t c;
-
-    c = pointlist[i]->p3_codes;
-
-    cc.cc_and &= c;
-    cc.cc_or |= c;
+    cc.cc_and &= pointlist[i]->p3_codes;
+    cc.cc_or |= pointlist[i]->p3_codes;
   }
 
   // All points off grid?
@@ -512,30 +498,30 @@ void DrawRadiosityPoly(int nv, g3Point **pointlist, int id) {
   if (cc.cc_or) {
 
     // Clip the polygon, getting pointer to new buffer
-    pointlist = g3_ClipPolygon(pointlist, &nv, &cc);
+    pl = &g3_ClipPolygon(*pl, nv, cc);
 
     // Flag as clipped so temp points will be freed
     was_clipped = 1;
 
     // Check for polygon clipped away, or clip otherwise failed
-    if ((nv == 0) || (cc.cc_or & CC_BEHIND) || cc.cc_and)
+    if ((nv == 0) || cc.cc_or.behind || cc.cc_and)
       goto free_points;
   }
 
   // Make list of 2d coords
   for (i = 0; i < nv; i++) {
-    g3Point *p = pointlist[i];
-    g3_ProjectPoint(p);
+    g3Point *p = (*pl)[i];
+    g3_ProjectPoint(*p);
   }
 
   // Draw!
-  ScanRadiosityPoly(pointlist, nv, id);
+  ScanRadiosityPoly(*pl, nv, id);
 
 free_points:;
 
   // If was clipped, free temp points
   if (was_clipped)
-    g3_FreeTempPoints(pointlist, nv);
+    g3_FreeTempPoints(*pl, nv);
 }
 
 /*void GetVertexOrdering (hemicube_point *t, int nv, int *vlt, int *vlb, int *vrt, int *vrb,int *bottom_y_ind)
@@ -701,7 +687,7 @@ int NextIndex(int val, int modulus) {
     return 0;
 }
 
-void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
+void ScanRadiosityPoly(const std::vector<g3Point *> &pl, int nv, int element_id) {
   int i, left_edge_dir;
 
   scalar Delta_right_x, Right_x, Delta_left_x, Left_x;
@@ -743,7 +729,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
     next_break_right = cp[vrb].sy;
   };
 
-  Q_ASSERT(element_id >= 0 && element_id <= rad_NumElements);
+  Q_ASSERT(element_id >= 0 && element_id <= static_cast<int>(rad_FormFactors.size()));
 
   for (i = 0; i < nv; i++) {
     g3Point p;
@@ -751,7 +737,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
 
     cp[i].sx = p.p3_sx;
     cp[i].sy = p.p3_sy;
-    cp[i].z = (scalar)1.0 / (scalar)(p.p3_vec.z());
+    cp[i].z = 1.0f / p.p3_vec.z();
   }
 
   // Determine top and bottom y coords.
@@ -823,7 +809,7 @@ void ScanRadiosityPoly(g3Point **pl, int nv, int element_id) {
 
       // Enter scan line
       for (int x = x1; x < x1 + width; x++) {
-        scalar realz = (scalar)1.0 / z;
+        scalar realz = 1.0f / z;
         // Check element visibility
         if (realz <= rad_Hemicube.depth_grid[destptr + x]) {
           // Update Z-buffer
@@ -879,7 +865,7 @@ float GetSideFactor(int row, int col) {
 }
 
 // Sums the delta form factors
-void SumDeltas(float *ff_array, int face_id) {
+void SumDeltas(std::vector<float>& ff_array, int face_id) {
   int poly_id;  // Polygon identifier
   int row, col; // Face cell indices
 

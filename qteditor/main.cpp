@@ -24,14 +24,14 @@
 #include <cstring>
 #include <cerrno>
 
-#include "d3_editor_init.h"
-#include "dialog_test.h"
+#include "d3edit.h"
 #include "main_window.h"
-
+#include "log.h"
 
 
 int main(int argc, char *argv[])
 {
+  LOG_DEBUG("DEBUG LOGGING ENABLED.");
   QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
   QApplication app(argc, argv);
   app.setApplicationName("Descent 3 Editor");

@@ -29,10 +29,10 @@ void populateTriggerCombo(QComboBox *combo, int selected) {
   combo->clear();
   combo->addItem("<none>", -1);
 
-  for (int i = 0; i < Num_triggers; i++) {
+  for (size_t i = 0; i < (Triggers).size(); i++) {
     int index = combo->count();
-    combo->addItem(Triggers[i].name, i);
-    if (selected == i)
+    combo->addItem(QString::fromStdString(Triggers[i].name), static_cast<int>(i));
+    if (selected == static_cast<int>(i))
       combo->setCurrentIndex(index);
   }
 }

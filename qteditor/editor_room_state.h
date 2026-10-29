@@ -19,78 +19,92 @@
 #pragma once
 
 #include "fix.h"
-#include "vecmat.h"
+#include "vecmat_external.h"
+#include "room_external.h"
 
-struct face;
-struct room;
+#include "utils.h"
+
+
+struct face_t;
 struct roomUVL;
 
+// Vars for the list of selected rooms
+extern int N_selected_rooms;
+extern std::array<index_t, MAX_ROOMS> Selected_rooms;
+
+
 // Room selection list (editor/selectedroom.cpp in Win32).
-int IsRoomSelected(int roomnum);
-void AddRoomToSelectedList(int roomnum);
-void RemoveRoomFromSelectedList(int roomnum);
+int IsRoomSelected(index_t roomnum);
+void AddRoomToSelectedList(index_t roomnum);
+void RemoveRoomFromSelectedList(index_t roomnum);
 void ClearRoomSelectedList();
-int ToggleRoomSelectedState(int roomnum);
-int SelectConnectedRooms(int roomnum);
+int ToggleRoomSelectedState(index_t roomnum);
+int SelectConnectedRooms(index_t roomnum);
 void SaveRoomSelectedList();
 void RestoreRoomSelectedList();
 
 
-// Allocate / free an editor room slot. CreateNewRoom allocates the per-
-// room verts[]/faces[]/portals[] arrays via new[] (DestroyRoom restores
-// the heap); the Win32 editor/Erooms.cpp version uses its free-list
-// allocator, which we don't replicate.
-room *CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
-void DestroyRoom(int roomnum);
+// Allocate / free an editor room slot.  CreateNewRoom provisions a slot in the
+// Rooms table (first unused slot, else appended at the high-water mark) and
+// returns its index, or nullopt when the room capacity limit is reached.  It mirrors
+// CreateNewRoom() in the Win32 editor/Erooms.cpp, whose free-list allocator we
+// don't replicate.
+index_t CreateNewRoom(int nverts, int nfaces, bool palette_room = false);
+void DestroyRoom(index_t roomnum);
+
+// Mirrors GetFreeRoom(): linear scan for the first unused slot, else append a
+// fresh slot at the end of Rooms (which is the high-water mark + 1).  Returns
+// the slot index or -1 when the room capacity limit is reached.
+int FindFreeRoomSlot();
 
 // Port of editor/Erooms.cpp:AssignDefaultUVsToRoomFace — projects each
 // vertex onto the face's normal plane and assigns UVs with a 1/20.0 scale.
-void AssignDefaultUVsToRoomFace(room *rp, int facenum);
+void AssignDefaultUVsToRoomFace(index_t roomnum, index_t facenum);
 
 // Port of editor/Erooms.cpp — room operations.
-void CopyFace(face *dfp, face *sfp);
-void CopyFaceFlags(face *dfp, face *sfp);
-void CopyRoom(room *destp, room *srcp);
-void ReInitRoomFace(face *fp, int nverts);
-int RoomAddVertices(room *rp, int num_new_verts);
-int RoomAddFaces(room *rp, int num_new_faces);
-bool ResetRoomFaceNormals(room *rp);
-bool FaceIsPlanar(int nv, int16_t *face_verts, vector *normal, vector *verts);
-int CheckFaceConcavity(int num_verts, int16_t *face_verts, vector *normal, vector *verts);
-bool FindSharedEdge(face *fp0, face *fp1, int *vn0, int *vn1);
-void DeleteRoomFace(room *rp, int facenum);
-void DeleteRoomPortal(room *rp, int portalnum);
-int AddPortal(room *rp);
-void LinkRooms(room *roomlist, int room0, int face0, int room1, int face1);
-void AssignUVsToFace(room *rp, int facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
-void AssignDefaultUVsToRoom(room *rp);
-void FixConcaveFaces(room *rp, int *facelist, int facecount);
-void FlipFace(room *rp, int facenum);
+void CopyFace(face_t *dfp, face_t *sfp);
+void CopyFaceFlags(face_t *dfp, face_t *sfp);
+void CopyRoom(int destroom, int srcroom);
+void ReInitRoomFace(face_t *fp, int nverts);
+int RoomAddVertices(index_t roomnum, int num_new_verts);
+int RoomAddFaces(index_t roomnum, int num_new_faces);
+bool ResetRoomFaceNormals(index_t roomnum);
+bool FaceIsPlanar(int nv, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
+int CheckFaceConcavity(int num_verts, std::vector<int16_t>& face_verts, vector3& normal, std::vector<vector3>& verts);
+bool FindSharedEdge(face_t *fp0, face_t *fp1, int *vn0, int *vn1);
+void DeleteRoomFace(index_t roomnum, index_t facenum);
+void DeleteRoomPortal(index_t roomnum, index_t portalnum);
+int AddPortal(index_t roomnum);
+void LinkRooms(int room0, int face0, int room1, int face1);
+void AssignUVsToFace(index_t roomnum, index_t facenum, roomUVL *uva, roomUVL *uvb, int va, int vb);
+void AssignDefaultUVsToRoom(index_t roomnum);
+void FixConcaveFaces(index_t roomnum, int *facelist, int facecount);
+void FlipFace(index_t roomnum, index_t facenum);
 
 // Port of editor/HRoom.cpp — room operations.
-bool CombineFaces(room *rp, int face0, int face1);
-void DeletePortalPair(room *rp, int portalnum);
+bool CombineFaces(index_t roomnum, index_t face0, index_t face1);
+void DeletePortalPair(index_t roomnum, index_t portalnum);
 void RotateRooms(angle p, angle h, angle b);
-void ConnectPortal(room *rp, int portal_num, int dest_room);
-void DetachPortal(room *rp, int portal_num);
+void ConnectPortal(index_t roomnum, int portal_num, int dest_room);
+void DetachPortal(index_t roomnum, int portal_num);
 void AttachRoom();
 void ComputePlacedRoomMatrix();
-void PlaceRoom(room *baseroomp, int baseface, int placed_room, int placed_room_face, int placed_room_door);
-void PlaceDoor(room *baseroomp, int baseface, int placed_door);
+void PlaceRoom(int baseroom, int baseface, int placed_room, int placed_room_face, index_t placed_room_door);
+void PlaceDoor(int baseroom, int baseface, index_t placed_door);
 
 // Port of editor/RoomUVs.cpp and editor/HTexture.cpp — UV manipulation.
-void GetUVLForRoomPoint(int roomnum, int facenum, int vertnum, roomUVL *uvl);
-void StretchRoomUVs(room *rp, int facenum, int edge);
-void ScaleFaceUVs(room *rp, int facenum, float scale);
-void HTextureSlide(room *rp, int facenum, float right, float up);
-void HTextureRotate(room *rp, int facenum, float angle_rad);
-void HTextureFlipX(room *rp, int facenum);
-void HTextureFlipY(room *rp, int facenum);
-void HTextureRoomStretch(room *rp, int facenum, int edge, int direction);
-void HTextureStretchMore(room *rp, int facenum, int edge, float texscale);
-void HTextureStretchLess(room *rp, int facenum, int edge, float texscale);
-void HTextureSetDefault(room *rp, int facenum);
-int HTexturePropagateToFace(room *destrp, int destface, room *srcrp, int srcface, bool tex = true);
-int HTextureCopyUVsToFace(room *destrp, int destface, room *srcrp, int srcface, int offset);
-void HTextureApplyToRoomFace(room *rp, int facenum, int tnum);
+void GetUVLForRoomPoint(index_t roomnum, index_t facenum, int vertnum, roomUVL *uvl);
+void StretchRoomUVs(index_t roomnum, index_t facenum, int edge);
+void ScaleFaceUVs(index_t roomnum, index_t facenum, float scale);
+void HTextureSlide(index_t roomnum, index_t facenum, float right, float up);
+void HTextureRotate(index_t roomnum, index_t facenum, float angle_rad);
+void HTextureFlipX(index_t roomnum, index_t facenum);
+void HTextureFlipY(index_t roomnum, index_t facenum);
+void HTextureRoomStretch(index_t roomnum, index_t facenum, index_t edge, int direction);
+void HTextureStretchMore(index_t roomnum, index_t facenum, index_t edge, float texscale);
+void HTextureStretchLess(index_t roomnum, index_t facenum, index_t edge, float texscale);
+void HTextureSetDefault(index_t roomnum, index_t facenum);
+int HTexturePropagateToFace(index_t destroom, index_t destface, index_t srcroom, index_t srcface, bool tex = true);
+int HTextureCopyUVsToFace(index_t destroom, index_t destface, index_t srcroom, index_t srcface, int offset);
+void HTextureApplyToRoomFace(index_t roomnum, index_t facenum, int tnum);
 

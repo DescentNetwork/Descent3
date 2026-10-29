@@ -38,18 +38,17 @@ OrphanRemoveDialog::OrphanRemoveDialog(QWidget *parent)
     // An orphan is an object whose id no longer maps to a valid object type.
     int orphans = 0;
     for (int i = 0; i <= Highest_object_index; i++) {
-      object *obj = &Objects[i];
-      if (obj->type == OBJ_NONE)
+      const object &obj = Objects[i];
+      if (obj.type == object_type_e::none)
         continue;
-      if (obj->id < 0 || obj->id >= MAX_OBJECT_IDS || Object_info[obj->id].type == OBJ_NONE) {
-        m_list->addItem(QString("Object %1: orphaned id %2").arg(i).arg(obj->id));
+      if (!obj.id || *obj.id >= Object_info.size() || Object_info[*obj.id].type == object_type_e::none) {
+        m_list->addItem(QString("Object %1: orphaned id %2").arg(i).arg(obj.id ? static_cast<int>(*obj.id) : -1));
         orphans++;
       }
     }
     if (orphans == 0)
       m_list->addItem("No orphans found.");
-    if (QLabel *label = ui->IDC_STATUS)
-      label->setText(QString("Scanned %1 objects; %2 orphans.").arg(Highest_object_index + 1).arg(orphans));
+    ui->IDC_STATUS->setText(QString("Scanned %1 objects; %2 orphans.").arg(Highest_object_index + 1).arg(orphans));
   }
 }
 

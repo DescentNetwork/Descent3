@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<ui version="4.0">
+  <class>Form</class>
+  <widget class="QMainWindow" name="idr_srvr_embedded_menu">
+    <widget class="QMenuBar" name="menubar">
+      <property name="geometry">
+        <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>800</width>
+          <height>22</height>
+        </rect>
+      </property>
+      <widget class="QMenu" name="menuFile">
+        <property name="title">
+          <string>&amp;File</string>
+        </property>
+        <addaction name="ID_FILE_UPDATE" />
+        <addaction name="ID_FILE_SAVE_COPY_AS" />
+        <addaction name="separator" />
+        <addaction name="ID_FILE_PRINT" />
+        <addaction name="ID_FILE_PRINT_PREVIEW" />
+        <addaction name="ID_FILE_PRINT_SETUP" />
+        <addaction name="separator" />
+        <addaction name="ID_APP_EXIT" />
+      </widget>
+      <addaction name="menuFile" />
+      <widget class="QMenu" name="menuEdit">
+        <property name="title">
+          <string>&amp;Edit</string>
+        </property>
+        <addaction name="ID_EDIT_UNDO" />
+        <addaction name="separator" />
+        <addaction name="ID_EDIT_CUT" />
+        <addaction name="ID_EDIT_COPY" />
+        <addaction name="ID_EDIT_PASTE" />
+      </widget>
+      <addaction name="menuEdit" />
+      <widget class="QMenu" name="menuView">
+        <property name="title">
+          <string>&amp;View</string>
+        </property>
+        <addaction name="ID_VIEW_TOOLBAR" />
+        <addaction name="ID_VIEW_STATUS_BAR" />
+      </widget>
+      <addaction name="menuView" />
+      <widget class="QMenu" name="menuHelp">
+        <property name="title">
+          <string>&amp;Help</string>
+        </property>
+        <addaction name="ID_APP_ABOUT" />
+      </widget>
+      <addaction name="menuHelp" />
+    </widget>
+    <action name="ID_APP_ABOUT">
+      <property name="text">
+        <string>&amp;About editor...</string>
+      </property>
+    </action>
+    <action name="ID_APP_EXIT">
+      <property name="text">
+        <string>E&amp;xit</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+X</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_COPY">
+      <property name="text">
+        <string>&amp;Copy</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+Ins</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_CUT">
+      <property name="text">
+        <string>Cu&amp;t</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+Del</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_PASTE">
+      <property name="text">
+        <string>&amp;Paste</string>
+      </property>
+      <property name="shortcut">
+        <string>Shift+Ins</string>
+      </property>
+    </action>
+    <action name="ID_EDIT_UNDO">
+      <property name="text">
+        <string>&amp;Undo</string>
+      </property>
+      <property name="shortcut">
+        <string>Alt+Backspace</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PRINT">
+      <property name="text">
+        <string>&amp;Print...</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+P</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PRINT_PREVIEW">
+      <property name="text">
+        <string>Print Pre&amp;view</string>
+      </property>
+    </action>
+    <action name="ID_FILE_PRINT_SETUP">
+      <property name="text">
+        <string>P&amp;rint Setup...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_SAVE_COPY_AS">
+      <property name="text">
+        <string>Save Copy &amp;As...</string>
+      </property>
+    </action>
+    <action name="ID_FILE_UPDATE">
+      <property name="text">
+        <string>&amp;Update</string>
+      </property>
+      <property name="shortcut">
+        <string>Ctrl+S</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_STATUS_BAR">
+      <property name="text">
+        <string>&amp;Status Bar</string>
+      </property>
+    </action>
+    <action name="ID_VIEW_TOOLBAR">
+      <property name="text">
+        <string>&amp;Toolbar</string>
+      </property>
+    </action>
+  </widget>
+</ui>

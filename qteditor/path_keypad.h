@@ -51,10 +51,6 @@ private:
   int currentNode();
 
   float m_inc = 10.0f;
-
-  template <typename T>
-  T *find(const QString &name) const { return findChild<T *>(name); }
-
   Ui::PathKeypad *ui;
 };
 

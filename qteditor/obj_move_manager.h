@@ -19,6 +19,7 @@
 #ifndef OBJ_MOVE_MANAGER_H
 #define OBJ_MOVE_MANAGER_H
 
+#include "utils.h"
 #include "vecmat.h"
 
 struct object;
@@ -29,11 +30,11 @@ const int OBJMOVEAXIS_X = 1, OBJMOVEAXIS_Y = 2, OBJMOVEAXIS_Z = 3, OBJMOVEAXIS_X
 class ObjectMoveManager {
   int m_DragState;              // 0 = idle, 1 = dragging
   int m_MoveAxis;               // OBJMOVEAXIS_*
-  int m_ObjNum;                 // object index being moved
+  index_t m_ObjNum;             // object index being moved
   float m_WindowW2, m_WindowH2; // half-window dimensions for projection
 
   matrix m_ViewMat;
-  vector m_ViewPos;
+  vector3 m_ViewPos;
 
   void GetObjectDeltas(float *dx, float *dy, object *obj, int dsx, int dsy);
 
@@ -43,14 +44,16 @@ public:
   // Starts a drag.  view_width/view_height are the viewport dimensions in
   // pixels; view_pos/view_mat are the camera; x/y are the press coordinates
   // (not used directly, reserved for future cursor-clamping).
-  void Start(int view_width, int view_height, vector *view_pos, matrix *view_mat, int x, int y);
+  void Start(int view_width, int view_height, vector3 *view_pos, matrix *view_mat, int x, int y);
 
   // Ends the current drag.
   void End();
 
-  // Called each frame while dragging; polls ddio mouse state and applies
-  // movement/rotation to the tracked object.
-  void Defer();
+  // Called on each mouse move while dragging.  dsx/dsy are the incremental
+  // screen deltas since the last event and leftDown is whether the left mouse
+  // button is still held.  Applies movement/rotation to the tracked object;
+  // ends the drag when the button is released.
+  void Defer(int dsx, int dsy, bool leftDown);
 
   bool IsMoving() const { return (m_DragState == 1); }
 
